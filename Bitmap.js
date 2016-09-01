@@ -1,15 +1,61 @@
-Bitmap = function(width, height) {
-  this.bm = game.add.bitmapData(width, height);
-  this.cx = this.bm.context;
+Rob.Bitmap = function(whichBitmap) {
+  switch(whichBitmap) {
+    case 'archonBackground':
+    case 'debugBackground':
+    this[whichBitmap]();
+    break;
+    default: throw "No '" + whichBitmap + "' background available";
+  }
 
-	game.add.image(0, 0, this.bm);
+  this.cx = this.bm.context;
+}
+
+Rob.Bitmap.prototype.archonBackground = function() {
+  this.bmDiagonal = Math.ceil(
+    Math.sqrt(Math.pow(game.width, 2) + Math.pow(game.height, 2))
+  );
+
+  this.bmRadius = Math.ceil(this.bmDiagonal / 2);
+
+  var x = game.width / 2;
+  var y = game.height / 2;
+
+  this.bm = game.make.bitmapData(this.bmDiagonal, this.bmDiagonal);
+
+  this.innerCircle = new Phaser.Circle(1, 1, 1);
+  this.outerCircle = new Phaser.Circle(x, y, this.bmDiagonal);
+
+  var g = this.bm.context.createRadialGradient(
+    this.innerCircle.x, this.innerCircle.y, this.innerCircle.radius,
+    this.outerCircle.x, this.outerCircle.y, this.outerCircle.radius
+  );
+
+  g.addColorStop(0.00, 'hsl(202, 100%, 100%)');
+  g.addColorStop(0.40, 'hsl(202, 100%, 50%)');
+  g.addColorStop(0.70, 'hsl(202, 100%, 50%)');
+  g.addColorStop(0.90, 'hsl(218, 100%, 40%)');
+  g.addColorStop(1.00, 'hsl(218, 100%, 00%)');
+
+  this.bm.circle(x, y, this.bmDiagonal, g);
+  this.bm.update();
+  this.bm.addToWorld();
 };
 
-Bitmap.prototype.clear = function() {
+Rob.Bitmap.prototype.clear = function() {
   this.cx.clearRect(0, 0, game.width, game.height);
 };
 
-Bitmap.prototype.draw = function(xyStart, xyEnd, style, width) {
+Rob.Bitmap.prototype.debugBackground = function() {
+  this.bm = game.add.bitmapData(game.width, game.height);
+  this.cx = this.bm.context;
+
+  this.cx.fillStyle = 'rgba(255, 255, 255, 1)';
+  this.cx.strokeStyle = 'rgba(255, 255, 255, 1)';
+
+  game.add.image(0, 0, this.bm);
+};
+
+Rob.Bitmap.prototype.draw = function(xyStart, xyEnd, style, width) {
   if(style === undefined) { style = 'rgb(255, 255, 255)'; }
   if(width === undefined) { width = 1; }
 
