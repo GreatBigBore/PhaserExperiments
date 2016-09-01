@@ -2,12 +2,23 @@ Rob.Bitmap = function(whichBitmap) {
   switch(whichBitmap) {
     case 'archonBackground':
     case 'debugBackground':
+    case 'rectGradient':
     this[whichBitmap]();
     break;
     default: throw "No '" + whichBitmap + "' background available";
   }
 
   this.cx = this.bm.context;
+
+
+  this.txStyle = {
+    font: "12pt Courier", fill: "blue", wordWrap: false,
+    align: "left", backgroundColor: null
+  };
+
+  this.tx = game.add.text(0, 0, "", this.txStyle);
+  this.tx.width = game.width / 2; this.tx.height = game.height / 2;
+  this.tx.anchor.set(0);
 }
 
 Rob.Bitmap.prototype.archonBackground = function() {
@@ -66,4 +77,30 @@ Rob.Bitmap.prototype.draw = function(xyStart, xyEnd, style, width) {
   this.cx.moveTo(xyStart.x, xyStart.y);
   this.cx.lineTo(xyEnd.x, xyEnd.y);
   this.cx.stroke();
+};
+
+Rob.Bitmap.prototype.rectGradient = function() {
+  this.bm = game.add.bitmapData(game.width, game.height);
+  this.cx = this.bm.context;
+
+  var g = this.cx.createLinearGradient(game.width / 2, 0, game.width / 2, game.height);
+
+  g.addColorStop(0.00, 'hsl(202, 100%, 100%)');
+  g.addColorStop(0.40, 'hsl(202, 100%, 50%)');
+  g.addColorStop(0.70, 'hsl(202, 100%, 50%)');
+  g.addColorStop(0.90, 'hsl(218, 100%, 40%)');
+  g.addColorStop(1.00, 'hsl(218, 100%, 00%)');
+
+  this.cx.fillStyle = g;
+  this.cx.fillRect(0, 0, game.width, game.height);
+
+  this.bm.addToWorld();
+};
+
+Rob.Bitmap.prototype.text = function(x, y, text) {
+  this.tx.setText(text);
+};
+
+Rob.Bitmap.prototype.update = function() {
+  this.clear();
 };
