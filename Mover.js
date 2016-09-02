@@ -69,9 +69,8 @@ function Motioner(debugBitmap, sprite, maxSpeed) {
     game.rnd.integerInRange(0, game.height), 30);
 };
 
-Motioner.prototype.setTarget = function(hisX, hisY) {
-  this.hisX = hisX;
-  this.hisY = hisY;
+Motioner.prototype.setTarget = function(him) {
+  this.him = Rob.XY(him);
 
   this.maneuverComplete = false;
   this.setNewVelocity();
@@ -81,60 +80,51 @@ Motioner.prototype.setNewVelocity = function() {
   this.maneuverStamp = this.frameCount;
 
   // Get his into the same frame of reference as the velocity vector
-  var relX = this.hisX - this.sprite.x;
-  var relY = this.hisY - this.sprite.y;
-
-  var vX = this.body.velocity.x;
-  var vY = this.body.velocity.y;
+  var rel = Rob.XY(this.him).minus(this.sprite);
+  var v = Rob.XY(this.body.velocity);
 
   // Get the angle between my velocity vector and
   // the distance vector from me to him.
 
-  var deltaD = Math.sqrt(Math.pow(vX + relX, 2) + Math.pow(vY + relY, 2));
-  var thetaToTarget = Math.atan2(vY + relY, vX + relX);
+  var deltaD = v.plus(rel).getMagnitude();
+  var thetaToTarget = v.plus(rel).getAngle();
 
-  var bestVx = Math.cos(thetaToTarget) * deltaD;
-  var bestVy = Math.sin(thetaToTarget) * deltaD;
+  var bestV = Rob.XY().makeFromAngle(thetaToTarget, deltaD);
 
   this.needUpdate = (deltaD > this.maxSpeed);
   deltaD = Math.min(deltaD, this.maxSpeed);
 
-  var vCurtailedX = Math.cos(thetaToTarget) * deltaD;
-  var vCurtailedY = Math.sin(thetaToTarget) * deltaD;
+  var vCurtailed = Rob.XY().makeFromAngle(thetaToTarget, deltaD);
 
   // Now we need to know how much change we intend to apply
   // to the current velocity vectors, so we can scale that
   // change back to limit the acceleration.
-  var bestDeltaX = vCurtailedX - vX;
-  var bestDeltaY = vCurtailedY - vY;
+  var bestDelta = Rob.XY(vCurtailed).minus(v);
 
-  var deltaV = Math.sqrt(Math.pow(bestDeltaX, 2) + Math.pow(bestDeltaY, 2));
+  var deltaV = bestDelta.getMagnitude();
 
-  // These two are just so I can show debug info
-  var aCurtailedX = vCurtailedX;
-  var aCurtailedY = vCurtailedY;
+  // This is just so I can show debug info
+  var aCurtailed = Rob.XY(vCurtailed);
 
   if(deltaV > this.maxAcceleration) {
     this.needUpdate = true;
 
-    bestDeltaX *= this.maxAcceleration / deltaV;
-    bestDeltaY *= this.maxAcceleration / deltaV;
+    bestDelta.scalarMultiply(this.maxAcceleration / deltaV);
 
-    aCurtailedX = bestDeltaX + this.body.velocity.x;
-    aCurtailedY = bestDeltaY + this.body.velocity.y;
+    // Just for showing debug info
+    aCurtailed = bestDelta.plus(this.body.velocity);
   }
 
-  var finalX = bestDeltaX + this.body.velocity.x;
-  var finalY = bestDeltaY + this.body.velocity.y;
+  var final = bestDelta.plus(this.body.velocity);
 
-  this.body.velocity.setTo(finalX, finalY);
+  this.body.velocity.setTo(final.x, final.y);
 
   this.db.text(
     0, 0,
-    "Ship to mouse: (" + relX.toFixed(0) + ", " + relY.toFixed(0) + ")\n" +
-    "Max change: (" + bestVx.toFixed(4) + ", " + bestVy.toFixed(4) + ")\n" +
-    "Cut vchange: (" + vCurtailedX.toFixed(4) + ", " + vCurtailedY.toFixed(4) + ")\n" +
-    "Cut achange: (" + aCurtailedX.toFixed(4) + ", " + aCurtailedY.toFixed(4) + ")\n"
+    "Ship to mouse: (" + rel.X() + ", " + rel.Y() + ")\n" +
+    "Max change: (" + bestV.X(4) + ", " + bestV.Y(4) + ")\n" +
+    "Cut vchange: (" + vCurtailed.X(4) + ", " + vCurtailed.Y(4) + ")\n" +
+    "Cut achange: (" + aCurtailed.X(4) + ", " + aCurtailed.Y(4) + ")\n"
   );
 };
 
@@ -159,7 +149,7 @@ Rob.Mover.prototype.preload = function() {
 };
 
 Rob.Mover.prototype.tap = function(pointer, doubleTap) {
-  this.motioner.setTarget(pointer.x, pointer.y);
+  this.motioner.setTarget(pointer);
   return;
 
   var killedAClown = false;
