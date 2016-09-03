@@ -6,17 +6,71 @@ Rob.Spreader.prototype.create = function() {
   this.db = new Rob.Bitmap('debugBackground');
 
   var mannaCount = 200;
-  var stinkCount = 1000;
-  this.stinkGroup = game.add.group();
-  this.stinkGroup.enableBody = true;
-  this.stinkGroup.createMultiple(200, 'alien', 0, false);
+  var smellPerManna = 10;
 
   this.foodGroup = game.add.group();
   this.foodGroup.enableBody = true;
-  this.foodGroup.createMultiple(1000, 'stink', 0, false);
+  this.foodGroup.createMultiple(mannaCount, 'alien', 0, false);
 
-  for(j = 0; j < this.stinkGroup.length; j++) {
-    var a = this.stinkGroup.getChildAt(j);
+  this.smellGroup = game.add.group();
+  this.smellGroup.enableBody = true;
+  this.smellGroup.createMultiple(mannaCount * smellPerManna, 'food', 0, false);
+
+  var smellConfig = {
+    particleSource: null,   // Set per morsel
+    interval: 1,            // Emit one particle per frame
+    lifetime: 60,           // lifetime one sec
+    size: Rob.XY(0, 0),
+    distribution: null,     // Means random
+    parent: null,            // Set per morsel
+    minVelocity: Rob.XY(-50, -100),
+    maxVelocity: Rob.XY(50, 100),
+    visible: false
+  };
+
+  this.foodGroup.forEach(function(m) {
+    m.anchor.setTo(0.5, 0.5);
+    m.scale.setTo(0.2, 0.2);
+    m.body.bounce.setTo(1, 1);
+    m.body.collideWorldBounds = true;
+
+    m.smellGroup = game.add.group();
+    for(var i = 0; i < smellPerManna; i++) {
+      var smellParticle = this.smellGroup.getChildAt(0);
+
+      smellParticle.anchor.setTo(0.5, 0.5);
+      smellParticle.scale.setTo(0.02, 0.02);
+      smellParticle.body.bounce.setTo(1, 1);
+      smellParticle.body.collideWorldBounds = true;
+
+      m.smellGroup.addChild(smellParticle);
+      this.smellGroup.removeChild(0);
+    }
+
+    smellConfig.particleSource = m.smellGroup;
+    smellConfig.parent = m;
+    m.smellEmitter = new Rob.Emitter(smellConfig);
+  }, this);
+
+  var mannaConfig = {
+    particleSource: this.foodGroup,
+    interval: 1,            // Emit one particle per frame
+    lifetime: 5 * 60,       // lifetime in seconds
+    size: Rob.XY(600, 200),
+    position: Rob.XY(game.width / 2, game.height / 2),
+    distribution: null      // Means random
+  };
+
+  this.emitters = [];
+
+  var mannaEmitter = new Rob.Emitter(mannaConfig);
+  this.emitters.push(mannaEmitter);
+  mannaEmitter.start();
+
+  return;
+
+  for(j = 0; j < this.foodGroup.length; j++) {
+    var a = this.foodGroup.getChildAt(j);
     a.anchor.setTo(0.5, 0.5);
     a.scale.setTo(0.2, 0.2);
     a.body.bounce.setTo(1, 1);
@@ -29,18 +83,20 @@ Rob.Spreader.prototype.create = function() {
     a.frameCount = game.rnd.integerInRange(0, 300);
     a.frameStamp = 0;
 
-    a.foodIndex = 0;
-    a.stink = [];
-    a.revive();
+    a.smellIndex = 0;
+    a.smell = game.add.group();
 
-    for(var i = 0; i < stinkCount / mannaCount; i++) {
-      var s = this.foodGroup.getChildAt(i + (j * stinkCount / mannaCount));
+    for(var i = 0; i < foodCount / mannaCount; i++) {
+      var s = this.smellGroup.getChildAt(0);
 
       s.frameCount = 0;
       s.new = true;
 
-      a.stink.push(s);
+      a.smell.addChild(s);
+      this.smellGroup.removeChild(0);
     }
+
+    a.revive();
   };
 
   //this.emitters = [];
@@ -75,7 +131,7 @@ Rob.Spreader.prototype.createEmitter = function() {
     var frame = 0;
     var enableCollisions = true;
     e.makeParticles(key, frame, particleCount, enableCollisions);
-    //e.add(this.foodGroup);
+    //e.add(this.smellGroup);
 
     e.maxParticleSpeed.set(0, 0);
     e.minParticleSpeed.set(0, 0);
@@ -91,7 +147,7 @@ Rob.Spreader.prototype.createEmitter = function() {
     var lifetime = 5000;
     e.start(explode, lifetime, msBetweenManna, 0);
 
-    e.makesFood = true;
+    e.makessmell = true;
     this.emitters.push(e);
   }
 };
@@ -113,15 +169,20 @@ Rob.Spreader.prototype.init = function() {
 Rob.Spreader.prototype.preload = function() {
   game.load.image('alien', 'assets/sprites/ufo.png');
   game.load.image('rain', 'assets/sprites/rain.png');
-  game.load.image('stink', 'assets/sprites/pangball.png');
+  game.load.image('food', 'assets/sprites/pangball.png');
 };
 
 Rob.Spreader.prototype.update = function() {
-  this.stinkGroup.forEach(function(a) {
+  for(var i = 0; i < this.emitters.length; i++) {
+    this.emitters[i].update();
+  }
+  return;
+
+  this.foodGroup.forEach(function(a) {
     a.frameCount++;
-    if(a.foodIndex < a.stink.length) {
+    if(a.smellIndex < a.smell.length) {
       if(a.frameCount % 60 === 0) {
-        var s = a.stink[a.foodIndex];
+        var s = a.smell.getChildAt(a.smellIndex);
 
         if(s.new) {
           s.anchor.setTo(0.5, 0.5);
@@ -136,12 +197,12 @@ Rob.Spreader.prototype.update = function() {
           s.body.velocity.setTo(vx, vy * 75);
           s.revive();
           s.new = false;
-          a.foodIndex++;
+          a.smellIndex++;
         }
       }
     } else {
-      for(var i = 0; i < a.stink.length; i++) {
-        var s = a.stink[i];
+      for(var i = 0; i < a.smell.length; i++) {
+        var s = a.smell.getChildAt(a.smellIndex);
         if(s.alive) {
           s.frameCount++;
           if(s.frameCount >= 60) {
@@ -155,16 +216,16 @@ Rob.Spreader.prototype.update = function() {
 
 Phaser.Particle.prototype.onEmit = function() {
   return;
-  if(this.parent.makesFood === undefined) {
-    // If my parent doesn't make food, then he is food,
+  if(this.parent.makessmell === undefined) {
+    // If my parent doesn't make smell, then he is smell,
     // which means I'm his smell. Set my smell diffusing
     var x = game.rnd.integerInRange(-100, 100);
     var y = game.rnd.integerInRange(0, 1) || -1;
     this.body.velocity.setTo(x, y * 150);
   } else {
-    // If my parent makes food, then I'm food. Appear
+    // If my parent makes smell, then I'm smell. Appear
     // in a random spot, make sure I have a smell
-    // emitter, and start stinking up the place
+    // emitter, and start fooding up the place
     var y = game.rnd.integerInRange(-100, 100);
     this.y = y + game.height / 2;
 
@@ -176,11 +237,11 @@ Phaser.Particle.prototype.onEmit = function() {
       e.width = 0;
       e.height = 0;
 
-      var key = 'stink';
+      var key = 'food';
       var frame = 0;
       var enableCollisions = true;
       e.makeParticles(key, frame, particleCount, enableCollisions);
-      //e.add(this.stinkGroup);
+      //e.add(this.foodGroup);
 
       e.maxParticleScale = 0.25;
       e.minParticleScale = 0.25;

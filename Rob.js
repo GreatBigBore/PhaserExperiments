@@ -5,7 +5,7 @@ window.onload = function() { Rob.go(runWhichState); }
 
 var Rob = {
   go: function(runWhichState) {
-    game = new Phaser.Game(640, 480, Phaser.CANVAS);
+    game = new Phaser.Game(600, 600, Phaser.CANVAS);
 
     var states = [
       'Angles', 'Mover', 'Spreader'
