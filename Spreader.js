@@ -10,14 +10,9 @@ Rob.Spreader.prototype.create = function() {
 
   this.motionVector = Rob.XY();
 
-  this.mannaCount = 300;
-  this.smellPerManna = 3;
-
-  this.emitters = [];
-
   this.makeArchon();
-  this.setupMannaGenerator();
-  this.setupSmellGenerator();
+
+  this.mannaGarden = new Rob.MannaGarden(300, 3);
 
   this.frameCount = 0;
 };
@@ -88,71 +83,6 @@ Rob.Spreader.prototype.render = function() {
   }
 };
 
-Rob.Spreader.prototype.setupMannaGenerator = function() {
-  this.foodGroup = game.add.group();
-  this.foodGroup.enableBody = true;
-  this.foodGroup.createMultiple(this.mannaCount, 'particles', 0, false);
-  game.physics.enable(this.foodGroup, Phaser.Physics.ARCADE);
-
-  this.foodGroup.forEach(function(m) {
-    m.previousEmit = 0;
-    m.birthday = 0;
-    m.anchor.setTo(0.5, 0.5);
-    m.scale.setTo(0.1, 0.1);
-    m.body.bounce.setTo(0, 0);
-    m.body.collideWorldBounds = true;
-
-    m.smellArray = [];
-  }, this);
-
-  var mannaConfig = {
-    particleSource: this.foodGroup,
-    interval: 1,            // Emit one particle per frame
-    lifetime: 5 * 60,       // lifetime in seconds
-    size: Rob.XY(game.width, 200),
-    position: Rob.XY(game.width / 2, game.height / 2),
-    distribution: null,      // Null means random
-    parent: null
-  };
-
-  this.mannaGenerator = new Rob.MannaGenerator(mannaConfig);
-  this.emitters.push(this.mannaGenerator);
-  this.mannaGenerator.start();
-};
-
-Rob.Spreader.prototype.setupSmellGenerator = function() {
-  this.smellGroup = game.add.group();
-  this.smellGroup.enableBody = true;
-  this.smellGroup.createMultiple(this.mannaCount * this.smellPerManna, 'particles', 0, false);
-  game.physics.enable(this.smellGroup, Phaser.Physics.ARCADE);
-
-  var smellConfig = {
-    particleSource: this.smellGroup,
-    interval: 1,            // Emit one particle per frame
-    lifetime: 2 * 60,           // lifetime in frames
-    size: Rob.XY(0, 0),
-    distribution: null,     // Means random
-    parentGroup: this.foodGroup,
-    minVelocity: Rob.XY(-50, -100),
-    maxVelocity: Rob.XY(50, 100),
-    visible: false
-  };
-
-  this.smellGroup.forEach(function(s) {
-    s.previousEmit = 0;
-    s.birthday = 0;
-    s.anchor.setTo(0.5, 0.5);
-    s.scale.setTo(0.3, 0.3);
-    s.body.bounce.setTo(1, 1);
-    //s.body.collideWorldBounds = true;
-    game.physics.enable(s, Phaser.Physics.ARCADE);
-  }, this);
-
-  this.smellGenerator = new Rob.MannaGenerator(smellConfig);
-  this.emitters.push(this.smellGenerator);
-  this.smellGenerator.start();
-};
-
 Rob.Spreader.prototype.smell = function(sensor, smellyParticle) {
   this.motionVector.add(Rob.XY(smellyParticle).minus(sensor));
   this.overlapCounter++;
@@ -163,7 +93,8 @@ Rob.Spreader.prototype.update = function() {
 
   this.motionVector.reset();
   this.overlapCounter = 0;
-  game.physics.arcade.overlap(this.sensor, this.smellGroup, this.smell, null, this);
+
+  game.physics.arcade.overlap(this.sensor, this.mannaGarden.smellGroup, this.smell, null, this);
 
   this.db.draw(
     this.sensor,
@@ -174,7 +105,6 @@ Rob.Spreader.prototype.update = function() {
     'green', 1
   );
 
-  for(var i = 0; i < this.emitters.length; i++) {
-    this.emitters[i].update();
-  }
+  this.frameCount++;
+  this.mannaGarden.update();
 };
