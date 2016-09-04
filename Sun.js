@@ -8,9 +8,16 @@
 Rob.Sun = function() {
   this.darknessAlphaHi = 0.3;
   this.darknessAlphaLo = 0.0;
+
+  this.sunChariotAlphaHi = 1.0;
+  this.sunChariotAlphaLo = 0.0;
+
   this.dayLength = 60000;
+  this.easingFunction = Phaser.Easing.Quartic.InOut;
 
   this.letThereBeDark();
+  //this.letThereBeLight();
+  this.letThereBeFoo();
 };
 
 // As a percentage -- 100% = full, broad daylight
@@ -33,11 +40,13 @@ Rob.Sun.prototype.letThereBeDark = function() {
   this.darkness.tint = 0x9900;
 
   game.add.tween(this.darkness).to(
-    {alpha: this.darknessAlphaLo}, this.dayLength, "Sine.easeInOut", true, 0, -1, true
+    {alpha: this.darknessAlphaLo}, this.dayLength, this.easingFunction, true, 0, -1, true
   );
 
   //this.darkness.visible = false;  // So I can see the debug lines while debugging
+};
 
+Rob.Sun.prototype.letThereBeFoo = function() {
   this.foo = game.add.sprite(0, 0, game.cache.getBitmapData('realityGoo'));
   this.foo.kill();  // Invisible until I need it for debugging
 
@@ -51,4 +60,31 @@ Rob.Sun.prototype.letThereBeDark = function() {
   this.bar.anchor.setTo(0.5, 0.5);
   this.bar.scale.setTo(0.05, 0.05);  // Any size is fine, as long as it covers the world
   this.bar.tint = 0xFF0000;
+};
+
+Rob.Sun.prototype.letThereBeLight = function() {
+  this.sunChariot = game.add.sprite(-100, -40, game.cache.getBitmapData('realityGoo'));
+
+  this.sunChariot.anchor.setTo(0.5, 0.5);
+  this.sunChariot.scale.setTo(2, 1);
+  this.sunChariot.alpha = 1;
+
+  var sunColor = 0xF5EE2F;
+  var moonColor = 0x888888;
+  this.sunChariot.tint = sunColor;
+
+  this.sunTween = game.add.tween(this.sunChariot).
+  to({ x: game.width + 100 }, this.dayLength, Phaser.Easing.Linear.InOut, true, this.dayLength / 2, -1, true);
+
+  // On the way back, it's the moon
+  var _this = this;
+
+  setTimeout(function() {
+    setInterval(function() {
+      _this.sunChariot.alpha = (_this.sunChariot.alpha === 0) ? 1 : 0;
+      //_this.sunChariot.tint = (_this.sunChariot.tint === sunColor) ? moonColor : sunColor
+    }, _this.dayLength);
+  }, _this.dayLength / 2);
+
+  //this.darkness.visible = false;  // So I can see the debug lines while debugging
 };

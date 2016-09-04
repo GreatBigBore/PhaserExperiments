@@ -25,10 +25,8 @@ Rob.Spreader.prototype.create = function() {
   this.frameCount = 0;
 };
 
-Rob.Spreader.prototype.debugText = function() {
-  if(1) {
-    this.db.text(0, 0, "hello world\n");
-  }
+Rob.Spreader.prototype.debugText = function(text) {
+  this.db.text(0, 0, text);
 };
 
 Rob.Spreader.prototype.init = function() {

@@ -18,7 +18,7 @@ Rob.MannaGarden = function(mannaCount, smellPerMorsel, db) {
     interval: 1,            // Emit one particle per frame
     lifetime: 5 * 60,       // lifetime in seconds
     size: Rob.XY(game.width, 150),
-    position: Rob.XY(game.width / 2, game.height / 3),
+    position: Rob.XY(game.width / 2, game.height / 4),
     maxVelocity: Rob.XY(),
     minVelocity: Rob.XY(),
     parent: null,
@@ -70,7 +70,7 @@ Rob.MannaGarden.prototype.setPosition = function(sunStrength) {
 
   var myRangeSize = (bottomOfMyRange - topOfMyRange);
   var position = bottomOfMyRange - sunStrength * myRangeSize;
-  
+
   mannaEmitter.config.position.y = position;
 };
 
