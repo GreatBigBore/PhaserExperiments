@@ -1,3 +1,10 @@
+/* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
+	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
+
+/* global Rob */
+
+"use strict";
+
 Rob.XY = function(sourceOrMaybeX, maybeY) {
   var self = {
     x: 0, y: 0,
@@ -7,7 +14,7 @@ Rob.XY = function(sourceOrMaybeX, maybeY) {
       self.y += addend.y;
     },
 
-    dividedByScalar: function(divideBy) {
+    dividedByScalar: function(dividedBy) {
       var scratch = Rob.XY(self);
       scratch.scalarDivide(dividedBy);
       return scratch;
@@ -127,7 +134,7 @@ Rob.XY = function(sourceOrMaybeX, maybeY) {
     },
 
     zero: function() {
-      set(0, 0);
+      self.set(0, 0);
     }
   };
 

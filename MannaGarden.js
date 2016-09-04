@@ -1,3 +1,10 @@
+/* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
+	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
+
+/* global game, Phaser, Rob */
+
+"use strict";
+
 Rob.MannaGarden = function(mannaCount, smellPerMorsel) {
   this.mannaCount = (mannaCount === undefined) ? 300 : mannaCount;
   this.smellPerManna = (smellPerMorsel === undefined) ? 3: smellPerMorsel;
@@ -11,7 +18,8 @@ Rob.MannaGarden = function(mannaCount, smellPerMorsel) {
     lifetime: 5 * 60,       // lifetime in seconds
     size: Rob.XY(game.width, 200),
     position: Rob.XY(game.width / 2, game.height / 2),
-    distribution: null,      // Null means random
+    maxVelocity: Rob.XY(),
+    minVelocity: Rob.XY(),
     parent: null
   };
 
@@ -32,6 +40,34 @@ Rob.MannaGarden = function(mannaCount, smellPerMorsel) {
 
   for(var i = 0; i < this.emitters.length; i++) {
     this.emitters[i].start();
+  }
+};
+
+Rob.MannaGarden.prototype.setEfficiency = function(efficiency) {
+  if(efficiency > 1 || efficiency < 0) { throw "Efficiency must be between 0 and 1"; }
+
+  if(efficiency < 0.1) {
+    this.mannaGenerator.stop();
+    this.smellGenerator.stop();
+  } else {
+    var mannaConfig = Object.assign({}, this.mannaGenerator.config);
+    var smellConfig = Object.assign({}, this.smellGenerator.config);
+
+    var multiplier = 1 + (efficiency - 1);
+    mannaConfig.interval *= multiplier;
+    smellConfig.interval *= multiplier
+
+    mannaConfig.lifetime *= multiplier;
+    smellConfig.lifetime *= multiplier;
+
+    mannaConfig.minVelocity.scalarMultiply(multiplier);
+    smellConfig.minVelocity.scalarMultiply(multiplier);
+
+    mannaConfig.maxVelocity.scalarMultiply(multiplier);
+    smellConfig.maxVelocity.scalarMultiply(multiplier);
+
+    this.mannaGenerator.config = Object.assign({}, mannaConfig);
+    this.smellGenerator.config = Object.assign({}, smellConfig);
   }
 };
 

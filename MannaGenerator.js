@@ -1,34 +1,48 @@
+/* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
+	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
+
+/* global game, Phaser, Rob */
+
+"use strict";
+
 Rob.MannaGenerator = function(config) {
-  Object.assign(this, config);
+  this.config = Object.assign({}, config);
 
   this.on = false;
   this.frameCount = 0;
   this.previousEmit = this.frameCount;
 
-  if(this.particleSource === undefined) { throw "Rob.MannaGenerator needs a source of particles"; }
-  if(this.interval === undefined) { this.interval = 60; }
-  if(this.lifetime === undefined) { this.lifetime = 60; }
-  if(this.visible === undefined) { this.visible = true; }
-  if(this.size === undefined) { this.size = Rob.XY(); } else { this.size = Rob.XY(config.size); }
-  if(this.position === undefined) { this.position = Rob.XY(); }
-    else { this.position = Rob.XY(config.position); }
+  if(this.config.particleSource === undefined) { throw "Rob.MannaGenerator needs a source of particles"; }
+  if(this.config.interval === undefined) { this.config.interval = 60; }
+  if(this.config.lifetime === undefined) { this.config.lifetime = 60; }
+  if(this.config.visible === undefined) { this.config.visible = true; }
+  if(this.config.size === undefined) { this.config.size = Rob.XY(); } else { this.config.size = Rob.XY(config.size); }
+  if(this.config.position === undefined) { this.config.position = Rob.XY(); }
+    else { this.config.position = Rob.XY(config.position); }
 
-  if(this.minVelocity === undefined) { this.minVelocity = Rob.XY(); }
-    else { this.minVelocity = Rob.XY(config.minVelocity); }
+  if(this.config.minVelocity === undefined) { this.config.minVelocity = Rob.XY(); }
+    else { this.config.minVelocity = Rob.XY(config.minVelocity); }
 
-  if(this.maxVelocity === undefined) { this.maxVelocity = Rob.XY(); }
-    else { this.maxVelocity = Rob.XY(config.maxVelocity); }
+  if(this.config.maxVelocity === undefined) { this.config.maxVelocity = Rob.XY(); }
+    else { this.config.maxVelocity = Rob.XY(config.maxVelocity); }
 };
 
 Rob.MannaGenerator.prototype.emit_ = function(parentParticle) {
-  var thisParticle = this.particleSource.getFirstDead();
+  var thisParticle = this.config.particleSource.getFirstDead();
   if(thisParticle !== null) {
     var position = Rob.XY();
 
     if(parentParticle === undefined) {
       position.set(
-        game.rnd.integerInRange(this.position.x - this.size.x / 2, this.position.x + this.size.x / 2),
-        game.rnd.integerInRange(this.position.y - this.size.y / 2, this.position.y + this.size.y / 2)
+        game.rnd.integerInRange(
+          this.config.position.x - this.config.size.x / 2,
+          this.config.position.x + this.config.size.x / 2
+        ),
+
+        game.rnd.integerInRange(
+          this.config.position.y - this.config.size.y / 2,
+          this.config.position.y + this.config.size.y / 2
+        )
       );
     } else {
       position.set(parentParticle); // Children start life where their parent is
@@ -37,11 +51,16 @@ Rob.MannaGenerator.prototype.emit_ = function(parentParticle) {
 
     thisParticle.x = position.x; thisParticle.y = position.y;
 
-    thisParticle.body.velocity.x = game.rnd.integerInRange(this.minVelocity.x, this.maxVelocity.x);
-    thisParticle.body.velocity.y = game.rnd.integerInRange(this.minVelocity.y, this.maxVelocity.y);
+    thisParticle.body.velocity.x = game.rnd.integerInRange(
+      this.config.minVelocity.x, this.config.maxVelocity.x
+    );
+
+    thisParticle.body.velocity.y = game.rnd.integerInRange(
+      this.config.minVelocity.y, this.config.maxVelocity.y
+    );
 
     thisParticle.revive();
-    thisParticle.alpha = this.visible ? 1 : 0;
+    thisParticle.alpha = this.config.visible ? 1 : 0;
 
     thisParticle.birthStamp = this.frameCount;      // Sprite remember when you were born
     this.previousEmit = this.frameCount;            // Generator remember the most recent birth
@@ -49,7 +68,7 @@ Rob.MannaGenerator.prototype.emit_ = function(parentParticle) {
 };
 
 Rob.MannaGenerator.prototype.emit = function() {
-  if(this.parent === null) {
+  if(this.config.parent === null) {
     this.emit_();
   } else {
     for(var i = 0; i < 2; i++) {
@@ -58,15 +77,15 @@ Rob.MannaGenerator.prototype.emit = function() {
       var theLuckyNewParent = -1;
       var lastBirthByLuckyParent = this.frameCount + 1;
 
-      this.parentGroup.forEachAlive(function(parentParticle) {
+      this.config.parentGroup.forEachAlive(function(parentParticle) {
         if(parentParticle.previousEmit < lastBirthByLuckyParent) {
-          theLuckyNewParent = this.parentGroup.getIndex(parentParticle);
+          theLuckyNewParent = this.config.parentGroup.getIndex(parentParticle);
           lastBirthByLuckyParent = parentParticle.previousEmit;
         }
       }, this);
 
       if(theLuckyNewParent !== -1) {
-        this.emit_(this.parentGroup.getChildAt(theLuckyNewParent));
+        this.emit_(this.config.parentGroup.getChildAt(theLuckyNewParent));
       }
     }
   }
@@ -79,7 +98,7 @@ Rob.MannaGenerator.prototype.start = function() {
 Rob.MannaGenerator.prototype.stop = function() {
   this.on = false;
 
-  this.particleSource.forEachAlive(function(p) {
+  this.config.particleSource.forEachAlive(function(p) {
     p.kill();
   }, this);
 };
@@ -88,12 +107,12 @@ Rob.MannaGenerator.prototype.update = function() {
   this.frameCount++;
 
   if(this.on) {
-    if(this.frameCount >= this.previousEmit + this.interval) {
+    if(this.frameCount >= this.previousEmit + this.config.interval) {
       this.emit();
     }
 
-    this.particleSource.forEachAlive(function(p) {
-      if(this.frameCount >= p.birthStamp + this.lifetime) {
+    this.config.particleSource.forEachAlive(function(p) {
+      if(this.frameCount >= p.birthStamp + this.config.lifetime) {
         p.kill();
       }
     }, this);
