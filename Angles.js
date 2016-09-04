@@ -13,10 +13,7 @@ Rob.Angles.prototype.init = function() {
 };
 
 Rob.Angles.prototype.makeAlien = function() {
-  this.alien = game.add.sprite(x, y, 'alien');
-  this.alien.anchor.set(0.5, 0.5);
-  this.alien.inputEnabled = true;
-  this.alien.input.enableDrag();
+  Rob.makeAlien(this);
 };
 
 Rob.Angles.prototype.preload = function() {

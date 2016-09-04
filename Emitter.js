@@ -20,35 +20,55 @@ Rob.Emitter = function(config) {
     else { this.maxVelocity = Rob.XY(config.maxVelocity); }
 };
 
-Rob.Emitter.prototype.emit = function() {
-  var p = this.particleSource.getFirstDead();
-  if(p !== null) {
-    if(this.distribution === null) {
-      var x = game.rnd.integerInRange(this.position.x - this.size.x / 2, this.position.x + this.size.x / 2);
-      var y = game.rnd.integerInRange(this.position.y - this.size.y / 2, this.position.y + this.size.y / 2);
+Rob.Emitter.prototype.emit_ = function(parentParticle) {
+  var thisParticle = this.particleSource.getFirstDead();
+  if(thisParticle !== null) {
+    var position = Rob.XY();
+
+    if(parentParticle === undefined) {
+      position.set(
+        game.rnd.integerInRange(this.position.x - this.size.x / 2, this.position.x + this.size.x / 2),
+        game.rnd.integerInRange(this.position.y - this.size.y / 2, this.position.y + this.size.y / 2)
+      );
     } else {
-      this.distribution.call(p);
+      position.set(parentParticle); // Children start life where their parent is
+      parentParticle.previousEmit = this.frameCount;  // Parent particle remember when you most recently stank
     }
 
-    if(this.parent !== undefined) {
-      x += this.parent.x; y += this.parent.y;
+    thisParticle.x = position.x; thisParticle.y = position.y;
+
+    thisParticle.body.velocity.x = game.rnd.integerInRange(this.minVelocity.x, this.maxVelocity.x);
+    thisParticle.body.velocity.y = game.rnd.integerInRange(this.minVelocity.y, this.maxVelocity.y);
+
+    thisParticle.revive();
+    thisParticle.alpha = this.visible ? 1 : 0;
+
+    thisParticle.birthStamp = this.frameCount;      // Sprite remember when you were born
+    this.previousEmit = this.frameCount;            // Generator remember the most recent birth
+  }
+};
+
+Rob.Emitter.prototype.emit = function() {
+  if(this.parent === null) {
+    this.emit_();
+  } else {
+    for(var i = 0; i < 2; i++) {
+      // This is to make sure each food particle gets to emit one smell
+      // particle before anyone else gets to emit another one
+      var theLuckyNewParent = -1;
+      var lastBirthByLuckyParent = this.frameCount + 1;
+
+      this.parentGroup.forEachAlive(function(parentParticle) {
+        if(parentParticle.previousEmit < lastBirthByLuckyParent) {
+          theLuckyNewParent = this.parentGroup.getIndex(parentParticle);
+          lastBirthByLuckyParent = parentParticle.previousEmit;
+        }
+      }, this);
+
+      if(theLuckyNewParent !== -1) {
+        this.emit_(this.parentGroup.getChildAt(theLuckyNewParent));
+      }
     }
-
-    p.x = x; p.y = y;
-
-    p.body.velocity.x = game.rnd.integerInRange(this.minVelocity.x, this.maxVelocity.x);
-    p.body.velocity.y = game.rnd.integerInRange(this.minVelocity.y, this.maxVelocity.y);
-
-    p.revive();
-    p.visible = this.visible;
-
-    if(p.smellEmitter !== undefined) {
-      p.smellEmitter.start();
-    }
-
-    p.birthStamp = this.frameCount;
-
-    this.previousEmit = this.frameCount;
   }
 };
 
@@ -61,9 +81,6 @@ Rob.Emitter.prototype.stop = function() {
 
   this.particleSource.forEachAlive(function(p) {
     p.kill();
-    if(p.smellEmitter !== undefined) {
-      p.smellEmitter.stop();
-    }
   }, this);
 };
 
@@ -71,16 +88,12 @@ Rob.Emitter.prototype.update = function() {
   this.frameCount++;
 
   if(this.on) {
-    if(this.frameCount > this.previousEmit + this.interval) {
+    if(this.frameCount >= this.previousEmit + this.interval) {
       this.emit();
     }
 
     this.particleSource.forEachAlive(function(p) {
-      if(p.smellEmitter !== undefined) {
-        p.smellEmitter.update();
-      }
-
-      if(this.frameCount > p.birthStamp + this.lifetime) {
+      if(this.frameCount >= p.birthStamp + this.lifetime) {
         p.kill();
       }
     }, this);

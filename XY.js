@@ -54,10 +54,25 @@ Rob.XY = function(sourceOrMaybeX, maybeY) {
       return scratch;
     },
 
+    normalize: function() {
+      var m = self.getMagnitude();
+      self.scalarDivide(m);
+    },
+
+    normalized: function() {
+      var scratch = Rob.XY(self);
+      scratch.normalize();
+      return scratch;
+    },
+
     plus: function(addend) {
       var scratch = Rob.XY(self);
       scratch.add(addend);
       return scratch;
+    },
+
+    reset: function() {
+      self.set(0, 0);
     },
 
     scalarDivide: function(divisor) {
@@ -68,6 +83,28 @@ Rob.XY = function(sourceOrMaybeX, maybeY) {
     scalarMultiply: function(multiplicand) {
       self.x *= multiplicand;
       self.y *= multiplicand;
+    },
+
+    set: function(sourceOrMaybeX, maybeY) {
+      if(sourceOrMaybeX === undefined) {
+        self.x = 0; self.y = 0;
+      } else {
+        if(sourceOrMaybeX.x === undefined) {
+          if(maybeY === undefined) {
+            // sourceOrMaybeX appears to be a number, an x-coordinate, but
+            // maybeY has nothing in it. Tell the caller we hate him
+            throw "Bad argument(s) to Rob.XY()";
+          } else {
+            // Looks like an x/y pair
+            self.x = sourceOrMaybeX;
+            self.y = maybeY;
+          }
+        } else {
+          // sourceOrMaybeX must be an object with x/y values
+          self.x = sourceOrMaybeX.x;
+          self.y = sourceOrMaybeX.y;
+        }
+      }
     },
 
     subtract: function(subtrahend) {
@@ -88,27 +125,13 @@ Rob.XY = function(sourceOrMaybeX, maybeY) {
     Y: function(decimals) {
       return self.y.toFixed(decimals);
     },
+
+    zero: function() {
+      set(0, 0);
+    }
   };
 
-  if(sourceOrMaybeX === undefined) {
-    self.x = 0; self.y = 0;
-  } else {
-    if(sourceOrMaybeX.x === undefined) {
-      if(maybeY === undefined) {
-        // sourceOrMaybeX appears to be a number, an x-coordinate, but
-        // maybeY has nothing in it. Tell the caller we hate him
-        throw "Bad argument(s) to Rob.XY()";
-      } else {
-        // Looks like an x/y pair
-        self.x = sourceOrMaybeX;
-        self.y = maybeY;
-      }
-    } else {
-      // sourceOrMaybeX must be an object with x/y values
-      self.x = sourceOrMaybeX.x;
-      self.y = sourceOrMaybeX.y;
-    }
-  }
+  self.set(sourceOrMaybeX, maybeY);
 
   return self;
 

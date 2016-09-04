@@ -16,5 +16,12 @@ var Rob = {
     }
 
     game.state.start(runWhichState);
+  },
+
+  makeAlien: function(owner) {
+    owner.alien = game.add.sprite(x, y, 'alien');
+    owner.alien.anchor.set(0.5, 0.5);
+    owner.alien.inputEnabled = true;
+    owner.alien.input.enableDrag();
   }
 };

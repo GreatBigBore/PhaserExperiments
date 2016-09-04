@@ -3,6 +3,7 @@ Rob.Bitmap = function(whichBitmap) {
     case 'archonBackground':
     case 'debugBackground':
     case 'rectGradient':
+    case 'realityGoo':
     this[whichBitmap]();
     break;
     default: throw "No '" + whichBitmap + "' background available";
@@ -54,6 +55,20 @@ Rob.Bitmap.prototype.archonBackground = function() {
 
 Rob.Bitmap.prototype.clear = function() {
   this.cx.clearRect(0, 0, game.width, game.height);
+};
+
+Rob.Bitmap.prototype.realityGoo = function() {
+  var diameter = 100;
+  var radius = diameter / 2;
+
+  this.bm = game.add.bitmapData(diameter, diameter);
+  this.cx = this.bm.context;
+
+  this.cx.beginPath();
+  this.bm.circle(radius, radius, radius, 'rgba(255, 255, 255, 1)');
+  this.cx.fill();
+
+  game.cache.addBitmapData('realityGoo', this.bm);
 };
 
 Rob.Bitmap.prototype.debugBackground = function() {
