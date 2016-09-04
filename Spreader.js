@@ -19,7 +19,7 @@ Rob.Spreader.prototype.create = function() {
 
   this.makeArchon();
 
-  this.mannaGarden = new Rob.MannaGarden(300, 3);
+  this.mannaGarden = new Rob.MannaGarden(300, 3, this.db);
 
   this.frameCount = 0;
 };
@@ -37,8 +37,8 @@ Rob.Spreader.prototype.init = function() {
 
 Rob.Spreader.prototype.makeArchon = function() {
   var center = Rob.XY(game.width / 2, game.height / 2);
-  this.sensor = game.add.sprite(center.x, center.y, game.cache.getBitmapData('realityGoo'));
-  this.sprite = game.add.sprite(center.x, center.y, game.cache.getBitmapData('realityGoo'));
+  this.sensor = game.add.sprite(center.x, 100, game.cache.getBitmapData('realityGoo'));
+  this.sprite = game.add.sprite(center.x, 100, game.cache.getBitmapData('realityGoo'));
 
   this.sensor.scale.setTo(1, 1);
   this.sprite.scale.setTo(0.5, 0.5);
@@ -97,6 +97,18 @@ Rob.Spreader.prototype.smell = function(sensor, smellyParticle) {
 
 Rob.Spreader.prototype.update = function() {
   this.db.bm.cls();
+
+  var topOfScreen = 0;
+  var topOfMyRange = topOfScreen + 100;
+
+  var bottomOfScreen = game.height;
+  var bottomOfMyRange = bottomOfScreen - 100;
+
+  var fuck1 = (this.sprite.y - topOfMyRange);
+  var fuck3 = (bottomOfMyRange - topOfMyRange);
+  var efficiency = 1 - (fuck1 / fuck3);
+
+  this.mannaGarden.setEfficiency(efficiency);
 
   this.motionVector.reset();
   this.overlapCounter = 0;

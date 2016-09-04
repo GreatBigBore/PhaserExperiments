@@ -5,7 +5,8 @@
 
 "use strict";
 
-Rob.MannaGarden = function(mannaCount, smellPerMorsel) {
+Rob.MannaGarden = function(mannaCount, smellPerMorsel, db) {
+  this.db = db;
   this.mannaCount = (mannaCount === undefined) ? 300 : mannaCount;
   this.smellPerManna = (smellPerMorsel === undefined) ? 3: smellPerMorsel;
 
@@ -20,10 +21,11 @@ Rob.MannaGarden = function(mannaCount, smellPerMorsel) {
     position: Rob.XY(game.width / 2, game.height / 2),
     maxVelocity: Rob.XY(),
     minVelocity: Rob.XY(),
-    parent: null
+    parent: null,
+    visible: true
   };
 
-  this.setupMannaGenerator(mannaConfig);
+  this.setupMannaGenerator(mannaConfig, this.db);
 
   var smellConfig = {
     interval: 1,            // Emit one particle per frame
@@ -33,7 +35,7 @@ Rob.MannaGarden = function(mannaCount, smellPerMorsel) {
     parentGroup: this.foodGroup,
     minVelocity: Rob.XY(-50, -100),
     maxVelocity: Rob.XY(50, 100),
-    visible: false
+    visible: true
   };
 
   this.setupSmellGenerator(smellConfig);
@@ -44,30 +46,8 @@ Rob.MannaGarden = function(mannaCount, smellPerMorsel) {
 };
 
 Rob.MannaGarden.prototype.setEfficiency = function(efficiency) {
-  if(efficiency > 1 || efficiency < 0) { throw "Efficiency must be between 0 and 1"; }
-
-  if(efficiency < 0.1) {
-    this.mannaGenerator.stop();
-    this.smellGenerator.stop();
-  } else {
-    var mannaConfig = Object.assign({}, this.mannaGenerator.config);
-    var smellConfig = Object.assign({}, this.smellGenerator.config);
-
-    var multiplier = 1 + (efficiency - 1);
-    mannaConfig.interval *= multiplier;
-    smellConfig.interval *= multiplier
-
-    mannaConfig.lifetime *= multiplier;
-    smellConfig.lifetime *= multiplier;
-
-    mannaConfig.minVelocity.scalarMultiply(multiplier);
-    smellConfig.minVelocity.scalarMultiply(multiplier);
-
-    mannaConfig.maxVelocity.scalarMultiply(multiplier);
-    smellConfig.maxVelocity.scalarMultiply(multiplier);
-
-    this.mannaGenerator.config = Object.assign({}, mannaConfig);
-    this.smellGenerator.config = Object.assign({}, smellConfig);
+  for(var i = 0; i < this.emitters.length; i++) {
+    this.emitters[i].setEfficiency(efficiency);
   }
 };
 
@@ -90,7 +70,7 @@ Rob.MannaGarden.prototype.setupMannaGenerator = function(mannaConfig) {
 
   mannaConfig.particleSource = this.foodGroup;
 
-  this.mannaGenerator = new Rob.MannaGenerator(mannaConfig);
+  this.mannaGenerator = new Rob.MannaGenerator(mannaConfig, this.db);
   this.emitters.push(this.mannaGenerator);
 };
 

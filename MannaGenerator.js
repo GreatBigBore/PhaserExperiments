@@ -5,8 +5,10 @@
 
 "use strict";
 
-Rob.MannaGenerator = function(config) {
+Rob.MannaGenerator = function(config, db) {
+  this.db = db;
   this.config = Object.assign({}, config);
+  this.originalConfig = Object.assign({}, config);
 
   this.on = false;
   this.frameCount = 0;
@@ -88,6 +90,32 @@ Rob.MannaGenerator.prototype.emit = function() {
         this.emit_(this.config.parentGroup.getChildAt(theLuckyNewParent));
       }
     }
+  }
+};
+
+Rob.MannaGenerator.prototype.setEfficiency = function(efficiency) {
+  efficiency = Math.min(1, efficiency); efficiency = Math.max(0, efficiency);
+
+  if(efficiency < 0.1) {
+    this.stop();
+  } else {
+    var scratch = Object.assign({}, this.originalConfig);
+
+    var myResult = Math.ceil(60 * Math.pow(2, ((1 - efficiency) * 8) - 7));
+    scratch.interval = myResult;
+
+/*    if(this.db !== undefined)
+      this.db.text(
+        0, 0,
+        "Interval: " + myResult +
+        ", lifetime: " + scratch.lifetime.toFixed(0) +
+        ", minv: " + scratch.minVelocity.X() + ", " + scratch.minVelocity.Y() +
+        ", maxv: " + scratch.maxVelocity.X() + ", " + scratch.maxVelocity.Y()
+      );*/
+
+    this.config = Object.assign({}, scratch);
+
+    this.start();
   }
 };
 
