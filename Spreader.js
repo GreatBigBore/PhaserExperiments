@@ -20,16 +20,15 @@ Rob.Spreader.prototype.create = function() {
   this.makeArchon();
 
   this.mannaGarden = new Rob.MannaGarden(300, 3, this.db);
+  this.sun = new Rob.Sun();
 
   this.frameCount = 0;
 };
 
 Rob.Spreader.prototype.debugText = function() {
-  if(1)
-  this.db.text(
-      0, 0,
-      "hello world\n"
-    );
+  if(1) {
+    this.db.text(0, 0, "hello world\n");
+  }
 };
 
 Rob.Spreader.prototype.init = function() {
@@ -98,7 +97,7 @@ Rob.Spreader.prototype.smell = function(sensor, smellyParticle) {
 Rob.Spreader.prototype.update = function() {
   this.db.bm.cls();
 
-  var topOfScreen = 0;
+/*  var topOfScreen = 0;
   var topOfMyRange = topOfScreen + 100;
 
   var bottomOfScreen = game.height;
@@ -106,9 +105,7 @@ Rob.Spreader.prototype.update = function() {
 
   var fuck1 = (this.sprite.y - topOfMyRange);
   var fuck3 = (bottomOfMyRange - topOfMyRange);
-  var efficiency = 1 - (fuck1 / fuck3);
-
-  this.mannaGarden.setSunStrength(efficiency);
+  var efficiency = 1 - (fuck1 / fuck3);*/
 
   this.motionVector.reset();
   this.overlapCounter = 0;
@@ -125,5 +122,5 @@ Rob.Spreader.prototype.update = function() {
   );
 
   this.frameCount++;
-  this.mannaGarden.update();
+  this.mannaGarden.update(this.sun.getStrength());
 };

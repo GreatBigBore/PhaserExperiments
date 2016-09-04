@@ -27,7 +27,7 @@ Rob.Bitmap = function(whichBitmap) {
   this.tx = game.add.text(0, 0, "", this.txStyle);
   this.tx.width = game.width / 2; this.tx.height = game.height / 2;
   this.tx.anchor.set(0);
-}
+};
 
 Rob.Bitmap.prototype.archonBackground = function() {
   this.bmDiagonal = Math.ceil(

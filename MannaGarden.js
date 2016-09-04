@@ -70,14 +70,7 @@ Rob.MannaGarden.prototype.setPosition = function(sunStrength) {
 
   var myRangeSize = (bottomOfMyRange - topOfMyRange);
   var position = bottomOfMyRange - sunStrength * myRangeSize;
-
-        if(this.db !== undefined)
-            this.db.text(
-              0, 0,
-              "Sun: " + (sunStrength * 100).toFixed() + " " +
-              "Position: " + position.toFixed(2));
-
-
+  
   mannaEmitter.config.position.y = position;
 };
 
@@ -133,7 +126,9 @@ Rob.MannaGarden.prototype.setupSmellGenerator = function(smellConfig) {
   this.emitters.push(this.smellGenerator);
 };
 
-Rob.MannaGarden.prototype.update = function() {
+Rob.MannaGarden.prototype.update = function(sunStrength) {
+  this.setSunStrength(sunStrength);
+
   for(var i = 0; i < this.emitters.length; i++) {
     this.emitters[i].update();
   }

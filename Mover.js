@@ -27,12 +27,12 @@ Rob.Mover.prototype.create = function() {
   game.physics.arcade.enable(this.sensor);
 
   this.sensor.scale.setTo(0.2, 0.2);
-  this.sensor.body.setCircle(16)
+  this.sensor.body.setCircle(16);
   this.sensor.body.syncBounds = true;
   this.sensor.alpha = 0.1;
   this.alien.addChild(this.sensor);
 
-  this.clowns = game.add.group()
+  this.clowns = game.add.group();
 
   this.motioner = new Motioner(this.db, this.alien, 120);
 };
@@ -74,7 +74,7 @@ function Motioner(debugBitmap, sprite, maxSpeed) {
 
   game.physics.arcade.moveToXY(this.sprite, game.rnd.integerInRange(0, game.width),
     game.rnd.integerInRange(0, game.height), 30);
-};
+}
 
 Motioner.prototype.setTarget = function(him) {
   this.him = Rob.XY(him);
@@ -155,11 +155,11 @@ Rob.Mover.prototype.preload = function() {
   game.load.image('sensor', 'assets/skies/deepblue.png');
 };
 
-Rob.Mover.prototype.tap = function(pointer, doubleTap) {
+Rob.Mover.prototype.tap = function(pointer/*, doubleTap*/) {
   this.motioner.setTarget(pointer);
   return;
 
-  var killedAClown = false;
+  /*var killedAClown = false;
 
   this.clowns.forEach(function(c) {
     if(c.getBounds().contains(pointer.x, pointer.y)) {
@@ -181,7 +181,7 @@ Rob.Mover.prototype.tap = function(pointer, doubleTap) {
     clown.dragging = false;
 
     this.clowns.add(clown);
-  }
+  }*/
 };
 
 Rob.Mover.prototype.update = function() {
