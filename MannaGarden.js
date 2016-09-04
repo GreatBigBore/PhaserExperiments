@@ -17,8 +17,8 @@ Rob.MannaGarden = function(mannaCount, smellPerMorsel, db) {
   var mannaConfig = {
     interval: 1,            // Emit one particle per frame
     lifetime: 5 * 60,       // lifetime in seconds
-    size: Rob.XY(game.width, 200),
-    position: Rob.XY(game.width / 2, game.height / 2),
+    size: Rob.XY(game.width, 150),
+    position: Rob.XY(game.width / 2, game.height / 3),
     maxVelocity: Rob.XY(),
     minVelocity: Rob.XY(),
     parent: null,
@@ -34,7 +34,7 @@ Rob.MannaGarden = function(mannaCount, smellPerMorsel, db) {
     distribution: null,     // Means random
     parentGroup: this.foodGroup,
     minVelocity: Rob.XY(-50, -100),
-    maxVelocity: Rob.XY(50, 100),
+    maxVelocity: Rob.XY(50, -10),
     visible: true
   };
 
@@ -49,22 +49,44 @@ Rob.MannaGarden.prototype.setEfficiency = function(efficiency) {
   // Easier than using some arbitrary and complex math; just set
   // specific emission intervals for each step of efficiency. For
   // each increment of 10%, change the interval to a particular value
-  efficiency = Math.min(1, efficiency);
-  efficiency = Math.max(0, efficiency);
   efficiency = Math.ceil(efficiency * 10);
 
-  var map = [ 60, 60, 40, 40, 10, 5, 3, 2, 1, 1, 1 ];
+  var mannaEmitter = this.emitters[0];
+  var smellEmitter = this.emitters[1];
 
-  for(var i = 0; i < this.emitters.length; i++) {
+  var lifetimeMap = [ 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0 ];
+  mannaEmitter.config.lifetime = lifetimeMap[efficiency] * 60;
 
-      if(this.db !== undefined)
-          this.db.text(
-            0, 0,
-            "Eff: " + (efficiency * 10).toFixed() + " " +
-            "Interval: " + this.emitters[i].config.interval);
+  var intervalMap = [ 60, 60, 40, 40, 10, 5, 3, 2, 1, 1, 1 ];
+  smellEmitter.config.interval = intervalMap[efficiency];
+  mannaEmitter.config.interval = intervalMap[efficiency];
+};
 
-    this.emitters[i].config.interval = map[efficiency];
-  }
+Rob.MannaGarden.prototype.setPosition = function(sunStrength) {
+  var mannaEmitter = this.emitters[0];
+
+  var topOfMyRange = game.height / 2;
+  var bottomOfMyRange = game.height - (this.emitters[0].config.size.y / 2);
+
+  var myRangeSize = (bottomOfMyRange - topOfMyRange);
+  var position = bottomOfMyRange - sunStrength * myRangeSize;
+
+        if(this.db !== undefined)
+            this.db.text(
+              0, 0,
+              "Sun: " + (sunStrength * 100).toFixed() + " " +
+              "Position: " + position.toFixed(2));
+
+
+  mannaEmitter.config.position.y = position;
+};
+
+Rob.MannaGarden.prototype.setSunStrength = function(sunStrength) {
+  sunStrength = Math.min(1, sunStrength);
+  sunStrength = Math.max(0, sunStrength);
+
+  this.setEfficiency(sunStrength);
+  this.setPosition(sunStrength);
 };
 
 Rob.MannaGarden.prototype.setupMannaGenerator = function(mannaConfig) {

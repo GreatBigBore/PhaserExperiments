@@ -108,7 +108,7 @@ Rob.Spreader.prototype.update = function() {
   var fuck3 = (bottomOfMyRange - topOfMyRange);
   var efficiency = 1 - (fuck1 / fuck3);
 
-  this.mannaGarden.setEfficiency(efficiency);
+  this.mannaGarden.setSunStrength(efficiency);
 
   this.motionVector.reset();
   this.overlapCounter = 0;
