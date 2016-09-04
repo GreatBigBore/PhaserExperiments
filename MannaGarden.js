@@ -46,8 +46,24 @@ Rob.MannaGarden = function(mannaCount, smellPerMorsel, db) {
 };
 
 Rob.MannaGarden.prototype.setEfficiency = function(efficiency) {
+  // Easier than using some arbitrary and complex math; just set
+  // specific emission intervals for each step of efficiency. For
+  // each increment of 10%, change the interval to a particular value
+  efficiency = Math.min(1, efficiency);
+  efficiency = Math.max(0, efficiency);
+  efficiency = Math.ceil(efficiency * 10);
+
+  var map = [ 60, 60, 40, 40, 10, 5, 3, 2, 1, 1, 1 ];
+
   for(var i = 0; i < this.emitters.length; i++) {
-    this.emitters[i].setEfficiency(efficiency);
+
+      if(this.db !== undefined)
+          this.db.text(
+            0, 0,
+            "Eff: " + (efficiency * 10).toFixed() + " " +
+            "Interval: " + this.emitters[i].config.interval);
+
+    this.emitters[i].config.interval = map[efficiency];
   }
 };
 
