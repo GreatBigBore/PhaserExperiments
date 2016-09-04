@@ -115,7 +115,7 @@ Rob.Spreader.prototype.setupMannaGenerator = function() {
     parent: null
   };
 
-  this.mannaGenerator = new Rob.Emitter(mannaConfig);
+  this.mannaGenerator = new Rob.MannaGenerator(mannaConfig);
   this.emitters.push(this.mannaGenerator);
   this.mannaGenerator.start();
 };
@@ -148,7 +148,7 @@ Rob.Spreader.prototype.setupSmellGenerator = function() {
     game.physics.enable(s, Phaser.Physics.ARCADE);
   }, this);
 
-  this.smellGenerator = new Rob.Emitter(smellConfig);
+  this.smellGenerator = new Rob.MannaGenerator(smellConfig);
   this.emitters.push(this.smellGenerator);
   this.smellGenerator.start();
 };

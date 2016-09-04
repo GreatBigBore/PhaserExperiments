@@ -1,11 +1,11 @@
-Rob.Emitter = function(config) {
+Rob.MannaGenerator = function(config) {
   Object.assign(this, config);
 
   this.on = false;
   this.frameCount = 0;
   this.previousEmit = this.frameCount;
 
-  if(this.particleSource === undefined) { throw "Rob.Emitter needs a source of particles"; }
+  if(this.particleSource === undefined) { throw "Rob.MannaGenerator needs a source of particles"; }
   if(this.interval === undefined) { this.interval = 60; }
   if(this.lifetime === undefined) { this.lifetime = 60; }
   if(this.visible === undefined) { this.visible = true; }
@@ -20,7 +20,7 @@ Rob.Emitter = function(config) {
     else { this.maxVelocity = Rob.XY(config.maxVelocity); }
 };
 
-Rob.Emitter.prototype.emit_ = function(parentParticle) {
+Rob.MannaGenerator.prototype.emit_ = function(parentParticle) {
   var thisParticle = this.particleSource.getFirstDead();
   if(thisParticle !== null) {
     var position = Rob.XY();
@@ -48,7 +48,7 @@ Rob.Emitter.prototype.emit_ = function(parentParticle) {
   }
 };
 
-Rob.Emitter.prototype.emit = function() {
+Rob.MannaGenerator.prototype.emit = function() {
   if(this.parent === null) {
     this.emit_();
   } else {
@@ -72,11 +72,11 @@ Rob.Emitter.prototype.emit = function() {
   }
 };
 
-Rob.Emitter.prototype.start = function() {
+Rob.MannaGenerator.prototype.start = function() {
   this.on = true;
 };
 
-Rob.Emitter.prototype.stop = function() {
+Rob.MannaGenerator.prototype.stop = function() {
   this.on = false;
 
   this.particleSource.forEachAlive(function(p) {
@@ -84,7 +84,7 @@ Rob.Emitter.prototype.stop = function() {
   }, this);
 };
 
-Rob.Emitter.prototype.update = function() {
+Rob.MannaGenerator.prototype.update = function() {
   this.frameCount++;
 
   if(this.on) {
