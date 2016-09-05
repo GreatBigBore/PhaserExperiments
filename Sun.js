@@ -1,18 +1,19 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global game, Rob */
+/* global game, Phaser, Rob */
 
 "use strict";
 
 Rob.Sun = function() {
+  theSun = this;
   this.darknessAlphaHi = 0.3;
   this.darknessAlphaLo = 0.0;
 
   this.sunChariotAlphaHi = 1.0;
   this.sunChariotAlphaLo = 0.0;
 
-  this.dayLength = 60000;
+  this.dayLength = 10000;
   this.easingFunction = Phaser.Easing.Quartic.InOut;
 
   this.letThereBeDark();
@@ -20,11 +21,15 @@ Rob.Sun = function() {
   this.letThereBeFoo();
 };
 
+Rob.Sun.prototype.getBrightnessRange = function() {
+  // Remember, sun is backward because it is colder when the
+  // alpha of the darkness is high
+  return Rob.Range(this.darknessAlphaHi, this.darknessAlphaLo);
+};
+
 // As a percentage -- 100% = full, broad daylight
 Rob.Sun.prototype.getStrength = function() {
-  var range = this.darknessAlphaHi - this.darknessAlphaLo;
-
-  return (this.darknessAlphaHi - this.darkness.alpha) / range;
+  return this.darknessAlphaHi - this.darkness.alpha;
 };
 
 Rob.Sun.prototype.letThereBeDark = function() {
@@ -70,7 +75,7 @@ Rob.Sun.prototype.letThereBeLight = function() {
   this.sunChariot.alpha = 1;
 
   var sunColor = 0xF5EE2F;
-  var moonColor = 0x888888;
+  //var moonColor = 0x888888;
   this.sunChariot.tint = sunColor;
 
   this.sunTween = game.add.tween(this.sunChariot).

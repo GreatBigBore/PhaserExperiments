@@ -6,6 +6,26 @@
 "use strict";
 
 Rob.Spreader = function() {
+  theSpreader = this;
+  this.temperatureLo = -1000;
+  this.temperatureHi = 1000;
+  this.temperatureRange = Rob.Range(this.temperatureLo, this.temperatureHi);
+  this.yAxisRange = Rob.Range(0, game.height);
+};
+
+Rob.Spreader.prototype.getWorldColorRange = function() {
+  var rgb = {};
+
+  this.bg.bm.getPixelRGB(game.width / 2, 10, rgb, true);
+  var lumaTL = rgb.l;
+
+  this.bg.bm.getPixelRGB(
+    Math.floor(game.width / 2), Math.floor(game.height - 10), rgb, true
+  );
+  var lumaBR = rgb.l;
+
+  // Bottom right is the cold end, top left is the hot
+  return Rob.Range(lumaTL, lumaBR);
 };
 
 Rob.Spreader.prototype.create = function() {
@@ -19,15 +39,53 @@ Rob.Spreader.prototype.create = function() {
 
   this.makeArchon();
 
-  this.mannaGarden = new Rob.MannaGarden(300, 3, this.db);
   this.sun = new Rob.Sun();
 
+  this.brightnessRange = theSun.getBrightnessRange();
+
+  this.mannaGarden = new Rob.MannaGarden(300, 3, this.db);
+  this.mover = new Rob.Mover(this.sprite, this.db);
+
   this.frameCount = 0;
+
+  this.worldColorRange = this.getWorldColorRange();
 };
 
 Rob.Spreader.prototype.debugText = function(text) {
   this.db.text(0, 0, text);
 };
+
+Rob.Spreader.prototype.getTemperature = function(x, y) {
+  // Allow callers to specify an object with x/y rather than an x and a y
+  if(x.x !== undefined) {
+    y = x.y; x = x.x;
+  }
+
+  x = Math.floor(x); y = Math.floor(y);
+
+  var rgb = {};
+  this.bg.bm.getPixelRGB(x, y, rgb, true);
+
+  var lumaComponent = this.temperatureRange.convertPoint(rgb.l, this.worldColorRange);
+  var yAxisComponent = this.temperatureRange.convertPoint(game.height - y, this.yAxisRange);
+
+  var sunStrength = theSun.getStrength();
+  var sunComponent =
+    this.temperatureRange.convertPoint(sunStrength, this.brightnessRange);
+
+  // Give luma and sun most of the weight. The y-axis thing is there
+  // just to help them not get stuck in the luma dead zone(s)
+  var final = (yAxisComponent + 10 * (lumaComponent + sunComponent)) / 21;
+
+  /*this.debugText(
+    "Luma:  " + lumaComponent.toFixed(4) + ", " + rgb.l.toFixed(4) + "\n" +
+    "Sun:   " + sunComponent.toFixed(4) + "\n" +
+    "Y      " + yAxisComponent.toFixed(4) + "\n" +
+    "Final: " + final.toFixed(2) + ", " + sansY.toFixed(2) + ", " + (sansY - final).toFixed(2)
+  );*/
+
+  return final;
+},
 
 Rob.Spreader.prototype.init = function() {
 };
@@ -108,17 +166,21 @@ Rob.Spreader.prototype.update = function() {
   this.motionVector.reset();
   this.overlapCounter = 0;
 
-  game.physics.arcade.overlap(this.sensor, this.mannaGarden.smellGroup, this.smell, null, this);
+  // Pass him the sensor for now; eventually, the mover will own
+  // the sprite and the sensor
+  this.mover.overlap(this.sensor, this.mannaGarden.smellGroup);
+//  game.physics.arcade.overlap(this.sensor, this.mannaGarden.smellGroup, this.mover.smell, null, this);
 
-  this.db.draw(
+  /*this.db.draw(
     this.sensor,
     this.motionVector.
       normalized().
       timesScalar(this.sensor.width).
       plus(this.sensor),
     'green', 1
-  );
+  );*/
 
   this.frameCount++;
-  this.mannaGarden.update(this.sun.getStrength());
+  this.mannaGarden.update(theSun.getStrength());
+  this.mover.update();
 };

@@ -1,11 +1,12 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global game, Rob */
+/* global Rob */
 
 "use strict";
 
 Rob.MannaGenerator = function(config, db) {
+  theMannaGenerator = this;
   this.db = db;
   this.config = Object.assign({}, config);
   this.originalConfig = Object.assign({}, config);
@@ -36,12 +37,12 @@ Rob.MannaGenerator.prototype.emit_ = function(parentParticle) {
 
     if(parentParticle === undefined) {
       position.set(
-        game.rnd.integerInRange(
+        Rob.integerInRange(
           this.config.position.x - this.config.size.x / 2,
           this.config.position.x + this.config.size.x / 2
         ),
 
-        game.rnd.integerInRange(
+        Rob.integerInRange(
           this.config.position.y - this.config.size.y / 2,
           this.config.position.y + this.config.size.y / 2
         )
@@ -53,11 +54,11 @@ Rob.MannaGenerator.prototype.emit_ = function(parentParticle) {
 
     thisParticle.x = position.x; thisParticle.y = position.y;
 
-    thisParticle.body.velocity.x = game.rnd.integerInRange(
+    thisParticle.body.velocity.x = Rob.integerInRange(
       this.config.minVelocity.x, this.config.maxVelocity.x
     );
 
-    thisParticle.body.velocity.y = game.rnd.integerInRange(
+    thisParticle.body.velocity.y = Rob.integerInRange(
       this.config.minVelocity.y, this.config.maxVelocity.y
     );
 

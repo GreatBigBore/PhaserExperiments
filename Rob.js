@@ -7,6 +7,13 @@
 
 var game = null;
 var runWhichState = 'Spreader';
+var theSpreader = null;
+var theMover = null;
+var theAngles = null;
+var theSun = null;
+var theMannaGenerator = null;
+var theMannaGarden = null;
+
 window.onload = function() { Rob.go(runWhichState); };
 
 var Rob = {
@@ -22,6 +29,10 @@ var Rob = {
     }
 
     game.state.start(runWhichState);
+  },
+
+  integerInRange: function(lo, hi) {
+    return Math.floor(Math.random() * (hi - lo) + lo);
   },
 
   makeAlien: function(owner, x, y) {

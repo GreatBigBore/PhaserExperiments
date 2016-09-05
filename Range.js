@@ -11,23 +11,30 @@ Rob.Range = function(lo, hi) {
 
     // The reason for this class: scaling a point
     // in my range to a point in a different range
-    convertPoint: function(point, theOtherGuy) {
-      var hisRange = theOtherGuy.getRange();
-      var percentage = point / self.getSize();
-      return hisRange * percentage;
+    convertPoint: function(thePointOnHisMap, hisRange) {
+
+      var myCenter = self.getCenter();
+      var hisCenter = hisRange.getCenter();
+
+      var thePointOnMyMap = (
+        (thePointOnHisMap - hisCenter) * self.getSize() / hisRange.getSize()
+      );
+
+      return thePointOnMyMap;
     },
 
     getCenter: function() {
-      return self.getSize() / 2;
+      return Math.abs(self.getSize() / 2);
     },
 
     getSize: function() {
-      return self.hi - self.lo;
+      return Math.abs(self.hi - self.lo);
     },
 
     set: function(lo, hi) {
       this.lo = lo;
       this.hi = hi;
+      return this;
     }
   };
 

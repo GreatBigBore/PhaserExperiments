@@ -6,7 +6,7 @@
 "use strict";
 
 Rob.Angles = function() {
-
+  theAngles = this;
 };
 
 Rob.Angles.prototype.create = function() {

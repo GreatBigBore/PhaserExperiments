@@ -116,7 +116,8 @@ Rob.Bitmap.prototype.rectGradient = function() {
   this.cx.fillStyle = g;
   this.cx.fillRect(0, 0, game.width, game.height);
 
-  this.bm.addToWorld();
+  this.bm.update();
+  game.add.image(0, 0, this.bm);
 };
 
 Rob.Bitmap.prototype.text = function(x, y, text) {

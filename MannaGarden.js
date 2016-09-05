@@ -6,6 +6,7 @@
 "use strict";
 
 Rob.MannaGarden = function(mannaCount, smellPerMorsel, db) {
+  theMannaGarden = this;
   this.db = db;
   this.mannaCount = (mannaCount === undefined) ? 300 : mannaCount;
   this.smellPerManna = (smellPerMorsel === undefined) ? 3: smellPerMorsel;

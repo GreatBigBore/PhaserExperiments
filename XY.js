@@ -20,6 +20,17 @@ Rob.XY = function(sourceOrMaybeX, maybeY) {
       return scratch;
     },
 
+    isEqualTo: function(rhs) {
+      if(isNaN(rhs)) {
+        // The normal case, checking myself against a vector
+        return self.x === rhs.x && self.y === rhs.y;
+      } else {
+        // But you can also specify a scalar and we'll
+        // test both x and y against it
+        return self.x === rhs && self.y === rhs;
+      }
+    },
+
     getAngle: function() {
       return Math.atan2(self.y, self.x);
     },
