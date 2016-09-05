@@ -89,8 +89,8 @@ Rob.Spreader.prototype.getTemperature = function(x, y) {
 
 Rob.Spreader.prototype.makeArchon = function() {
   var center = Rob.XY(game.width / 2, game.height / 2);
-  this.sensor = game.add.sprite(center.x, 100, game.cache.getBitmapData('realityGoo'));
-  this.sprite = game.add.sprite(center.x, 100, game.cache.getBitmapData('realityGoo'));
+  this.sensor = game.add.sprite(center.x, center.y, game.cache.getBitmapData('realityGoo'));
+  this.sprite = game.add.sprite(center.x, center.y, game.cache.getBitmapData('realityGoo'));
 
   this.sensor.scale.setTo(1, 1);
   this.sprite.scale.setTo(0.5, 0.5);
@@ -101,7 +101,7 @@ Rob.Spreader.prototype.makeArchon = function() {
   this.sensor.tint = 0xFF0000;
   this.sprite.tint = 0x0000FF;
 
-  this.sensor.alpha = 0;
+  this.sensor.alpha = 0.1;
   this.sprite.alpha = 1;
 
   this.sprite.inputEnabled = true;
@@ -113,10 +113,15 @@ Rob.Spreader.prototype.makeArchon = function() {
     var radius = s.width / 2;
     s.body.setCircle(radius, 0, 0);
     s.body.syncBounds = true;
+
+    s.body.bounce.setTo(0, 0);
   };
 
   finalSetup(this.sensor);
   finalSetup(this.sprite);
+
+  this.sprite.body.collideWorldBounds = true;
+  this.sprite.sensor = this.sensor;
 };
 
 Rob.Spreader.prototype.preload = function() {

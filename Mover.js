@@ -16,46 +16,40 @@ Rob.Mover = function(sprite, db) {
   this.currentMotionVector = Rob.XY();
   this.smellVector = Rob.XY();
   this.temperatureVector = Rob.XY();
+  this.wallsVector = Rob.XY();
 
   this.optimalTemperature = 0;
+  this.frameCount = 0;
 };
 
-Rob.Mover.prototype.setTempTarget = function() {
+Rob.Mover.prototype.setTempVector = function() {
   this.temperatureVector.reset();
 
   var temperature = theSpreader.getTemperature(this.sprite);
   var bestDeltaT = Math.abs(temperature - this.optimalTemperature);
-  var radius = this.sprite.width * 2;
+  var radius = this.sprite.sensor.width / 2;
 
   for(var i = 0; i < 2; i += 1/6) {
     var theta = i * Math.PI;
 
-    var tPointRelative = Rob.XY().polar(1, theta);
+    var tPointRelative = Rob.XY().polar(radius, theta);
 
-    // Check four points on each line, so we don't
-    // just blindly go to a point out on our radius circle
-    for(var j = 1; j <= 4; j++) {
-      var magnitude = (j / 4) * radius;
+    var tPointAbsolute = tPointRelative.plus(this.sprite);
 
-      var tPointAbsolute = tPointRelative.timesScalar(magnitude).plus(this.sprite);
-
-      temperature = theSpreader.getTemperature(tPointAbsolute);
-
-      var deltaT = Math.abs(temperature - this.optimalTemperature);
-
-      if(deltaT < bestDeltaT) {
-        bestDeltaT = deltaT;
-        this.temperatureVector.set(tPointRelative).timesScalar(magnitude);
-      }
-    }
-  }
-
-  if(!this.temperatureVector.isEqualTo(0)) {
     this.db.draw(
       this.sprite,
-      this.temperatureVector.normalized().timesScalar(this.sprite.width).plus(this.sprite),
-      'blue'
+      tPointAbsolute,
+      'black'
     );
+
+    temperature = theSpreader.getTemperature(tPointAbsolute);
+
+    var deltaT = Math.abs(temperature - this.optimalTemperature);
+
+    if(deltaT < bestDeltaT) {
+      bestDeltaT = deltaT;
+      this.temperatureVector.set(tPointRelative);
+    }
   }
 };
 
@@ -72,25 +66,46 @@ Rob.Mover.prototype.smell = function(me, smell) {
   var value = 1 / Math.pow(distance, 2);
 
   this.smellVector.add(relativePosition.timesScalar(value));
-
-  this.db.draw(
-    this.sprite,
-    this.smellVector.normalized().timesScalar(this.sprite.width * 2).plus(this.sprite),
-    'yellow'
-  );
 };
 
 Rob.Mover.prototype.update = function() {
+  this.frameCount++;
 
-  this.setTempTarget();
+  this.setTempVector();
 
-  if(this.smelledAnything) {
-    this.currentMotionVector.set(this.smellVector.normalized().timesScalar(this.sprite.width));
+  if(this.frameCount % 10 === 0) {
+    this.currentMotionVector.set(this.smellVector);
+    this.currentMotionVector.add(this.temperatureVector);
+    this.currentMotionVector.add(Rob.XY(this.body.velocity).timesScalar(25));
+    this.currentMotionVector.normalize();
+    this.currentMotionVector.scalarMultiply(30);
+    var wtfVector = Rob.XY(this.currentMotionVector);
+    this.body.velocity.setTo(this.currentMotionVector.x, this.currentMotionVector.y);
+
+    theSpreader.debugText(
+      "T: " + this.temperatureVector.X(4) + ", " + this.temperatureVector.Y(4) + "\n" +
+      "S: " + this.smellVector.X(4) + ", " + this.smellVector.Y(4) + "\n" +
+      "V: " + this.body.velocity.x.toFixed(4) + ", " + this.body.velocity.y.toFixed(4)
+    );
 
     this.db.draw(
       this.sprite,
-      this.currentMotionVector.plus(this.sprite),
-      'green'
+      this.smellVector.normalized().timesScalar(this.sprite.sensor.width).plus(this.sprite),
+      'yellow', 2
+    );
+
+    /*if(!this.temperatureVector.isEqualTo(0)) {
+      this.db.draw(
+        this.sprite,
+        this.temperatureVector.normalized().timesScalar(this.sprite.sensor.width).plus(this.sprite),
+        'red', 2
+      );
+    }*/
+
+    this.db.draw(
+      this.sprite,
+      wtfVector.normalized().timesScalar(this.sprite.sensor.width).plus(this.sprite),
+      'green', 1
     );
   }
 
@@ -98,4 +113,5 @@ Rob.Mover.prototype.update = function() {
 
   this.smelledAnything = false;
   this.smellVector.reset();
+  this.currentMotionVector.reset();
 };

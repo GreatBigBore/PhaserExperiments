@@ -84,8 +84,8 @@ Rob.XY = function(sourceOrMaybeX, maybeY) {
     },
 
     polar: function(r, theta) {
-      self.x = Math.cos(theta);
-      self.y = Math.cos(theta);
+      self.x = Math.cos(theta) * r;
+      self.y = Math.sin(theta) * r;
       return self;
     },
 
