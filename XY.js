@@ -83,6 +83,12 @@ Rob.XY = function(sourceOrMaybeX, maybeY) {
       return scratch;
     },
 
+    polar: function(r, theta) {
+      self.x = Math.cos(theta);
+      self.y = Math.cos(theta);
+      return self;
+    },
+
     plus: function(addend) {
       var scratch = Rob.XY(self);
       scratch.add(addend);
@@ -123,6 +129,8 @@ Rob.XY = function(sourceOrMaybeX, maybeY) {
           self.y = sourceOrMaybeX.y;
         }
       }
+
+      return self;
     },
 
     subtract: function(subtrahend) {

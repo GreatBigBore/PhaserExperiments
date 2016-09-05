@@ -77,12 +77,12 @@ Rob.Spreader.prototype.getTemperature = function(x, y) {
   // just to help them not get stuck in the luma dead zone(s)
   var final = (yAxisComponent + 10 * (lumaComponent + sunComponent)) / 21;
 
-  this.debugText(
+  /*this.debugText(
     "Luma:  " + lumaComponent.toFixed(4) + ", " + rgb.l.toFixed(4) + "\n" +
     "Sun:   " + sunComponent.toFixed(4) + "\n" +
     "Y      " + yAxisComponent.toFixed(4) + "\n" +
     "Final: " + final.toFixed(2)
-  );
+  );*/
 
   return final;
 };
@@ -101,7 +101,7 @@ Rob.Spreader.prototype.makeArchon = function() {
   this.sensor.tint = 0xFF0000;
   this.sprite.tint = 0x0000FF;
 
-  this.sensor.alpha = 0.5;
+  this.sensor.alpha = 0;
   this.sprite.alpha = 1;
 
   this.sprite.inputEnabled = true;
