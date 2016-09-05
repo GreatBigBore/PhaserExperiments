@@ -26,7 +26,7 @@ Rob.Mover = function(sprite, db) {
 Rob.Mover.prototype.setTempVectors = function() {
   var radius = this.sprite.sensor.width / 2;
 
-  for(var i = 0; i < 2; i += 1/6) {
+  for(var i = 0; i < 2; i += 1/12) {
     var theta = i * Math.PI;
 
     var relativePosition = Rob.XY().polar(radius, theta);
@@ -68,7 +68,7 @@ Rob.Mover.prototype.update = function() {
   this.tempFactor = 100;
   this.velocityFactor = 1;
 
-  if(this.frameCount % 1 === 0) {
+  if(this.frameCount % 10 === 0) {
     this.motionVector.reset();
     this.motionVector.add(this.tempVectors.timesScalar(this.tempFactor));
     this.motionVector.add(this.smellVectors.timesScalar(this.smellFactor));

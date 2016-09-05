@@ -33,7 +33,7 @@ var Rob = {
   },
 
   integerInRange: function(lo, hi) {
-    return Math.floor(Math.random() * (hi - lo) + lo);
+    return Math.floor(Rob.realInRange(lo, hi));
   },
 
   makeAlien: function(owner, x, y) {
@@ -41,5 +41,9 @@ var Rob = {
     owner.alien.anchor.set(0.5, 0.5);
     owner.alien.inputEnabled = true;
     owner.alien.input.enableDrag();
+  },
+
+  realInRange: function(lo, hi) {
+    return Math.random() * (hi - lo) + lo;
   }
 };
