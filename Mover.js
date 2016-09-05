@@ -13,17 +13,28 @@ Rob.Mover = function(sprite, db) {
   this.db = db;
   this.frameCount = 0;
 
-  this.motionVector = Rob.XY();
-  this.smellVectors = Rob.XY();
-  this.tempVectors = Rob.XY();
+  this.vectors = {
+    motion: Rob.XY(),
+    smell: Rob.XY(),
+    taste: Rob.XY(),
+    temp: Rob.XY()
+  };
 
   this.d = new Rob.DNA();
 
   this.sprite.tint = this.d.getTint();
+  this.tasteCount = 0;
+  this.smellCount = 0;
 };
 
 Rob.Mover.prototype.setTempVectors = function() {
   var radius = this.sprite.sensor.width / 2;
+
+  // Get temp into the same order of magnitude as the sense vectors
+  // Smell and taste fall off like gravity, so the range is
+  // from zero to the square of 1 / radius
+  var senseRange = new Rob.Range(radius, 0);
+  var tempRange = new Rob.Range(theSpreader.temperatureRange.lo, theSpreader.temperatureRange.hi);
 
   for(var i = 0; i < 2; i += 1/12) {
     var theta = i * Math.PI;
@@ -33,29 +44,37 @@ Rob.Mover.prototype.setTempVectors = function() {
     var temperature = theSpreader.getTemperature(absolutePosition);
     var deltaT = Math.abs(temperature - this.d.optimalTemp);
 
-    // Value falls off like gravity
+    // Value falls off like gravity, but scale it first, so it
+    // will be in the same ball park as the senses
+    deltaT = senseRange.convertPoint(deltaT, tempRange);
     var value = 1 / Math.pow(deltaT, 2);
 
-    this.tempVectors.add(relativePosition.normalized().timesScalar(value));
+    this.vectors.temp.add(relativePosition.normalized().timesScalar(value));
 
     this.db.draw(this.sprite, absolutePosition, 'black');
   }
 };
 
-Rob.Mover.prototype.overlap = function(sensor, smellGroup) {
-  game.physics.arcade.overlap(sensor, smellGroup, this.smell, null, this);
+Rob.Mover.prototype.overlap = function(sense, sensorGroup, senseeGroup) {
+  var dispatch = function(sensor, sensee) {
+    this.sense(sense, sensor, sensee);
+  };
+
+  game.physics.arcade.overlap(sensorGroup, senseeGroup, dispatch, null, this);
 };
 
-Rob.Mover.prototype.smell = function(me, smell) {
-  var relativePosition = Rob.XY(smell).minus(this.sprite);
+Rob.Mover.prototype.sense = function(sense, me, sensee) {
+  var relativePosition = Rob.XY(sensee).minus(this.sprite);
   var distance = relativePosition.getMagnitude();
 
   // Value falls off like gravity
   var value = 1 / Math.pow(distance, 2);
 
-  this.smellVectors.add(relativePosition.normalized().timesScalar(value));
+  this.vectors[sense].add(relativePosition.normalized().timesScalar(value));
 
-  this.db.draw(this.sprite, smell, 'yellow');
+  if(sense === 'smell') { this.smellCount++; } else { this.tasteCount++; }
+  var color = sense === 'smell' ? 'yellow' : 'cyan';
+  this.db.draw(this.sprite, sensee, color);
 };
 
 Rob.Mover.prototype.update = function() {
@@ -63,15 +82,30 @@ Rob.Mover.prototype.update = function() {
 
   this.setTempVectors();
 
+  this.d.tempFactor = 1;
+  this.d.smellFactor = 1;
+  this.d.tasteFactor = 1;
+  this.d.velocityFactor = 1;
+
   if(this.frameCount % 10 === 0) {
-    this.motionVector.reset();
-    this.motionVector.add(this.tempVectors.timesScalar(this.d.tempFactor));
-    this.motionVector.add(this.smellVectors.timesScalar(this.d.smellFactor));
-    this.motionVector.add(Rob.XY(this.body.velocity).timesScalar(this.d.velocityFactor));
-    this.motionVector.normalize();
-    this.motionVector.scalarMultiply(this.d.motionMultiplier);
-    var wtfVector = Rob.XY(this.motionVector);
-    this.body.velocity.setTo(this.motionVector.x, this.motionVector.y);
+
+        var v = Rob.XY(this.body.velocity);
+        theSpreader.debugText(
+          "˚: " + this.vectors.temp.X(4) + ", " + this.vectors.temp.Y(4) + "\n" +
+          "s: " + this.vectors.smell.X(4) + ", " + this.vectors.smell.Y(4) + "\n" +
+          "t: " + this.vectors.taste.X(4) + ", " + this.vectors.taste.Y(4) + "\n" +
+          "v: " + v.X(4) + ", " + v.Y(4)
+        );
+
+    this.vectors.motion.reset();
+    this.vectors.motion.add(this.vectors.temp.timesScalar(this.d.tempFactor));
+    this.vectors.motion.add(this.vectors.smell.timesScalar(this.d.smellFactor));
+    this.vectors.motion.add(this.vectors.taste.timesScalar(this.d.tasteFactor));
+    this.vectors.motion.add(Rob.XY(this.body.velocity).timesScalar(this.d.velocityFactor));
+    this.vectors.motion.normalize();
+    this.vectors.motion.scalarMultiply(this.d.motionMultiplier);
+    var wtfVector = Rob.XY(this.vectors.motion);
+    this.body.velocity.setTo(this.vectors.motion.x, this.vectors.motion.y);
 
     this.db.draw(
       this.sprite,
@@ -80,7 +114,9 @@ Rob.Mover.prototype.update = function() {
     );
   }
 
-  this.motionVector.reset();
-  this.smellVectors.reset();
-  this.tempVectors.reset();
+  this.smellCount = 0;
+  this.tasteCount = 0;
+  for(var i in this.vectors) {
+    this.vectors[i].reset();
+  }
 };

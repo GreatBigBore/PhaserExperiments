@@ -170,7 +170,8 @@ Rob.Spreader.prototype.update = function() {
 
   // Pass him the sensor for now; eventually, the mover will own
   // the sprite and the sensor
-  this.mover.overlap(this.sensor, this.mannaGarden.smellGroup);
+  this.mover.overlap('smell', this.sensor, this.mannaGarden.smellGroup);
+  this.mover.overlap('taste', this.sensor, this.mannaGarden.foodGroup);
 //  game.physics.arcade.overlap(this.sensor, this.mannaGarden.smellGroup, this.mover.smell, null, this);
 
   /*this.db.draw(

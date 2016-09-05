@@ -23,7 +23,8 @@ Rob.Range = function(lo, hi) {
     },
 
     getCenter: function() {
-      return Math.abs(self.getSize() / 2);
+      var base = (self.lo < self.hi) ? self.lo : self.hi;
+      return base + self.getSize() / 2;
     },
 
     getSize: function() {

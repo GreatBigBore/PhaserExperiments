@@ -18,6 +18,7 @@ Rob.dnaConstants = {
 Rob.aboriginalDNA = {
   massOfMyBabies: 0.5,
   embryoThreshold: 0,
+  tasteFactor: 300,
   maxAcceleration: 30,
   maxVelocity: 60,
   motionMultiplier: 30,
