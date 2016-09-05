@@ -44,6 +44,9 @@ var Rob = {
   },
 
   realInRange: function(lo, hi) {
-    return Math.random() * (hi - lo) + lo;
+    var array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+
+    return array[0] / Math.pow(2, 32) * (hi - lo) + lo;
   }
 };

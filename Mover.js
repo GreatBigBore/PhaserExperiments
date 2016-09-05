@@ -11,16 +11,15 @@ Rob.Mover = function(sprite, db) {
   this.body = sprite.body;
 
   this.db = db;
+  this.frameCount = 0;
 
   this.motionVector = Rob.XY();
   this.smellVectors = Rob.XY();
   this.tempVectors = Rob.XY();
 
-  this.optimalTemperature = 0;
-  this.frameCount = 0;
-  this.smellFactor = 1;
-  this.tempFactor = 1;
-  this.velocityFactor = 1;
+  this.d = new Rob.DNA();
+
+  this.sprite.tint = this.d.getTint();
 };
 
 Rob.Mover.prototype.setTempVectors = function() {
@@ -32,7 +31,7 @@ Rob.Mover.prototype.setTempVectors = function() {
     var relativePosition = Rob.XY().polar(radius, theta);
     var absolutePosition = relativePosition.plus(this.sprite);
     var temperature = theSpreader.getTemperature(absolutePosition);
-    var deltaT = Math.abs(temperature - this.optimalTemperature);
+    var deltaT = Math.abs(temperature - this.d.optimalTemp);
 
     // Value falls off like gravity
     var value = 1 / Math.pow(deltaT, 2);
@@ -64,17 +63,13 @@ Rob.Mover.prototype.update = function() {
 
   this.setTempVectors();
 
-  this.smellFactor = 200;
-  this.tempFactor = 100;
-  this.velocityFactor = 1;
-
   if(this.frameCount % 10 === 0) {
     this.motionVector.reset();
-    this.motionVector.add(this.tempVectors.timesScalar(this.tempFactor));
-    this.motionVector.add(this.smellVectors.timesScalar(this.smellFactor));
-    this.motionVector.add(Rob.XY(this.body.velocity).timesScalar(this.velocityFactor));
+    this.motionVector.add(this.tempVectors.timesScalar(this.d.tempFactor));
+    this.motionVector.add(this.smellVectors.timesScalar(this.d.smellFactor));
+    this.motionVector.add(Rob.XY(this.body.velocity).timesScalar(this.d.velocityFactor));
     this.motionVector.normalize();
-    this.motionVector.scalarMultiply(30);
+    this.motionVector.scalarMultiply(this.d.motionMultiplier);
     var wtfVector = Rob.XY(this.motionVector);
     this.body.velocity.setTo(this.motionVector.x, this.motionVector.y);
 
