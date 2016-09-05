@@ -36,7 +36,7 @@ Rob.MannaGarden = function(mannaCount, smellPerMorsel, db) {
     parentGroup: this.foodGroup,
     minVelocity: Rob.XY(-50, -100),
     maxVelocity: Rob.XY(50, -10),
-    visible: true
+    visible: false
   };
 
   this.setupSmellGenerator(smellConfig);
@@ -44,6 +44,17 @@ Rob.MannaGarden = function(mannaCount, smellPerMorsel, db) {
   for(var i = 0; i < this.emitters.length; i++) {
     this.emitters[i].start();
   }
+};
+
+Rob.MannaGarden.prototype.render = function() {
+  var showDebugOutlines = false;
+
+  this.smellGroup.forEachAlive(function(s) {
+    if(showDebugOutlines) {
+      game.debug.body(s, 'yellow', false);
+      game.debug.spriteBounds(s, 'black', false);
+    }
+  });
 };
 
 Rob.MannaGarden.prototype.setEfficiency = function(efficiency) {

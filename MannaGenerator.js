@@ -63,7 +63,7 @@ Rob.MannaGenerator.prototype.emit_ = function(parentParticle) {
     );
 
     thisParticle.revive();
-    thisParticle.alpha = this.config.visible ? 1 : 0;
+    thisParticle.alpha = this.config.visible ? 1 : 0.1;
 
     thisParticle.birthStamp = this.frameCount;      // Sprite remember when you were born
     this.previousEmit = this.frameCount;            // Generator remember the most recent birth

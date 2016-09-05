@@ -2,14 +2,13 @@
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
 /* global Phaser */
-/* exported theSpreader, theMover, theAngles, theSun, theMannaGenerator, theMannaGarden */
+/* exported theSpreader, theAngles, theSun, theMannaGenerator, theMannaGarden */
 
 "use strict";
 
 var game = null;
 var runWhichState = 'Spreader';
 var theSpreader = null;
-var theMover = null;
 var theAngles = null;
 var theSun = null;
 var theMannaGenerator = null;
@@ -48,5 +47,11 @@ var Rob = {
     window.crypto.getRandomValues(array);
 
     return array[0] / Math.pow(2, 32) * (hi - lo) + lo;
+  },
+
+  setupBitmaps: function() {
+    Rob.bg = new Rob.Bitmap('rectGradient');
+    Rob.db = new Rob.Bitmap('debugBackground');
+    Rob.rg = new Rob.Bitmap('realityGoo');
   }
 };

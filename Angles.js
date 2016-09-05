@@ -28,14 +28,14 @@ Rob.Angles.prototype.preload = function() {
 };
 
 Rob.Angles.prototype.update = function() {
-  this.db.update();
+  Rob.dbupdate();
 
-  this.db.draw(
+  Rob.db.draw(
     {x: game.width / 2, y: game.height * 1/4},
     {x: game.width / 2, y: game.height * 3/4}, 'black', 0.5
   );
 
-  this.db.draw(
+  Rob.db.draw(
     {x: game.width * 1/4, y: game.height / 2},
     {x: game.width * 3/4, y: game.height / 2}, 'black', 0.5
   );
@@ -48,7 +48,7 @@ Rob.Angles.prototype.update = function() {
   var relCos = Math.cos(relTheta);
   var relSin = Math.sin(relTheta);
 
-  this.db.text(
+  Rob.db.text(
     0, 0,
     "P to 0: (" + this.alien.x.toFixed(0) + ", " + this.alien.y.toFixed() + ") " +
     "Angle to 0: " + Math.atan2(this.alien.y, this.alien.x).toFixed(4) + "\n" +

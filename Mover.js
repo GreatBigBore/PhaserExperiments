@@ -1,16 +1,15 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global game, Rob, theMover, theSpreader */
+/* global game, Rob, theSpreader */
 
 "use strict";
 
-Rob.Mover = function(sprite, db) {
-  theMover = this;  // jshint ignore: line
+Rob.Mover = function(sprite) {
   this.sprite = sprite;
   this.body = sprite.body;
+  this.sensor = sprite.sensor;
 
-  this.db = db;
   this.frameCount = 0;
 
   this.vectors = {
@@ -51,16 +50,16 @@ Rob.Mover.prototype.setTempVectors = function() {
 
     this.vectors.temp.add(relativePosition.normalized().timesScalar(value));
 
-    this.db.draw(this.sprite, absolutePosition, 'black');
+    Rob.db.draw(this.sprite, absolutePosition, 'black');
   }
 };
 
-Rob.Mover.prototype.overlap = function(sense, sensorGroup, senseeGroup) {
-  var dispatch = function(sensor, sensee) {
-    this.sense(sense, sensor, sensee);
-  };
+Rob.Mover.prototype.smell = function(sensor, smellyParticle) {
+  this.sense('smell', sensor, smellyParticle);
+};
 
-  game.physics.arcade.overlap(sensorGroup, senseeGroup, dispatch, null, this);
+Rob.Mover.prototype.taste = function(sensor, tastyParticle) {
+  this.sense('taste', sensor, tastyParticle);
 };
 
 Rob.Mover.prototype.sense = function(sense, me, sensee) {
@@ -74,7 +73,7 @@ Rob.Mover.prototype.sense = function(sense, me, sensee) {
 
   if(sense === 'smell') { this.smellCount++; } else { this.tasteCount++; }
   var color = sense === 'smell' ? 'yellow' : 'cyan';
-  this.db.draw(this.sprite, sensee, color);
+  Rob.db.draw(this.sprite, sensee, color);
 };
 
 Rob.Mover.prototype.update = function() {
@@ -88,14 +87,11 @@ Rob.Mover.prototype.update = function() {
   this.d.velocityFactor = 1;
 
   if(this.frameCount % 10 === 0) {
-
-        var v = Rob.XY(this.body.velocity);
-        theSpreader.debugText(
-          "˚: " + this.vectors.temp.X(4) + ", " + this.vectors.temp.Y(4) + "\n" +
-          "s: " + this.vectors.smell.X(4) + ", " + this.vectors.smell.Y(4) + "\n" +
-          "t: " + this.vectors.taste.X(4) + ", " + this.vectors.taste.Y(4) + "\n" +
-          "v: " + v.X(4) + ", " + v.Y(4)
-        );
+    theSpreader.debugText(
+      "˚: " + this.vectors.temp.X(4) + ", " + this.vectors.temp.Y(4) + "\n" +
+      "s: " + this.vectors.smell.X(4) + ", " + this.vectors.smell.Y(4) + "\n" +
+      "t: " + this.vectors.taste.X(4) + ", " + this.vectors.taste.Y(4)
+    );
 
     this.vectors.motion.reset();
     this.vectors.motion.add(this.vectors.temp.timesScalar(this.d.tempFactor));
@@ -107,12 +103,14 @@ Rob.Mover.prototype.update = function() {
     var wtfVector = Rob.XY(this.vectors.motion);
     this.body.velocity.setTo(this.vectors.motion.x, this.vectors.motion.y);
 
-    this.db.draw(
+    Rob.db.draw(
       this.sprite,
       wtfVector.normalized().timesScalar(this.sprite.sensor.width).plus(this.sprite),
       'green', 1
     );
   }
+
+  this.sensor.x = this.sprite.x; this.sensor.y = this.sprite.y;
 
   this.smellCount = 0;
   this.tasteCount = 0;

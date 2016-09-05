@@ -16,10 +16,10 @@ Rob.Spreader = function() {
 Rob.Spreader.prototype.getWorldColorRange = function() {
   var rgb = {};
 
-  this.bg.bm.getPixelRGB(game.width / 2, 10, rgb, true);
+  Rob.bg.bm.getPixelRGB(game.width / 2, 10, rgb, true);
   var lumaTL = rgb.l;
 
-  this.bg.bm.getPixelRGB(
+  Rob.bg.bm.getPixelRGB(
     Math.floor(game.width / 2), Math.floor(game.height - 10), rgb, true
   );
   var lumaBR = rgb.l;
@@ -31,20 +31,18 @@ Rob.Spreader.prototype.getWorldColorRange = function() {
 Rob.Spreader.prototype.create = function() {
   game.physics.startSystem(Phaser.Physics.ARCADE);
 
-  this.bg = new Rob.Bitmap('rectGradient');
-  this.db = new Rob.Bitmap('debugBackground');
-  this.rg = new Rob.Bitmap('realityGoo');
+  Rob.setupBitmaps();
+
+  this.archons = new Rob.Archons();
+  this.archons.breed();
 
   this.motionVector = Rob.XY();
-
-  this.makeArchon();
 
   this.sun = new Rob.Sun();
 
   this.brightnessRange = theSun.getBrightnessRange();
 
   this.mannaGarden = new Rob.MannaGarden(300, 3, this.db);
-  this.mover = new Rob.Mover(this.sprite, this.db);
 
   this.frameCount = 0;
 
@@ -52,7 +50,7 @@ Rob.Spreader.prototype.create = function() {
 };
 
 Rob.Spreader.prototype.debugText = function(text) {
-  this.db.text(0, 0, text);
+  Rob.db.text(0, 0, text);
 };
 
 Rob.Spreader.prototype.getTemperature = function(x, y) {
@@ -64,7 +62,7 @@ Rob.Spreader.prototype.getTemperature = function(x, y) {
   x = Math.floor(x); y = Math.floor(y);
 
   var rgb = {};
-  this.bg.bm.getPixelRGB(x, y, rgb, true);
+  Rob.bg.bm.getPixelRGB(x, y, rgb, true);
 
   var lumaComponent = this.temperatureRange.convertPoint(rgb.l, this.worldColorRange);
   var yAxisComponent = this.temperatureRange.convertPoint(game.height - y, this.yAxisRange);
@@ -87,73 +85,26 @@ Rob.Spreader.prototype.getTemperature = function(x, y) {
   return final;
 };
 
-Rob.Spreader.prototype.makeArchon = function() {
-  var center = Rob.XY(game.width / 2, game.height / 2);
-  this.sensor = game.add.sprite(center.x, center.y, game.cache.getBitmapData('realityGoo'));
-  this.sprite = game.add.sprite(center.x, center.y, game.cache.getBitmapData('realityGoo'));
-
-  this.sensor.scale.setTo(1, 1);
-  this.sprite.scale.setTo(0.5, 0.5);
-
-  this.sensor.anchor.setTo(0.5, 0.5);
-  this.sprite.anchor.setTo(0.5, 0.5);
-
-  this.sensor.tint = 0xFF0000;
-  this.sprite.tint = 0x0000FF;
-
-  this.sensor.alpha = 0.1;
-  this.sprite.alpha = 1;
-
-  this.sprite.inputEnabled = true;
-  this.sprite.input.enableDrag();
-
-  var finalSetup = function(s) {
-    game.physics.enable(s, Phaser.Physics.ARCADE);
-
-    var radius = s.width / 2;
-    s.body.setCircle(radius, 0, 0);
-    s.body.syncBounds = true;
-
-    s.body.bounce.setTo(0, 0);
-  };
-
-  finalSetup(this.sensor);
-  finalSetup(this.sprite);
-
-  this.sprite.body.collideWorldBounds = true;
-  this.sprite.sensor = this.sensor;
-};
-
 Rob.Spreader.prototype.preload = function() {
   game.load.image('alien', 'assets/sprites/ufo.png');
   game.load.image('particles', 'assets/sprites/pangball.png');
 };
 
 Rob.Spreader.prototype.render = function() {
-  this.sensor.x = this.sprite.x; this.sensor.y = this.sprite.y;
-  this.showDebugOutlines = false;
-  if(this.showDebugOutlines) {
-    game.debug.body(this.sensor, 'blue', false);
-    game.debug.body(this.sprite, 'yellow', false);
-
-    game.debug.spriteBounds(this.sensor, 'magenta', false);
-    game.debug.spriteBounds(this.sprite, 'black', false);
-
-    this.smellGroup.forEach(function(a) {
-      game.debug.body(a, 'blue', false);
-      game.debug.spriteBounds(a, 'magenta', false);
-
-    }, this);
-  }
+  this.archons.render();
+  this.mannaGarden.render();
 };
 
 Rob.Spreader.prototype.smell = function(sensor, smellyParticle) {
-  this.motionVector.add(Rob.XY(smellyParticle).minus(sensor));
-  this.overlapCounter++;
+  sensor.mover.smell(sensor, smellyParticle);
+};
+
+Rob.Spreader.prototype.taste = function(sensor, tastyParticle) {
+  sensor.mover.taste(sensor, tastyParticle);
 };
 
 Rob.Spreader.prototype.update = function() {
-  this.db.bm.cls();
+  Rob.db.bm.cls();
 
 /*  var topOfScreen = 0;
   var topOfMyRange = topOfScreen + 100;
@@ -170,11 +121,10 @@ Rob.Spreader.prototype.update = function() {
 
   // Pass him the sensor for now; eventually, the mover will own
   // the sprite and the sensor
-  this.mover.overlap('smell', this.sensor, this.mannaGarden.smellGroup);
-  this.mover.overlap('taste', this.sensor, this.mannaGarden.foodGroup);
-//  game.physics.arcade.overlap(this.sensor, this.mannaGarden.smellGroup, this.mover.smell, null, this);
+  game.physics.arcade.overlap(this.archons.sensorPool, this.mannaGarden.smellGroup, this.smell, null, this);
+  game.physics.arcade.overlap(this.archons.sensorPool, this.mannaGarden.foodGroup, this.taste, null, this);
 
-  /*this.db.draw(
+  /*Rob.db.draw(
     this.sensor,
     this.motionVector.
       normalized().
@@ -185,5 +135,5 @@ Rob.Spreader.prototype.update = function() {
 
   this.frameCount++;
   this.mannaGarden.update(theSun.getStrength());
-  this.mover.update();
+  this.archons.update();
 };
