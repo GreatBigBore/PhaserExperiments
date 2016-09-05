@@ -1,12 +1,12 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global game, Phaser, Rob */
+/* global game, Phaser, Rob, theSun */
 
 "use strict";
 
 Rob.Spreader = function() {
-  theSpreader = this;
+  theSpreader = this; // jshint ignore: line
   this.temperatureLo = -1000;
   this.temperatureHi = 1000;
   this.temperatureRange = Rob.Range(this.temperatureLo, this.temperatureHi);
@@ -69,7 +69,7 @@ Rob.Spreader.prototype.getTemperature = function(x, y) {
   var lumaComponent = this.temperatureRange.convertPoint(rgb.l, this.worldColorRange);
   var yAxisComponent = this.temperatureRange.convertPoint(game.height - y, this.yAxisRange);
 
-  var sunStrength = theSun.getStrength();
+  var sunStrength = theSun.getStrength() * this.brightnessRange.getSize();
   var sunComponent =
     this.temperatureRange.convertPoint(sunStrength, this.brightnessRange);
 
@@ -77,17 +77,14 @@ Rob.Spreader.prototype.getTemperature = function(x, y) {
   // just to help them not get stuck in the luma dead zone(s)
   var final = (yAxisComponent + 10 * (lumaComponent + sunComponent)) / 21;
 
-  /*this.debugText(
+  this.debugText(
     "Luma:  " + lumaComponent.toFixed(4) + ", " + rgb.l.toFixed(4) + "\n" +
     "Sun:   " + sunComponent.toFixed(4) + "\n" +
     "Y      " + yAxisComponent.toFixed(4) + "\n" +
-    "Final: " + final.toFixed(2) + ", " + sansY.toFixed(2) + ", " + (sansY - final).toFixed(2)
-  );*/
+    "Final: " + final.toFixed(2)
+  );
 
   return final;
-},
-
-Rob.Spreader.prototype.init = function() {
 };
 
 Rob.Spreader.prototype.makeArchon = function() {

@@ -6,14 +6,14 @@
 "use strict";
 
 Rob.Sun = function() {
-  theSun = this;
+  theSun = this;  // jshint ignore: line
   this.darknessAlphaHi = 0.3;
   this.darknessAlphaLo = 0.0;
 
   this.sunChariotAlphaHi = 1.0;
   this.sunChariotAlphaLo = 0.0;
 
-  this.dayLength = 10000;
+  this.dayLength = 60000;
   this.easingFunction = Phaser.Easing.Quartic.InOut;
 
   this.letThereBeDark();
@@ -29,7 +29,8 @@ Rob.Sun.prototype.getBrightnessRange = function() {
 
 // As a percentage -- 100% = full, broad daylight
 Rob.Sun.prototype.getStrength = function() {
-  return this.darknessAlphaHi - this.darkness.alpha;
+  return (this.darknessAlphaHi - this.darkness.alpha) /
+    (this.darknessAlphaHi - this.darknessAlphaLo);
 };
 
 Rob.Sun.prototype.letThereBeDark = function() {

@@ -1,12 +1,12 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global game, Rob */
+/* global game, Rob, theMover */
 
 "use strict";
 
 Rob.Mover = function(sprite, db) {
-  theMover = this;
+  theMover = this;  // jshint ignore: line
   this.sprite = sprite;
   this.body = sprite.body;
 
@@ -46,7 +46,7 @@ Rob.Mover.prototype.update = function() {
       'blue');
   }
 
-  var t = theSpreader.getTemperature(this.sprite);
+  //var t = theSpreader.getTemperature(this.sprite);
 
   this.smellVector.reset();
 };

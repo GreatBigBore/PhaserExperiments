@@ -13,7 +13,6 @@ Rob.Range = function(lo, hi) {
     // in my range to a point in a different range
     convertPoint: function(thePointOnHisMap, hisRange) {
 
-      var myCenter = self.getCenter();
       var hisCenter = hisRange.getCenter();
 
       var thePointOnMyMap = (

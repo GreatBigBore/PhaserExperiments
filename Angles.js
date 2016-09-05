@@ -1,12 +1,12 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global game, Rob */
+/* global game, Rob, theAngles */
 
 "use strict";
 
 Rob.Angles = function() {
-  theAngles = this;
+  theAngles = this; // jshint ignore: line
 };
 
 Rob.Angles.prototype.create = function() {

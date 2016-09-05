@@ -1,12 +1,12 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global game, Phaser, Rob */
+/* global game, Phaser, Rob, theMannaGarden */
 
 "use strict";
 
 Rob.MannaGarden = function(mannaCount, smellPerMorsel, db) {
-  theMannaGarden = this;
+  theMannaGarden = this;  // jshint ignore: line
   this.db = db;
   this.mannaCount = (mannaCount === undefined) ? 300 : mannaCount;
   this.smellPerManna = (smellPerMorsel === undefined) ? 3: smellPerMorsel;

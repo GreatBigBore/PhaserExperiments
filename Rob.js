@@ -2,6 +2,7 @@
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
 /* global Phaser */
+/* exported theSpreader, theMover, theAngles, theSun, theMannaGenerator, theMannaGarden */
 
 "use strict";
 
