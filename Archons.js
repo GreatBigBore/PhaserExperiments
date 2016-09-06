@@ -6,6 +6,8 @@
 "use strict";
 
 Rob.Archons = function() {
+	this.archonUniqueID = 0;
+
 	this.archonPool = null;
 	this.buttonPool = null;
 	this.sensorPool = null;
@@ -50,6 +52,7 @@ Rob.Archons.prototype.ensoul = function(sprite, parent, birthWeight) {
 	if(sprite.archon === undefined) { throw "How did we get a sprite with no archon?"; }
 
 	if(!sprite.archon.ensouled) {
+		sprite.archon.uniqueID = this.archonUniqueID++;
 		sprite.archon.ensouled = true;
 		sprite.archon.god = this;
 
@@ -70,6 +73,10 @@ Rob.Archons.prototype.initialize = function() {
 	this.setupSpritePools();
 	this.prepSpritesForLife();
 	this.enablePhysicsBodies();
+};
+
+Rob.Archons.prototype.onMouseUp = function(sprite, pointer) {
+	//sprite.archon.stopped = sprite.archon.stopped ? false : true;
 };
 
 Rob.Archons.prototype.prepSpritesForLife = function() {
@@ -102,6 +109,10 @@ Rob.Archons.prototype.prepSpritesForLife = function() {
 		a.body.collideWorldBounds = true;
 		a.inputEnabled = true;
 		a.input.enableDrag();
+
+		a.archon.stopped = false;
+
+		a.events.onInputUp.add(this.onMouseUp, this);
 	}, this);
 };
 

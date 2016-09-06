@@ -11,6 +11,11 @@ Rob.Spreader = function() {
   this.temperatureHi = 1000;
   this.temperatureRange = Rob.Range(this.temperatureLo, this.temperatureHi);
   this.yAxisRange = Rob.Range(0, game.height);
+  this.stopped = false;
+
+  // Phaser gives us mouseUp constantly. I want to ignore all
+  // of these unless we've actually registered a mouseDown
+  this.mouseUp = true;
 };
 
 Rob.Spreader.prototype.getWorldColorRange = function() {
@@ -49,6 +54,9 @@ Rob.Spreader.prototype.create = function() {
   this.frameCount = 0;
 
   this.worldColorRange = this.getWorldColorRange();
+
+  game.input.onUp.add(this.onMouseUp, this);
+  game.input.onDown.add(this.onMouseDown, this);
 };
 
 Rob.Spreader.prototype.debugText = function(text) {
@@ -90,6 +98,26 @@ Rob.Spreader.prototype.getTemperature = function(x, y) {
   );*/
 
   return final;
+};
+
+Rob.Spreader.prototype.onMouseDown = function(pointer) {
+  this.mouseUp = false;
+};
+
+Rob.Spreader.prototype.onMouseUp = function(pointer) {
+  // Don't do any of this if the mouse was already up. We get
+  // mouseUp all the time from Phaser. We only care if it was
+  // preceded by a mouseDown
+  if(!this.mouseUp) {
+    this.mouseUp = true;
+
+    this.stopped = this.stopped ? false : true;
+
+    this.archons.archonPool.forEachAlive(function(a) {
+      //console.log(a.archon.uniqueID);
+      a.archon.stopped = this.stopped;
+    }, this);
+  }
 };
 
 Rob.Spreader.prototype.preload = function() {
