@@ -20,6 +20,7 @@ var Rob = {
   globals: {
     adultFatCalorieDensity: 500,    // Calories per gram of mass
     babyFatCalorieDensity: 2000,    // Calories per gram of mass
+    caloriesPerMannaMorsel: 50,
     embryoCalorieDensity: 10000,    // Very high density fat stored for making babies
   },
 

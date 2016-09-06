@@ -71,7 +71,7 @@ Rob.Archons.prototype.initialize = function() {
 		a.addChild(b);	// b is removed from its pool by this call
 
 		a.anchor.setTo(0.5, 0.5); a.alpha = 1.0; a.tint = 0x00FF00; a.scale.setTo(0.07, 0.07);
-		b.anchor.setTo(0.5, 0.5);	b.alpha = 0; b.tint = 0x00FFFF; b.scale.setTo(0.25, 0.25);
+		b.anchor.setTo(0.5, 0.5);	b.alpha = 1.0; b.tint = 0; b.scale.setTo(0.25, 0.25);
 		s.anchor.setTo(0.5, 0.5); s.alpha = 0; s.tint = 0x0000FF; s.scale.setTo(1, 1);
 
 		a.body.collideWorldBounds = true;
@@ -85,6 +85,10 @@ Rob.Archons.prototype.initialize = function() {
 Rob.Archons.prototype.setSize = function(archon, mass) {
 	var p = Rob.globals.archonSizeRange.convertPoint(mass, Rob.globals.archonMassRange);
 	archon.scale.setTo(p, p);
+
+	// Don't know why, but we have to use the diameter here, or we end
+	// up with a circle half the size we want. Ok, whatever
+	archon.body.setCircle(archon.body.width, 0, 0);
 
 	//Rob.db.text(0, 0, "Mass: " + mass.toFixed(4) + ", scale: " + p.toFixed(4));
 };
@@ -109,10 +113,10 @@ Rob.Archons.prototype.render = function() {
 	if(showDebugOutlines) {
 		this.archonPool.forEachAlive(function(a) {
 	  	game.debug.body(a, 'yellow', false);
-			game.debug.body(a.sensor, 'blue', false);
+			//game.debug.body(a.sensor, 'blue', false);
 
-			game.debug.spriteBounds(a, 'black', false);
-	    game.debug.spriteBounds(a.sensor, 'magenta', false);
+			game.debug.spriteBounds(a, 'blue', false);
+	    //game.debug.spriteBounds(a.sensor, 'magenta', false);
 		}, this);
 	}
 };

@@ -52,8 +52,8 @@ Rob.DNA = function(parentDNA) {
 Rob.DNA.prototype.finalSetup = function(dnaSource) {
   dnaSource.embryoThreshold = (
     Rob.dnaConstants.embryoThresholdMultiplier *
-    ((dnaSource.massOfMyBabies * Rob.globals.babyCalorieDensity) +
-    (dnaSource.optimalMass * Rob.globals.adultCalorieDensity))
+    ((dnaSource.massOfMyBabies * Rob.globals.babyFatCalorieDensity) +
+    (dnaSource.optimalMass * Rob.globals.adultFatCalorieDensity))
   );
 
   var colorAdjustment = this.getTempFromColor(dnaSource.color);
