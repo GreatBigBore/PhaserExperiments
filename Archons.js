@@ -52,6 +52,7 @@ Rob.Archons.prototype.initialize = function() {
 
 		var _this = this;
 		a.ensoul = function() { _this.ensoul.call(_this, a); };
+		a.setSize = function(mass) { _this.setSize.call(_this, a, mass); };
 
 		var ix = this.archonPool.getIndex(a);
 		var s = this.sensorPool.getChildAt(ix);
@@ -69,9 +70,9 @@ Rob.Archons.prototype.initialize = function() {
 
 		a.addChild(b);	// b is removed from its pool by this call
 
-		a.anchor.setTo(0.5, 0.5); a.alpha = 1.0; a.tint = 0x00FF00; a.scale.setTo(0.10, 0.10);
-		b.anchor.setTo(0.5, 0.5);	b.alpha = 1.0; b.tint = 0x00FFFF; b.scale.setTo(0.25, 0.25);
-		s.anchor.setTo(0.5, 0.5); s.alpha = 0.1; s.tint = 0x0000FF; s.scale.setTo(1, 1);
+		a.anchor.setTo(0.5, 0.5); a.alpha = 1.0; a.tint = 0x00FF00; a.scale.setTo(0.07, 0.07);
+		b.anchor.setTo(0.5, 0.5);	b.alpha = 0; b.tint = 0x00FFFF; b.scale.setTo(0.25, 0.25);
+		s.anchor.setTo(0.5, 0.5); s.alpha = 0; s.tint = 0x0000FF; s.scale.setTo(1, 1);
 
 		a.body.collideWorldBounds = true;
 		a.inputEnabled = true;
@@ -79,6 +80,13 @@ Rob.Archons.prototype.initialize = function() {
 
 		finalTouch(a); finalTouch(s);
 	}, this);
+};
+
+Rob.Archons.prototype.setSize = function(archon, mass) {
+	var p = Rob.globals.archonSizeRange.convertPoint(mass, Rob.globals.archonMassRange);
+	archon.scale.setTo(p, p);
+
+	//Rob.db.text(0, 0, "Mass: " + mass.toFixed(4) + ", scale: " + p.toFixed(4));
 };
 
 Rob.Archons.prototype.breed = function(parent) {

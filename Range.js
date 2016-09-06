@@ -16,7 +16,8 @@ Rob.Range = function(lo, hi) {
       var hisCenter = hisRange.getCenter();
 
       var thePointOnMyMap = (
-        (thePointOnHisMap - hisCenter) * self.getSize() / hisRange.getSize()
+        (thePointOnHisMap - hisCenter) * (self.getSize() / hisRange.getSize()) +
+        self.getCenter()
       );
 
       return thePointOnMyMap;

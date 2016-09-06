@@ -20,10 +20,20 @@ var Rob = {
   globals: {
     adultFatCalorieDensity: 500,    // Calories per gram of mass
     babyFatCalorieDensity: 2000,    // Calories per gram of mass
-    embryoCalorieDensity: 10000     // Very high density fat stored for making babies
+    embryoCalorieDensity: 10000,    // Very high density fat stored for making babies
+  },
+
+  preGameInit: function() {
+    // At this point, I don't expect them ever to weigh more than 10g.
+    // For now I'll have them die when their mass gets down to 0.1g;
+    // by default, until mutations set in, the birth mass is 0.5g
+    Rob.globals.archonMassRange = new Rob.Range(0.25, 10);
+    Rob.globals.archonSizeRange = new Rob.Range(0.07, 0.30);
   },
 
   go: function(runWhichState) {
+    Rob.preGameInit();
+
     game = new Phaser.Game(600, 600, Phaser.CANVAS);
 
     var states = [

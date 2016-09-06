@@ -56,7 +56,7 @@ Rob.Mover.prototype.setTempVectors = function() {
 
     this.vectors.temp.add(relativePosition.normalized().timesScalar(value));
 
-    //Rob.db.draw(this.sprite, absolutePosition, 'black');
+    //Rob.db.draw(this.sprite, absolutePosition, 'black', 0.5);
   }
 };
 
@@ -97,17 +97,17 @@ Rob.Mover.prototype.update = function() {
   this.dna.velocityFactor = 1;
 
   if(this.frameCount % 10 === 0) {
-    theSpreader.debugText(
+  /*  theSpreader.debugText(
       "˚: " + this.vectors.temp.X(4) + ", " + this.vectors.temp.Y(4) + "\n" +
       "s: " + this.vectors.smell.X(4) + ", " + this.vectors.smell.Y(4) + "\n" +
       "t: " + this.vectors.taste.X(4) + ", " + this.vectors.taste.Y(4)
-    );
+    );*/
 
     this.vectors.motion.reset();
     this.vectors.motion.add(this.vectors.temp.timesScalar(this.dna.tempFactor));
-    this.vectors.motion.add(this.vectors.smell.timesScalar(this.dna.smellFactor));
-    this.vectors.motion.add(this.vectors.taste.timesScalar(this.dna.tasteFactor));
-    this.vectors.motion.add(Rob.XY(this.body.velocity).timesScalar(this.dna.velocityFactor));
+    //this.vectors.motion.add(this.vectors.smell.timesScalar(this.dna.smellFactor));
+    //this.vectors.motion.add(this.vectors.taste.timesScalar(this.dna.tasteFactor));
+    //this.vectors.motion.add(Rob.XY(this.body.velocity).timesScalar(this.dna.velocityFactor));
     this.vectors.motion.normalize();
     this.vectors.motion.scalarMultiply(this.dna.motionMultiplier);
     var wtfVector = Rob.XY(this.vectors.motion);

@@ -6,6 +6,7 @@
 "use strict";
 
 Rob.Lizer = function(sprite) {
+	this.sprite = sprite;
 	this.dna = sprite.dna;
 	sprite.lizer = this;
 };
@@ -19,12 +20,16 @@ Rob.Lizer.prototype.eat = function(calories) {
     // if we're not an adult yet
     this.adultCalorieBudget += calories;
   }
+
+	this.sprite.setSize(this.getMass());
 };
 
 Rob.Lizer.prototype.ensoul = function(parent) {
-	this.adultCalorieBudget = 0;	// Birth weight should be set by the parent
+	this.adultCalorieBudget = 2500;	// Birth weight should be set by the parent
 	this.babyCalorieBudget = 0;
-	//this.embryoCalorieBudget = parent.archon.getBabyMass() * Rob.globals.embryoCalorieDensity;
+	this.embryoCalorieBudget = 0;//parent.archon.getBabyMass() * Rob.globals.embryoCalorieDensity;
+
+	this.sprite.setSize(this.getMass());
 };
 
 Rob.Lizer.prototype.getMass = function() {

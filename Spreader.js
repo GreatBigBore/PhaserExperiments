@@ -55,6 +55,7 @@ Rob.Spreader.prototype.debugText = function(text) {
 
 Rob.Spreader.prototype.eat = function(archon, foodParticle) {
   archon.mover.eat(archon, foodParticle);
+  archon.lizer.eat(archon, 50);
 };
 
 Rob.Spreader.prototype.getTemperature = function(x, y) {
