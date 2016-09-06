@@ -34,7 +34,9 @@ Rob.Spreader.prototype.create = function() {
   Rob.setupBitmaps();
 
   this.archons = new Rob.Archons();
-  this.archons.breed();
+  for(var i = 0; i < 2; i++) {
+    this.archons.breed();
+  }
 
   this.motionVector = Rob.XY();
 
@@ -53,9 +55,9 @@ Rob.Spreader.prototype.debugText = function(text) {
   Rob.db.text(0, 0, text);
 };
 
-Rob.Spreader.prototype.eat = function(archon, foodParticle) {
-  archon.mover.eat(archon, foodParticle);
-  archon.lizer.eat(Rob.globals.caloriesPerMannaMorsel);
+Rob.Spreader.prototype.eat = function(sprite, foodParticle) {
+  sprite.archon.mover.eat(foodParticle);
+  sprite.archon.lizer.eat(Rob.globals.caloriesPerMannaMorsel);
 };
 
 Rob.Spreader.prototype.getTemperature = function(x, y) {
@@ -100,12 +102,12 @@ Rob.Spreader.prototype.render = function() {
   this.mannaGarden.render();
 };
 
-Rob.Spreader.prototype.smell = function(sensor, smellyParticle) {
-  sensor.mover.smell(sensor, smellyParticle);
+Rob.Spreader.prototype.smell = function(sprite, smellyParticle) {
+  sprite.archon.mover.smell(smellyParticle);
 };
 
-Rob.Spreader.prototype.taste = function(sensor, tastyParticle) {
-  sensor.mover.taste(sensor, tastyParticle);
+Rob.Spreader.prototype.taste = function(sprite, tastyParticle) {
+  sprite.archon.mover.taste(tastyParticle);
 };
 
 Rob.Spreader.prototype.update = function() {

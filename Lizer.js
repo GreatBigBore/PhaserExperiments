@@ -1,14 +1,15 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global game, Rob, theSpreader */
+/* global Rob */
 
 "use strict";
 
 Rob.Lizer = function(sprite) {
+	this.archon = sprite.archon;
 	this.sprite = sprite;
-	this.dna = sprite.dna;
-	sprite.lizer = this;
+	this.body = sprite.body;
+	this.dna = this.archon.dna;
 };
 
 Rob.Lizer.prototype.eat = function(calories) {
@@ -21,15 +22,15 @@ Rob.Lizer.prototype.eat = function(calories) {
     this.adultCalorieBudget += calories;
   }
 
-	this.sprite.setSize(this.getMass());
+	this.archon.god.setSize(this.sprite, this.getMass());
 };
 
-Rob.Lizer.prototype.ensoul = function(parent) {
-	this.adultCalorieBudget = 2500;	// Birth weight should be set by the parent
+Rob.Lizer.prototype.ensoul = function(parent, birthWeight) {
+	this.adultCalorieBudget = 0;
 	this.babyCalorieBudget = 0;
-	this.embryoCalorieBudget = 0;//parent.archon.getBabyMass() * Rob.globals.embryoCalorieDensity;
+	this.embryoCalorieBudget = birthWeight * Rob.globals.embryoCalorieDensity;
 
-	this.sprite.setSize(this.getMass());
+	this.archon.god.setSize(this.sprite, this.getMass());
 };
 
 Rob.Lizer.prototype.getMass = function() {

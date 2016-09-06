@@ -13,18 +13,20 @@ Rob.Archons = function() {
 	this.initialize();
 };
 
-Rob.Archons.prototype.breed = function(parent) {
+Rob.Archons.prototype.breed = function(parent, birthWeight) {
 	var a = this.archonPool.getFirstDead();
 	if(a === null) {
 		throw "No more archons in pool";
 	}
 
-	var center = game.width / 2;
-	a.x = center; a.y = center;
+	a.x = game.world.randomX; a.y = game.world.randomY;
 
-	a.archon.ensoul(a, parent);
+	if(birthWeight === undefined) { birthWeight = Rob.globals.standardBabyMass; }
+	this.ensoul(a, parent, birthWeight);
 
 	a.revive(); a.archon.button.revive(); a.archon.sensor.revive();
+
+	return a.archon;
 };
 
 Rob.Archons.prototype.enablePhysicsBodies = function() {
@@ -44,21 +46,24 @@ Rob.Archons.prototype.enablePhysicsBodies = function() {
 	}, this);
 };
 
-Rob.Archons.prototype.ensoul = function(sprite, parent) {
+Rob.Archons.prototype.ensoul = function(sprite, parent, birthWeight) {
 	if(sprite.archon === undefined) { throw "How did we get a sprite with no archon?"; }
 
 	if(!sprite.archon.ensouled) {
+		sprite.archon.ensouled = true;
+		sprite.archon.god = this;
+
 		// This is how we get access to our stuff when resurrecting
 		// a sprite. The archon object on the sprite points to
 		// all of our other objects.
-		sprite.archon.dna = new Rob.DNA(sprite, parent);
-		sprite.archon.mover = new Rob.Mover(sprite, parent);
-		sprite.archon.lizer = new Rob.Lizer(sprite, parent);
+		sprite.archon.dna = new Rob.DNA(sprite);
+		sprite.archon.mover = new Rob.Mover(sprite);
+		sprite.archon.lizer = new Rob.Lizer(sprite);
 	}
 
 	sprite.archon.dna.ensoul(parent);
 	sprite.archon.mover.ensoul(parent);
-	sprite.archon.lizer.ensoul(parent);
+	sprite.archon.lizer.ensoul(parent, birthWeight);
 };
 
 Rob.Archons.prototype.initialize = function() {
@@ -88,6 +93,8 @@ Rob.Archons.prototype.prepSpritesForLife = function() {
 			sensor: s
 		};
 
+		s.archon = a.archon;	// So we can hook back from sensors too
+
 		a.anchor.setTo(0.5, 0.5); a.alpha = 1.0; a.tint = 0x00FF00; a.scale.setTo(0.07, 0.07);
 		b.anchor.setTo(0.5, 0.5);	b.alpha = 1.0; b.tint = 0; b.scale.setTo(0.25, 0.25);
 		s.anchor.setTo(0.5, 0.5); s.alpha = 0; s.tint = 0x0000FF; s.scale.setTo(1, 1);
@@ -112,13 +119,13 @@ Rob.Archons.prototype.render = function() {
 	}
 };
 
-Rob.Archons.prototype.setSize = function(archon, mass) {
+Rob.Archons.prototype.setSize = function(sprite, mass) {
 	var p = Rob.globals.archonSizeRange.convertPoint(mass, Rob.globals.archonMassRange);
-	archon.scale.setTo(p, p);
+	sprite.scale.setTo(p, p);
 
 	// Don't know why, but we have to use the diameter here, or we end
 	// up with a circle half the size we want. Ok, whatever
-	archon.body.setCircle(archon.body.width, 0, 0);
+	sprite.body.setCircle(sprite.body.width, 0, 0);
 
 	//Rob.db.text(0, 0, "Mass: " + mass.toFixed(4) + ", scale: " + p.toFixed(4));
 };

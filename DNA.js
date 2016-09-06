@@ -33,20 +33,31 @@ Rob.aboriginalDNA = {
   }
 };
 
-Rob.DNA = function(parentDNA) {
-  if(parentDNA === undefined) {
-    parentDNA = Object.assign(this, Rob.aboriginalDNA);
+Rob.DNA = function(sprite) {
+  this.sprite = sprite;
+};
 
-    // Can't pick these up in the static object
-    parentDNA.optimalTemp = Rob.dnaConstants.archonStandardOptimalTemp;
-    parentDNA.tempRange = Rob.dnaConstants.archonStandardTempRange;
+Rob.DNA.prototype.ensoul = function(parent) {
+  if(parent === undefined) {
+    parent = {
+      dna: Object.assign({}, Rob.aboriginalDNA)
+    };
+
+    parent.dna.optimalTemp = Rob.dnaConstants.archonStandardOptimalTemp;
+    parent.dna.tempRange = Rob.dnaConstants.archonStandardTempRange;
+
+    // Just copy from the aboriginal, don't mutate
+    for(var j in parent.dna) {
+      this[j] = parent.dna[j];
+    }
+
   } else {
-    for(var i in parentDNA) {
-      this.mutate(i, parentDNA);
+    for(var i in parent.dna) {
+      this.mutate(i, parent.dna);
     }
   }
 
-  this.finalSetup(parentDNA);
+  this.finalSetup(parent.dna);
 };
 
 Rob.DNA.prototype.finalSetup = function(dnaSource) {

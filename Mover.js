@@ -1,23 +1,19 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global game, Rob, theSpreader */
+/* global Rob, theSpreader */
 
 "use strict";
 
 Rob.Mover = function(sprite) {
   this.sprite = sprite;
+  this.archon = sprite.archon;
   this.body = sprite.body;
-  this.sensor = sprite.sensor;
-  this.dna = sprite.dna;
-
-  sprite.sensor.mover = this;
-  sprite.mover = this;
-
-  this.ensoul();
+  this.sensor = sprite.archon.sensor;
 };
 
 Rob.Mover.prototype.ensoul = function() {
+  this.dna = this.archon.dna;
   this.frameCount = 0;
 
   this.vectors = {
@@ -33,7 +29,7 @@ Rob.Mover.prototype.ensoul = function() {
 };
 
 Rob.Mover.prototype.setTempVectors = function() {
-  var radius = this.sprite.sensor.width / 2;
+  var radius = this.sensor.width / 2;
 
   // Get temp into the same order of magnitude as the sense vectors
   // Smell and taste fall off like gravity, so the range is
@@ -60,19 +56,19 @@ Rob.Mover.prototype.setTempVectors = function() {
   }
 };
 
-Rob.Mover.prototype.eat = function(archon, foodParticle) {
+Rob.Mover.prototype.eat = function(foodParticle) {
   foodParticle.kill();
 };
 
-Rob.Mover.prototype.smell = function(sensor, smellyParticle) {
-  this.sense('smell', sensor, smellyParticle);
+Rob.Mover.prototype.smell = function(smellyParticle) {
+  this.sense('smell', smellyParticle);
 };
 
-Rob.Mover.prototype.taste = function(sensor, tastyParticle) {
-  this.sense('taste', sensor, tastyParticle);
+Rob.Mover.prototype.taste = function(tastyParticle) {
+  this.sense('taste', tastyParticle);
 };
 
-Rob.Mover.prototype.sense = function(sense, me, sensee) {
+Rob.Mover.prototype.sense = function(sense, sensee) {
   var relativePosition = Rob.XY(sensee).minus(this.sprite);
   var distance = relativePosition.getMagnitude();
 
@@ -115,7 +111,7 @@ Rob.Mover.prototype.update = function() {
 
     Rob.db.draw(
       this.sprite,
-      wtfVector.normalized().timesScalar(this.sprite.sensor.width).plus(this.sprite),
+      wtfVector.normalized().timesScalar(this.sensor.width).plus(this.sprite),
       'green', 1
     );
   }
