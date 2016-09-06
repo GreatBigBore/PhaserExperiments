@@ -17,11 +17,17 @@ var theMannaGarden = null;
 window.onload = function() { Rob.go(runWhichState); };
 
 var Rob = {
+  globals: {
+    adultFatCalorieDensity: 500,    // Calories per gram of mass
+    babyFatCalorieDensity: 2000,    // Calories per gram of mass
+    embryoCalorieDensity: 10000     // Very high density fat stored for making babies
+  },
+
   go: function(runWhichState) {
     game = new Phaser.Game(600, 600, Phaser.CANVAS);
 
     var states = [
-      'Angles', 'Mover', 'Spreader'
+      'Spreader'
     ];
 
     for(var i in states) {

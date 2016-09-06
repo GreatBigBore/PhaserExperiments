@@ -6,12 +6,10 @@
 "use strict";
 
 Rob.dnaConstants = {
-  adultCalorieDensity: 500,
   archonHeroSize: 100,
   archonMortalSizeScale: 0.0005,
   archonStandardOptimalTemp: 0,
   archonStandardTempRange: 400,
-  babyCalorieDensity: 2000,
   embryoThresholdMultiplier: 1.1
 };
 
@@ -54,8 +52,8 @@ Rob.DNA = function(parentDNA) {
 Rob.DNA.prototype.finalSetup = function(dnaSource) {
   dnaSource.embryoThreshold = (
     Rob.dnaConstants.embryoThresholdMultiplier *
-    ((dnaSource.massOfMyBabies * Rob.dnaConstants.babyCalorieDensity) +
-    (dnaSource.optimalMass * Rob.dnaConstants.adultCalorieDensity))
+    ((dnaSource.massOfMyBabies * Rob.globals.babyCalorieDensity) +
+    (dnaSource.optimalMass * Rob.globals.adultCalorieDensity))
   );
 
   var colorAdjustment = this.getTempFromColor(dnaSource.color);

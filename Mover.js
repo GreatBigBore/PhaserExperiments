@@ -9,7 +9,15 @@ Rob.Mover = function(sprite) {
   this.sprite = sprite;
   this.body = sprite.body;
   this.sensor = sprite.sensor;
+  this.dna = sprite.dna;
 
+  sprite.sensor.mover = this;
+  sprite.mover = this;
+
+  this.ensoul();
+};
+
+Rob.Mover.prototype.ensoul = function() {
   this.frameCount = 0;
 
   this.vectors = {
@@ -19,9 +27,7 @@ Rob.Mover = function(sprite) {
     temp: Rob.XY()
   };
 
-  this.d = new Rob.DNA();
-
-  this.sprite.tint = this.d.getTint();
+  this.sprite.tint = this.dna.getTint();
   this.tasteCount = 0;
   this.smellCount = 0;
 };
@@ -41,7 +47,7 @@ Rob.Mover.prototype.setTempVectors = function() {
     var relativePosition = Rob.XY().polar(radius, theta);
     var absolutePosition = relativePosition.plus(this.sprite);
     var temperature = theSpreader.getTemperature(absolutePosition);
-    var deltaT = Math.abs(temperature - this.d.optimalTemp);
+    var deltaT = Math.abs(temperature - this.dna.optimalTemp);
 
     // Value falls off like gravity, but scale it first, so it
     // will be in the same ball park as the senses
@@ -50,8 +56,12 @@ Rob.Mover.prototype.setTempVectors = function() {
 
     this.vectors.temp.add(relativePosition.normalized().timesScalar(value));
 
-    Rob.db.draw(this.sprite, absolutePosition, 'black');
+    //Rob.db.draw(this.sprite, absolutePosition, 'black');
   }
+};
+
+Rob.Mover.prototype.eat = function(archon, foodParticle) {
+  foodParticle.kill();
 };
 
 Rob.Mover.prototype.smell = function(sensor, smellyParticle) {
@@ -81,10 +91,10 @@ Rob.Mover.prototype.update = function() {
 
   this.setTempVectors();
 
-  this.d.tempFactor = 1;
-  this.d.smellFactor = 1;
-  this.d.tasteFactor = 1;
-  this.d.velocityFactor = 1;
+  this.dna.tempFactor = 1;
+  this.dna.smellFactor = 1;
+  this.dna.tasteFactor = 1;
+  this.dna.velocityFactor = 1;
 
   if(this.frameCount % 10 === 0) {
     theSpreader.debugText(
@@ -94,12 +104,12 @@ Rob.Mover.prototype.update = function() {
     );
 
     this.vectors.motion.reset();
-    this.vectors.motion.add(this.vectors.temp.timesScalar(this.d.tempFactor));
-    this.vectors.motion.add(this.vectors.smell.timesScalar(this.d.smellFactor));
-    this.vectors.motion.add(this.vectors.taste.timesScalar(this.d.tasteFactor));
-    this.vectors.motion.add(Rob.XY(this.body.velocity).timesScalar(this.d.velocityFactor));
+    this.vectors.motion.add(this.vectors.temp.timesScalar(this.dna.tempFactor));
+    this.vectors.motion.add(this.vectors.smell.timesScalar(this.dna.smellFactor));
+    this.vectors.motion.add(this.vectors.taste.timesScalar(this.dna.tasteFactor));
+    this.vectors.motion.add(Rob.XY(this.body.velocity).timesScalar(this.dna.velocityFactor));
     this.vectors.motion.normalize();
-    this.vectors.motion.scalarMultiply(this.d.motionMultiplier);
+    this.vectors.motion.scalarMultiply(this.dna.motionMultiplier);
     var wtfVector = Rob.XY(this.vectors.motion);
     this.body.velocity.setTo(this.vectors.motion.x, this.vectors.motion.y);
 

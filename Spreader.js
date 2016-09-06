@@ -53,6 +53,10 @@ Rob.Spreader.prototype.debugText = function(text) {
   Rob.db.text(0, 0, text);
 };
 
+Rob.Spreader.prototype.eat = function(archon, foodParticle) {
+  archon.mover.eat(archon, foodParticle);
+};
+
 Rob.Spreader.prototype.getTemperature = function(x, y) {
   // Allow callers to specify an object with x/y rather than an x and a y
   if(x.x !== undefined) {
@@ -123,6 +127,7 @@ Rob.Spreader.prototype.update = function() {
   // the sprite and the sensor
   game.physics.arcade.overlap(this.archons.sensorPool, this.mannaGarden.smellGroup, this.smell, null, this);
   game.physics.arcade.overlap(this.archons.sensorPool, this.mannaGarden.foodGroup, this.taste, null, this);
+  game.physics.arcade.overlap(this.archons.archonPool, this.mannaGarden.foodGroup, this.eat, null, this);
 
   /*Rob.db.draw(
     this.sensor,

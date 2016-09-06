@@ -13,6 +13,18 @@ Rob.Archons = function() {
 	this.initialize();
 };
 
+Rob.Archons.prototype.ensoul = function(protoArchon, parent) {
+	if(protoArchon.hasASoul === false) {
+		protoArchon.dna = new Rob.DNA(parent);
+		protoArchon.mover = new Rob.Mover(protoArchon);
+		protoArchon.lizer = new Rob.Lizer(protoArchon);
+	}
+
+	//protoArchon.dna.ensoul(parent);
+	protoArchon.mover.ensoul(parent);
+	protoArchon.lizer.ensoul(parent);
+};
+
 Rob.Archons.prototype.initialize = function() {
 	var setupPool = function(t, whichPool) {
 		t[whichPool] = game.add.group();
@@ -36,6 +48,11 @@ Rob.Archons.prototype.initialize = function() {
 	setupPool(this, 'sensorPool');
 
 	this.archonPool.forEach(function(a) {
+		a.hasASoul = false;
+
+		var _this = this;
+		a.ensoul = function() { _this.ensoul.call(_this, a); };
+
 		var ix = this.archonPool.getIndex(a);
 		var s = this.sensorPool.getChildAt(ix);
 
@@ -52,8 +69,8 @@ Rob.Archons.prototype.initialize = function() {
 
 		a.addChild(b);	// b is removed from its pool by this call
 
-		a.anchor.setTo(0.5, 0.5); a.alpha = 1.0; a.tint = 0x00FF00; a.scale.setTo(0.5, 0.5);
-		b.anchor.setTo(0.5, 0.5);	b.alpha = 1.0; b.tint = 0x00FFFF; b.scale.setTo(0.1, 0.1);
+		a.anchor.setTo(0.5, 0.5); a.alpha = 1.0; a.tint = 0x00FF00; a.scale.setTo(0.10, 0.10);
+		b.anchor.setTo(0.5, 0.5);	b.alpha = 1.0; b.tint = 0x00FFFF; b.scale.setTo(0.25, 0.25);
 		s.anchor.setTo(0.5, 0.5); s.alpha = 0.1; s.tint = 0x0000FF; s.scale.setTo(1, 1);
 
 		a.body.collideWorldBounds = true;
@@ -64,19 +81,16 @@ Rob.Archons.prototype.initialize = function() {
 	}, this);
 };
 
-Rob.Archons.prototype.breed = function() {
+Rob.Archons.prototype.breed = function(parent) {
 	var a = this.archonPool.getFirstDead();
 	if(a === null) {
 		throw "No more archons in pool";
 	}
 
 	var center = game.width / 2;
-	Rob.XY(a).set(center, center);
+	a.x = center; a.y = center;
 
-	if(a.mover === undefined) {
-		a.mover = new Rob.Mover(a);
-		a.sensor.mover = a.mover;
-	}
+	a.ensoul(a, parent);
 
 	a.revive(); a.button.revive(); a.sensor.revive();
 };
