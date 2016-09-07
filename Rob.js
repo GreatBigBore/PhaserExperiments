@@ -25,6 +25,10 @@ var Rob = {
     standardBabyMass: 0.5,          // Grams
   },
 
+  clamp: function(value, lo, hi) {
+    var c = Math.max(value, lo); c = Math.min(value, hi); return c;
+  },
+
   preGameInit: function() {
     // At this point, I don't expect them ever to weigh more than 10g.
     // For now I'll have them die when their mass gets down to 0.1g;

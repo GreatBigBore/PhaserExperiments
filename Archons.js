@@ -36,7 +36,8 @@ Rob.Archons.prototype.enablePhysicsBodies = function() {
 		game.physics.enable(c, Phaser.Physics.ARCADE);
 
 		var radius = c.width / 2;
-		c.body.setCircle(radius, 0, 0);
+		c.body.setSize(radius, radius);
+		c.body.setCircle(radius);
 		c.body.syncBounds = true;
 
 		c.body.bounce.setTo(0, 0);
@@ -75,9 +76,9 @@ Rob.Archons.prototype.initialize = function() {
 	this.enablePhysicsBodies();
 };
 
-Rob.Archons.prototype.onMouseUp = function(sprite, pointer) {
+/*Rob.Archons.prototype.onMouseUp = function(sprite, pointer) {
 	//sprite.archon.stopped = sprite.archon.stopped ? false : true;
-};
+};*/
 
 Rob.Archons.prototype.prepSpritesForLife = function() {
 	this.archonPool.forEach(function(a) {
@@ -112,7 +113,7 @@ Rob.Archons.prototype.prepSpritesForLife = function() {
 
 		a.archon.stopped = false;
 
-		a.events.onInputUp.add(this.onMouseUp, this);
+		//a.events.onInputUp.add(this.onMouseUp, this);
 	}, this);
 };
 
@@ -122,10 +123,10 @@ Rob.Archons.prototype.render = function() {
 	if(showDebugOutlines) {
 		this.archonPool.forEachAlive(function(a) {
 	  	game.debug.body(a, 'yellow', false);
-			//game.debug.body(a.sensor, 'blue', false);
+			game.debug.body(a.archon.sensor, 'blue', false);
 
 			game.debug.spriteBounds(a, 'blue', false);
-	    //game.debug.spriteBounds(a.sensor, 'magenta', false);
+	    game.debug.spriteBounds(a.archon.sensor, 'magenta', false);
 		}, this);
 	}
 };
@@ -134,11 +135,9 @@ Rob.Archons.prototype.setSize = function(sprite, mass) {
 	var p = Rob.globals.archonSizeRange.convertPoint(mass, Rob.globals.archonMassRange);
 	sprite.scale.setTo(p, p);
 
-	// Don't know why, but we have to use the diameter here, or we end
-	// up with a circle half the size we want. Ok, whatever
-	sprite.body.setCircle(sprite.body.width, 0, 0);
-
-	//Rob.db.text(0, 0, "Mass: " + mass.toFixed(4) + ", scale: " + p.toFixed(4));
+	var r = sprite.width / 2;	// Have to tell the body to keep up with the sprite
+	sprite.body.setSize(r, r);
+	sprite.body.setCircle(r);
 };
 
 Rob.Archons.prototype.setupSpritePools = function() {

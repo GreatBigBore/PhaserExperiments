@@ -22,7 +22,6 @@ Rob.Motioner = function(mover) {
   };
 
   this.xDirection = 1;
-  this.previousTempInfo = {p: 0, d: 0};
 };
 
 Rob.Motioner.prototype.eat = function() {
@@ -87,12 +86,13 @@ Rob.Motioner.prototype.update = function() {
   this.frameCount++;
 
   var tempInfo = this.getTempInfo();
-  var maxSpeed = 30;
+  var maxSpeed = 60;
 
   var tolerableTempRange = Rob.Range(-200, 200);
-  var speedRange = Rob.Range(-30, 30);
-  var targetSpeed = speedRange.convertPoint(tempInfo.d, tolerableTempRange);
-  targetSpeed = Math.max(targetSpeed, -30); targetSpeed = Math.min(targetSpeed, 30);
+  var speedRange = Rob.Range(-maxSpeed, maxSpeed);
+  var targetSpeed = Rob.clamp(
+    speedRange.convertPoint(tempInfo.d, tolerableTempRange), -maxSpeed, maxSpeed
+  );
 
   if(this.frameCount % 10 === 0) {
     if(this.archon.stopped) {
@@ -113,19 +113,6 @@ Rob.Motioner.prototype.update = function() {
           this.body.velocity.x--;
         }
       }
-
-      /*if(this.archon.uniqueID === 0) {
-        Rob.db.text(0, 0,
-          "temp: " + tempInfo.t.toFixed(2) +
-          ", delta: " + tempInfo.d.toFixed() + "\n" +
-          "prev: " + this.previousTempInfo.d.toFixed() +
-          ", vel: " + this.body.velocity.y.toFixed() + "\n" +
-          "targ: " + targetSpeed.toFixed() + " xy: (" + this.sprite.x.toFixed() + ", " + this.sprite.y.toFixed() + ")\n" +
-          wtf
-        );
-      }*/
-
-      this.previousTempInfo = tempInfo;
     }
   }
 

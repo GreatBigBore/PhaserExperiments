@@ -100,11 +100,11 @@ Rob.Spreader.prototype.getTemperature = function(x, y) {
   return final;
 };
 
-Rob.Spreader.prototype.onMouseDown = function(pointer) {
+Rob.Spreader.prototype.onMouseDown = function(/*pointer*/) {
   this.mouseUp = false;
 };
 
-Rob.Spreader.prototype.onMouseUp = function(pointer) {
+Rob.Spreader.prototype.onMouseUp = function(/*pointer*/) {
   // Don't do any of this if the mouse was already up. We get
   // mouseUp all the time from Phaser. We only care if it was
   // preceded by a mouseDown

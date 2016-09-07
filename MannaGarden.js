@@ -87,8 +87,7 @@ Rob.MannaGarden.prototype.setPosition = function(sunStrength) {
 };
 
 Rob.MannaGarden.prototype.setSunStrength = function(sunStrength) {
-  sunStrength = Math.min(1, sunStrength);
-  sunStrength = Math.max(0, sunStrength);
+  sunStrength = Rob.clamp(sunStrength, 0, 1);
 
   this.setEfficiency(sunStrength);
   this.setPosition(sunStrength);
