@@ -49,7 +49,7 @@ Rob.Motioner.prototype.getTempInfo = function() {
   addCandidate(this, Rob.XY(this.sprite.x, this.sprite.y + this.sensor.width / 2), false);
 
   var bestDelta = testPoints[0].a;
-  var bestIndex = 0;;
+  var bestIndex = 0;
   for(var i = 0; i < testPoints.length; i++) {
     if(testPoints[i].a < bestDelta) {
       bestIndex = i;
@@ -99,20 +99,6 @@ Rob.Motioner.prototype.update = function() {
       this.body.velocity.setTo(0, 0);
     } else {
       this.body.velocity.y = targetSpeed;
-
-      if(this.frameCount % 13 === 0) {
-        this.xDirection *= -1;
-      }
-
-      if(this.xDirection === 1) {
-        if(this.body.velocity.x < maxSpeed) {
-          this.body.velocity.x++;
-        }
-      } else if(this.xDirection === -1) {
-        if(this.body.velocity.x > -maxSpeed) {
-          this.body.velocity.x--;
-        }
-      }
     }
   }
 

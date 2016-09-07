@@ -5,11 +5,14 @@
 
 "use strict";
 
-Rob.Lizer = function(sprite) {
-	this.archon = sprite.archon;
-	this.sprite = sprite;
-	this.body = sprite.body;
-	this.dna = this.archon.dna;
+Rob.Lizer = function() {
+};
+
+Rob.Lizer.prototype.init = function(archon) {
+	this.archon = archon;
+	this.sprite = archon.sprite;
+	this.body = archon.sprite.body;
+	this.dna = archon.dna;
 };
 
 Rob.Lizer.prototype.eat = function(calories) {

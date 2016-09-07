@@ -56,17 +56,25 @@ Rob.Archons.prototype.ensoul = function(sprite, parent, birthWeight) {
 		sprite.archon.uniqueID = this.archonUniqueID++;
 		sprite.archon.ensouled = true;
 		sprite.archon.god = this;
+		sprite.archon.sprite = sprite;
 
 		// This is how we get access to our stuff when resurrecting
 		// a sprite. The archon object on the sprite points to
 		// all of our other objects.
-		sprite.archon.dna = new Rob.DNA(sprite);
-		sprite.archon.mover = new Rob.Mover(sprite);
-		sprite.archon.lizer = new Rob.Lizer(sprite);
+		sprite.archon.dna = new Rob.DNA();
+		sprite.archon.mover = new Rob.Mover();
+	  sprite.archon.motioner = new Rob.Motioner();
+		sprite.archon.lizer = new Rob.Lizer();
+
+		sprite.archon.dna.init(sprite.archon);
+		sprite.archon.mover.init(sprite.archon);
+		sprite.archon.motioner.init(sprite.archon);
+		sprite.archon.lizer.init(sprite.archon);
 	}
 
 	sprite.archon.dna.ensoul(parent);
 	sprite.archon.mover.ensoul(parent);
+	sprite.archon.motioner.ensoul(parent);
 	sprite.archon.lizer.ensoul(parent, birthWeight);
 };
 

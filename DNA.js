@@ -21,9 +21,11 @@ Rob.aboriginalDNA = {
   maxVelocity: 60,
   motionMultiplier: 30,
   optimalMass: 5,
+  optimalTemp: Rob.dnaConstants.archonStandardOptimalTemp,
   sensorSize: 1,
   smellFactor: 200,
   tempFactor: 100,
+  tempRange: Rob.dnaConstants.archonStandardTempRange,
   velocityFactor: 1,
 
   color: {
@@ -33,8 +35,11 @@ Rob.aboriginalDNA = {
   }
 };
 
-Rob.DNA = function(sprite) {
-  this.sprite = sprite;
+Rob.DNA = function() {
+};
+
+Rob.DNA.prototype.init = function(archon) {
+  this.sprite = archon.sprite;
 };
 
 Rob.DNA.prototype.ensoul = function(parent) {
@@ -42,9 +47,6 @@ Rob.DNA.prototype.ensoul = function(parent) {
     parent = {
       dna: Object.assign({}, Rob.aboriginalDNA)
     };
-
-    parent.dna.optimalTemp = Rob.dnaConstants.archonStandardOptimalTemp;
-    parent.dna.tempRange = Rob.dnaConstants.archonStandardTempRange;
 
     // Just copy from the aboriginal, don't mutate
     for(var j in parent.dna) {

@@ -22,6 +22,7 @@ var Rob = {
     babyFatCalorieDensity: 2000,    // Calories per gram of mass
     caloriesPerMannaMorsel: 50,
     embryoCalorieDensity: 10000,    // Very high density fat stored for making babies
+    maxSpeed: 30,                   // pix/sec
     standardBabyMass: 0.5,          // Grams
   },
 

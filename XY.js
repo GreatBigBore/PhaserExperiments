@@ -12,6 +12,7 @@ Rob.XY = function(sourceOrMaybeX, maybeY) {
     add: function(addend) {
       self.x += addend.x;
       self.y += addend.y;
+      return self;
     },
 
     dividedByScalar: function(dividedBy) {
@@ -75,6 +76,7 @@ Rob.XY = function(sourceOrMaybeX, maybeY) {
     normalize: function() {
       var m = self.getMagnitude();
       self.scalarDivide(m);
+      return self;
     },
 
     normalized: function() {
@@ -102,11 +104,13 @@ Rob.XY = function(sourceOrMaybeX, maybeY) {
     scalarDivide: function(divisor) {
       self.x /= divisor;
       self.y /= divisor;
+      return self;
     },
 
     scalarMultiply: function(multiplicand) {
       self.x *= multiplicand;
       self.y *= multiplicand;
+      return self;
     },
 
     set: function(sourceOrMaybeX, maybeY) {
@@ -136,6 +140,7 @@ Rob.XY = function(sourceOrMaybeX, maybeY) {
     subtract: function(subtrahend) {
       self.x -= subtrahend.x;
       self.y -= subtrahend.y;
+      return self;
     },
 
     timesScalar: function(multiplicand) {

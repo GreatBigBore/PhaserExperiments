@@ -5,14 +5,16 @@
 
 "use strict";
 
-Rob.Mover = function(sprite) {
-  this.sprite = sprite;
-  this.archon = sprite.archon;
-  this.body = sprite.body;
-  this.sensor = sprite.archon.sensor;
-  this.dna = this.archon.dna;
+Rob.Mover = function() {
+};
 
-  this.motioner = new Rob.Motioner(this);
+Rob.Mover.prototype.init = function(archon) {
+  this.archon = archon;
+  this.sprite = archon.sprite;
+  this.body = archon.sprite.body;
+  this.sensor = archon.sensor;
+  this.dna = archon.dna;
+  this.motioner = archon.motioner;
 };
 
 Rob.Mover.prototype.ensoul = function() {
