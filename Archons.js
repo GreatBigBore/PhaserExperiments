@@ -76,10 +76,6 @@ Rob.Archons.prototype.initialize = function() {
 	this.enablePhysicsBodies();
 };
 
-/*Rob.Archons.prototype.onMouseUp = function(sprite, pointer) {
-	//sprite.archon.stopped = sprite.archon.stopped ? false : true;
-};*/
-
 Rob.Archons.prototype.prepSpritesForLife = function() {
 	this.archonPool.forEach(function(a) {
 		var ix = this.archonPool.getIndex(a);
@@ -112,8 +108,6 @@ Rob.Archons.prototype.prepSpritesForLife = function() {
 		a.input.enableDrag();
 
 		a.archon.stopped = false;
-
-		//a.events.onInputUp.add(this.onMouseUp, this);
 	}, this);
 };
 

@@ -100,24 +100,49 @@ Rob.Spreader.prototype.getTemperature = function(x, y) {
   return final;
 };
 
+Rob.Spreader.prototype.handleClick = function(pointer) {
+  var changeState = false;
+
+  if(this.stopped) {
+    // We're completely stopped; if it was a click in the open,
+    // start everyone back up again. If it was a click on a
+    // sprite, just allow the sprite to be dragged around,
+    // don't start the world again
+    var clickedOnASprite = false;
+    this.archons.archonPool.forEachAlive(function(a) {
+      if(clickedOnASprite) { return; }
+
+      var radius = a.width / 2;
+      var rect = new Phaser.Rectangle(
+        a.x - radius, a.y - radius, a.width, a.height
+      );
+
+      if(Phaser.Rectangle.containsPoint(rect, pointer)) {
+        clickedOnASprite = true;
+      }
+    }, this);
+
+    // Clicked out in the open; start the world up again
+    if(!clickedOnASprite) { this.stopped = false; changeState = true; }
+  } else {
+    // We're running normally; a click anywhere stops everyone
+    this.stopped = true;
+    changeState = true;
+  }
+
+  if(changeState) {
+    this.archons.archonPool.forEachAlive(function(a) {
+      a.archon.stopped = this.stopped;
+    }, this);
+  }
+};
+
 Rob.Spreader.prototype.onMouseDown = function(/*pointer*/) {
   this.mouseUp = false;
 };
 
-Rob.Spreader.prototype.onMouseUp = function(/*pointer*/) {
-  // Don't do any of this if the mouse was already up. We get
-  // mouseUp all the time from Phaser. We only care if it was
-  // preceded by a mouseDown
-  if(!this.mouseUp) {
-    this.mouseUp = true;
-
-    this.stopped = this.stopped ? false : true;
-
-    this.archons.archonPool.forEachAlive(function(a) {
-      //console.log(a.archon.uniqueID);
-      a.archon.stopped = this.stopped;
-    }, this);
-  }
+Rob.Spreader.prototype.onMouseUp = function(pointer) {
+  if(!this.mouseUp) { this.mouseUp = true; this.handleClick(pointer); }
 };
 
 Rob.Spreader.prototype.preload = function() {
