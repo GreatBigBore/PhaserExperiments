@@ -133,7 +133,7 @@ Rob.Motioner.prototype.update = function() {
 
   this.dna.tempFactor = 1;
   this.dna.smellFactor = 1;
-  this.dna.tasteFactor = 1;
+  this.dna.tasteFactor = 2;
   this.dna.velocityFactor = 1;
 
   if(this.frameCount % 10 === 0) {
