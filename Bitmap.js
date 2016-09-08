@@ -118,6 +118,9 @@ Rob.Bitmap.prototype.rectGradient = function() {
 
   this.bm.update();
   game.add.image(0, 0, this.bm);
+
+  // Hacking this in to create boundaries; maybe clean it up later
+  game.cache.addBitmapData('rectGradient', this.bm);
 };
 
 Rob.Bitmap.prototype.text = function(x, y, text) {

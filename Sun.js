@@ -31,8 +31,8 @@ Rob.Sun.prototype.getStrength = function() {
 
 Rob.Sun.prototype.letThereBeDark = function() {
   this.darkness = game.add.sprite(
-    (game.world.width / 2),
-    (game.world.height / 2),
+    (game.world.width / 2 - 100),
+    (game.world.height / 2 - 100),
     game.cache.getBitmapData('realityGoo')
   );
 

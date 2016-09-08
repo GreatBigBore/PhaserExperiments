@@ -21,7 +21,12 @@ Rob.Archons.prototype.breed = function(parent, birthWeight) {
 		throw "No more archons in pool";
 	}
 
-	a.x = game.world.randomX; a.y = game.world.randomY;
+	// totally arbitrary, just staying within the bounds of the wall sprites
+	var center = game.width / 2;
+	var maxDFromCenter = game.width / 2 - 20;
+
+	a.x = Rob.integerInRange(center - maxDFromCenter, center + maxDFromCenter);
+	a.y = Rob.integerInRange(center - maxDFromCenter, center + maxDFromCenter);
 
 	if(birthWeight === undefined) { birthWeight = Rob.globals.standardBabyMass; }
 	this.ensoul(a, parent, birthWeight);
@@ -82,6 +87,7 @@ Rob.Archons.prototype.initialize = function() {
 	this.setupSpritePools();
 	this.prepSpritesForLife();
 	this.enablePhysicsBodies();
+	this.setupWalls();
 };
 
 Rob.Archons.prototype.prepSpritesForLife = function() {
@@ -153,6 +159,41 @@ Rob.Archons.prototype.setupSpritePools = function() {
 	setupPool(this, 'archonPool');
 	setupPool(this, 'buttonPool');
 	setupPool(this, 'sensorPool');
+};
+
+Rob.Archons.prototype.setupWalls = function() {
+	this.cursors = game.input.keyboard.createCursorKeys();
+  game.world.setBounds(-100, -100, game.width + 200, game.height + 200);
+
+	this.wallsGroup = game.add.group();
+	this.wallsGroup.enableBody = true;
+
+	var border = 1;
+	var wallsConfig = [
+		{ position: { x: 0, y: border}, scale: { x: 1.5, y: -0.1}, anchor: { x: 0, y: 0} },
+		{ position: { x: game.width - border, y: 0}, scale: { x: 0.1, y: 1}, anchor: { x: 0, y: 0} },
+		{ position: { x: 0, y: game.height - border}, scale: { x: 1.5, y: -0.1}, anchor: { x: 0, y: 1} },
+		{ position: { x: border, y: 0}, scale: { x: 0.1, y: 1}, anchor: { x: 1, y: 0} }
+	];
+
+	for(var i = 0; i < wallsConfig.length; i++) {
+		var s = game.add.sprite(
+			wallsConfig[i].position.x, wallsConfig[i].position.y,
+			game.cache.getBitmapData('rectGradient')
+		);
+
+		this.wallsGroup.add(s);
+
+    s.tint = 0;
+    s.inputEnabled = true;
+    s.input.enableDrag();
+
+		s.anchor.setTo(wallsConfig[i].anchor.x, wallsConfig[i].anchor.y);
+    s.scale.setTo(wallsConfig[i].scale.x, wallsConfig[i].scale.y);
+
+    s.body.bounce.setTo(1, 1);
+    s.body.immovable = true;
+	}
 };
 
 Rob.Archons.prototype.update = function() {

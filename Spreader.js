@@ -58,6 +58,8 @@ Rob.Spreader.prototype.create = function() {
 
   this.worldColorRange = this.getWorldColorRange();
 
+  this.cursors = game.input.keyboard.createCursorKeys();
+
   game.input.onUp.add(this.onMouseUp, this);
   game.input.onDown.add(this.onMouseDown, this);
 };
@@ -169,18 +171,10 @@ Rob.Spreader.prototype.taste = function(sprite, tastyParticle) {
 Rob.Spreader.prototype.update = function() {
   Rob.db.bm.cls();
 
-/*  var topOfScreen = 0;
-  var topOfMyRange = topOfScreen + 100;
-
-  var bottomOfScreen = game.height;
-  var bottomOfMyRange = bottomOfScreen - 100;
-
-  var fuck1 = (this.sprite.y - topOfMyRange);
-  var fuck3 = (bottomOfMyRange - topOfMyRange);
-  var efficiency = 1 - (fuck1 / fuck3);*/
-
-  this.motionVector.reset();
-  this.overlapCounter = 0;
+  if(this.cursors.up.isDown) { game.camera.y -= 4; }
+  else if(this.cursors.down.isDown) { game.camera.y += 4; }
+  else if(this.cursors.left.isDown) { game.camera.x -= 4; }
+  else if(this.cursors.right.isDown) { game.camera.x += 4; }
 
   // Pass him the sensor for now; eventually, the mover will own
   // the sprite and the sensor
@@ -188,15 +182,7 @@ Rob.Spreader.prototype.update = function() {
   game.physics.arcade.overlap(this.archons.sensorPool, this.mannaGarden.foodGroup, this.taste, null, this);
   game.physics.arcade.overlap(this.archons.archonPool, this.mannaGarden.foodGroup, this.eat, null, this);
   game.physics.arcade.overlap(this.archons.sensorPool, this.archons.archonPool, this.avoid, null, this);
-
-  /*Rob.db.draw(
-    this.sensor,
-    this.motionVector.
-      normalized().
-      timesScalar(this.sensor.width).
-      plus(this.sensor),
-    'green', 1
-  );*/
+  game.physics.arcade.collide(this.archons.archonPool, this.archons.wallsGroup);
 
   this.frameCount++;
   this.mannaGarden.update(theSun.getStrength());
