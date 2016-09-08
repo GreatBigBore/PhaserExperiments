@@ -11,6 +11,7 @@ Rob.Bitmap = function(whichBitmap) {
     case 'debugBackground':
     case 'rectGradient':
     case 'realityGoo':
+    case 'wallsGoo':
     this[whichBitmap]();
     break;
     default: throw "No '" + whichBitmap + "' background available";
@@ -86,6 +87,7 @@ Rob.Bitmap.prototype.debugBackground = function() {
   this.cx.strokeStyle = 'rgba(255, 255, 255, 1)';
 
   game.add.image(0, 0, this.bm);
+  game.cache.addBitmapData('debugBackground', this.bm);
 };
 
 Rob.Bitmap.prototype.draw = function(xyStart, xyEnd, style, width) {
@@ -129,4 +131,16 @@ Rob.Bitmap.prototype.text = function(x, y, text) {
 
 Rob.Bitmap.prototype.update = function() {
   this.clear();
+};
+
+Rob.Bitmap.prototype.wallsGoo = function() {
+  this.bm = game.add.bitmapData(1, 1);
+  this.cx = this.bm.context;
+
+  this.cx.fillStyle = 'rgba(255, 255, 255, 1)';
+  this.cx.strokeStyle = 'rgba(255, 255, 255, 1)';
+
+  this.cx.fillRect(0, 0, game.width, game.height);
+
+  game.cache.addBitmapData('wallsGoo', this.bm);
 };

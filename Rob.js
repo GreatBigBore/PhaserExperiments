@@ -2,7 +2,7 @@
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
 /* global Phaser */
-/* exported theSpreader, theAngles, theSun, theMannaGenerator, theMannaGarden */
+/* exported theSpreader, theAngles, theSun */
 
 "use strict";
 
@@ -11,14 +11,14 @@ var runWhichState = 'Spreader';
 var theSpreader = null;
 var theAngles = null;
 var theSun = null;
-var theMannaGenerator = null;
-var theMannaGarden = null;
 
 try {
   window.onload = function() { Rob.go(runWhichState); };
 } catch (e) {};
 
 var Rob = {
+  debugText: "",
+
   globals: {
     adultFatCalorieDensity: 500,    // Calories per gram of mass
     archonCount: 1,
@@ -27,8 +27,9 @@ var Rob = {
     darknessAlphaHi: 0.3,
     darknessAlphaLo: 0.0,
     embryoCalorieDensity: 10000,    // Very high density fat stored for making babies
-    maxSpeed: 30,                   // pix/sec
+    maxSpeed: 100,                   // pix/sec
     standardBabyMass: 0.5,          // Grams
+    worldBorder: 2                // Make room for our wall sprites
   },
 
   clamp: function(value, lo, hi) {
@@ -85,5 +86,6 @@ var Rob = {
     Rob.bg = new Rob.Bitmap('rectGradient');
     Rob.db = new Rob.Bitmap('debugBackground');
     Rob.rg = new Rob.Bitmap('realityGoo');
+    Rob.rg = new Rob.Bitmap('wallsGoo');
   }
 };

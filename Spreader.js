@@ -85,6 +85,7 @@ Rob.Spreader.prototype.getTemperature = function(x, y) {
   Rob.bg.bm.getPixelRGB(x, y, rgb, true);
 
   var lumaComponent = this.temperatureRange.convertPoint(rgb.l, this.worldColorRange);
+  Rob.debugText += "Luma: " + lumaComponent + "(" + x + ", " + y + ")\n";
 
   var darkness = theSun.darkness.alpha;
   var darknessComponent = this.temperatureRange.convertPoint(darkness, this.darknessRange);
@@ -94,6 +95,7 @@ Rob.Spreader.prototype.getTemperature = function(x, y) {
   // Give luma and sun most of the weight. The y-axis thing is there
   // just to help them not get stuck in the luma dead zone(s)
   var final = (yAxisComponent + 10 * (lumaComponent + darknessComponent)) / 21;
+  //var final = lumaComponent;
 
   /*this.debugText(
     "Luma:  " + lumaComponent.toFixed(4) + ", " + rgb.l.toFixed(4) + "\n" +

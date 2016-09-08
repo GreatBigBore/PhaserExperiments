@@ -1,12 +1,11 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global Rob, theMannaGenerator */
+/* global Rob */
 
 "use strict";
 
 Rob.MannaGenerator = function(config, db) {
-  theMannaGenerator = this; // jshint ignore: line
   this.db = db;
   this.config = Object.assign({}, config);
   this.originalConfig = Object.assign({}, config);

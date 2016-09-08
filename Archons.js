@@ -40,17 +40,20 @@ Rob.Archons.prototype.enablePhysicsBodies = function() {
 	var enable = function(c) {
 		game.physics.enable(c, Phaser.Physics.ARCADE);
 
-		var radius = c.width / 2;
-		c.body.setSize(radius, radius);
-		c.body.setCircle(radius);
 		c.body.syncBounds = true;
-
 		c.body.bounce.setTo(0, 0);
 	};
 
 	this.archonPool.forEach(function(a) {
+
 		enable(a);
+		this.setSize(a, Rob.globals.standardBabyMass);
+
 		enable(a.archon.sensor);
+
+		var radius = a.archon.sensor.width / 2;
+		a.archon.sensor.body.setSize(radius, radius);
+		a.archon.sensor.body.setCircle(radius);
 	}, this);
 };
 
@@ -168,18 +171,26 @@ Rob.Archons.prototype.setupWalls = function() {
 	this.wallsGroup = game.add.group();
 	this.wallsGroup.enableBody = true;
 
-	var border = 1;
+	var b = Rob.globals.worldBorder;
+	var h = b / 2;
+
+	game.world.setBounds(-h, -h, game.width + b, game.height + b);
+	game.camera.x = -h;
+	game.camera.y = -h;
 	var wallsConfig = [
-		{ position: { x: 0, y: border}, scale: { x: 1.5, y: -0.1}, anchor: { x: 0, y: 0} },
-		{ position: { x: game.width - border, y: 0}, scale: { x: 0.1, y: 1}, anchor: { x: 0, y: 0} },
-		{ position: { x: 0, y: game.height - border}, scale: { x: 1.5, y: -0.1}, anchor: { x: 0, y: 1} },
-		{ position: { x: border, y: 0}, scale: { x: 0.1, y: 1}, anchor: { x: 1, y: 0} }
+		{ position: { x: -b, y: -b }, scale: { x: game.width + b, y: b }, anchor: { x: 0, y: 0 } },
+
+		{ position: { x: game.width - b, y: -h }, scale: { x: b, y: game.height + b }, anchor: { x: 0, y: 0 } },
+
+		{ position: { x: -b, y: game.height - b }, scale: { x: game.width + b, y: b }, anchor: { x: 0, y: 0 } },
+
+		{ position: { x: -b, y: -h }, scale: { x: b, y: game.height + b }, anchor: { x: 0, y: 0 } }
 	];
 
 	for(var i = 0; i < wallsConfig.length; i++) {
 		var s = game.add.sprite(
 			wallsConfig[i].position.x, wallsConfig[i].position.y,
-			game.cache.getBitmapData('rectGradient')
+			game.cache.getBitmapData('wallsGoo')
 		);
 
 		this.wallsGroup.add(s);
@@ -191,9 +202,12 @@ Rob.Archons.prototype.setupWalls = function() {
 		s.anchor.setTo(wallsConfig[i].anchor.x, wallsConfig[i].anchor.y);
     s.scale.setTo(wallsConfig[i].scale.x, wallsConfig[i].scale.y);
 
+		s.body.collideWorldBounds = true;
     s.body.bounce.setTo(1, 1);
     s.body.immovable = true;
 	}
+
+	game.world.bringToTop(this.wallsGroup);
 };
 
 Rob.Archons.prototype.update = function() {

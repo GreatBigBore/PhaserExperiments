@@ -5,6 +5,8 @@
 
 "use strict";
 
+var Rob = Rob || {};
+
 Rob.dnaConstants = {
   archonHeroSize: 100,
   archonMortalSizeScale: 0.0005,
@@ -14,7 +16,7 @@ Rob.dnaConstants = {
 };
 
 Rob.aboriginalDNA = {
-  massOfMyBabies: 0.5,
+  massOfMyBabies: Rob.globals.standardBabyMass,
   embryoThreshold: 0,
   tasteFactor: 300,
   maxAcceleration: 30,
@@ -200,3 +202,12 @@ Rob.DNA.prototype.getTempFromColor = function(color) {
 Rob.DNA.prototype.setColor = function() {
 	this.color = this.getRandomTint();
 };
+
+console.log('barf');
+if(typeof window === "undefined") {
+  console.log('carf');
+  exports.DNA = new Rob.DNA();
+  //exports.DNA.mutateYN();
+  //console.log(exports);
+  console.log('looks like real DNA.js is working');
+}

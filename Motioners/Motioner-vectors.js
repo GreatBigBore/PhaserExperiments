@@ -44,6 +44,7 @@ Rob.Motioner.prototype.ensoul = function() {
   this.senseRange = Rob.Range(1, 1 / Math.pow(this.sensor.width, 2));
   this.hungerRange = Rob.Range(0, this.dna.embryoThreshold);
   this.speedRange = Rob.Range(-Rob.globals.maxSpeed, Rob.globals.maxSpeed);
+  this.centeredZeroToOneRange = Rob.Range(-0.5, 0.5);
 };
 
 Rob.Motioner.prototype.eat = function() {
@@ -53,22 +54,20 @@ Rob.Motioner.prototype.eat = function() {
 Rob.Motioner.prototype.getTempVector = function() {
   var testPoints = [];
 
-  var addCandidate = function(_this, where, accept) {
-    if(where.y < _this.sensor.width && !accept) {
-      return;
+  var addCandidate = function(_this, where) {
+    if(where.y > 0 && where.y < game.height && where.x > 0 && where.x < game.width) {
+      var p = where;
+      var t = theSpreader.getTemperature(where);
+      var d = t - _this.dna.optimalTemp;
+      var a = Math.abs(d);
+
+      testPoints.push({ p: p, t: t, d: d, a: a});
     }
-
-    var p = where;
-    var t = theSpreader.getTemperature(where);
-    var d = t - _this.dna.optimalTemp;
-    var a = Math.abs(d);
-
-    testPoints.push({ p: p, t: t, d: d, a: a});
   };
 
-  addCandidate(this, Rob.XY(this.sprite), true);
-  addCandidate(this, Rob.XY(this.sprite.x, this.sprite.y - this.sensor.width / 2), false);
-  addCandidate(this, Rob.XY(this.sprite.x, this.sprite.y + this.sensor.width / 2), false);
+  addCandidate(this, Rob.XY(this.sprite.x, this.sprite.y - this.sensor.width / 2));
+  addCandidate(this, Rob.XY(this.sprite));
+  addCandidate(this, Rob.XY(this.sprite.x, this.sprite.y + this.sensor.width / 2));
 
   var bestDelta = testPoints[0].a;
   var bestIndex = 0;
@@ -80,13 +79,16 @@ Rob.Motioner.prototype.getTempVector = function() {
   }
 
   var bestD = testPoints[bestIndex].d;
-  var myPointOnTheNormalScale = this.zeroToOneRange.convertPoint(
+
+  var myPointOnTheNormalScale = this.centeredZeroToOneRange.convertPoint(
     bestD, Rob.globals.standardArchonTolerableTempRange
   );
 
   this.vectors.temp.set(0, myPointOnTheNormalScale);
 
-  this.debugText += "temp : " + testPoints[bestIndex].t + ", " + theSun.darkness.alpha + ")\n";
+  Rob.debugText += "temp : " + testPoints[bestIndex].t + ", opt: " + this.dna.optimalTemp + "\n";
+  Rob.debugText += "d : " + testPoints[bestIndex].d + ", a: " + testPoints[bestIndex].a + "\n";
+  Rob.debugText += "p : " + myPointOnTheNormalScale + "\n";
 };
 
 Rob.Motioner.prototype.getSenseVector = function(sense) {
@@ -188,7 +190,7 @@ Rob.Motioner.prototype.update = function() {
   if(this.senseCounts.taste !== 0) {
     this.vectors.smell.set(0, 0);
   }
-
+  
   //this.debugText += "? " + sm.toFixed(4) + ", " + tm.toFixed(4) + "\n";
 
   this.dna.tempFactor = 1;
@@ -197,23 +199,20 @@ Rob.Motioner.prototype.update = function() {
   this.dna.velocityFactor = 1;
   this.dna.avoidanceFactor = -15;
   if(this.saveDebugText === undefined) {
-    this.saveDebugText = this.debugText;
+    this.saveDebugText = Rob.debugText;
   }
 
   if(this.frameCount % 10 === 0) {
     this.vectors.motion.reset();
-    roblog('temp yank', 'temp', this.vectors.temp.x, this.vectors.temp.y);
     this.vectors.temp.scalarMultiply(this.dna.tempFactor);
     this.vectors.motion.add(this.vectors.temp);
+
     roblog('temp yank', 'taste', this.vectors.taste.x, this.vectors.taste.y);
     //this.vectors.taste.scalarMultiply(this.dna.tasteFactor);
     //this.vectors.motion.add(this.vectors.taste);
     roblog('temp yank', 'smell', this.vectors.smell.x, this.vectors.smell.y);
     //this.vectors.smell.scalarMultiply(this.dna.smellFactor);
     //this.vectors.motion.add(this.vectors.smell);
-    roblog('temp yank', 'avoidance', this.vectors.avoidance.x, this.vectors.avoidance.y);
-    //this.vectors.avoidance.scalarMultiply(this.dna.avoidanceFactor);
-    //this.vectors.motion.add(this.vectors.avoidance);
 
     /*var v = Rob.XY(this.body.velocity);
     var m = v.getMagnitude();
@@ -231,12 +230,20 @@ Rob.Motioner.prototype.update = function() {
 
     this.vectors.motion.scalarMultiply(s / m);
 */
-    this.vectors.motion.normalize();
-    this.vectors.motion.scalarMultiply(Rob.globals.maxSpeed);
+    //this.vectors.motion.normalize();
+    var m = this.vectors.motion.getMagnitude();
+    var n = this.speedRange.convertPoint(m, this.centeredZeroToOneRange);
+    this.vectors.motion.scalarMultiply(n);
+    Rob.debugText += "m: (" + m + ", n: " + n + ")";
+    Rob.debugText += "v: (" + this.vectors.motion.x + ", " + this.vectors.motion.y + ")";
 
-    this.body.velocity.setTo(this.vectors.motion.x, this.vectors.motion.y);
+    if(this.archon.stopped) {
+      this.body.velocity.setTo(0, 0);
+    } else {
+      this.body.velocity.setTo(this.vectors.motion.x, this.vectors.motion.y);
+    }
 
-    this.debugText += "Final: (" + this.vectors.motion.X(4) + ", " + this.vectors.motion.Y(4) + ")";
+    //this.debugText += "Final: (" + this.vectors.motion.X(4) + ", " + this.vectors.motion.Y(4) + ")";
 
     Rob.db.draw(
       this.sprite,
@@ -249,11 +256,11 @@ Rob.Motioner.prototype.update = function() {
     Rob.db.text(0, 0, this.saveDebugText);
 
     if(this.frameCount % 30 === 0) {
-      this.saveDebugText = this.debugText;
+      this.saveDebugText = Rob.debugText;
     }
   }
 
-  this.debugText = "";
+  Rob.debugText = "";
 
   this.sensor.x = this.sprite.x; this.sensor.y = this.sprite.y;
 
