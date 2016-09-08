@@ -7,8 +7,6 @@
 
 Rob.Sun = function() {
   theSun = this;  // jshint ignore: line
-  this.darknessAlphaHi = 0.3;
-  this.darknessAlphaLo = 0.0;
 
   this.sunChariotAlphaHi = 1.0;
   this.sunChariotAlphaLo = 0.0;
@@ -21,16 +19,14 @@ Rob.Sun = function() {
   this.letThereBeFoo();
 };
 
-Rob.Sun.prototype.getBrightnessRange = function() {
-  // Remember, sun is backward because it is colder when the
-  // alpha of the darkness is high
-  return Rob.Range(this.darknessAlphaHi, this.darknessAlphaLo);
-};
-
-// As a percentage -- 100% = full, broad daylight
 Rob.Sun.prototype.getStrength = function() {
-  return (this.darknessAlphaHi - this.darkness.alpha) /
-    (this.darknessAlphaHi - this.darknessAlphaLo);
+  // We have to clamp it because the actual sprite alpha can go slightly
+  // negative when it's supposed to stop at zero.
+  return Rob.clamp(
+    Rob.globals.zeroToOneRange.convertPoint(
+      this.darkness.alpha, Rob.globals.darknessRange
+    ), 0, 1
+  );
 };
 
 Rob.Sun.prototype.letThereBeDark = function() {
@@ -42,11 +38,11 @@ Rob.Sun.prototype.letThereBeDark = function() {
 
   this.darkness.anchor.setTo(0.5, 0.5);
   this.darkness.scale.setTo(10, 10);  // Any size is fine, as long as it covers the world
-  this.darkness.alpha = this.darknessAlphaHi;       // Note: black sprite, so high alpha means dark world
+  this.darkness.alpha = Rob.globals.darknessAlphaHi;       // Note: black sprite, so high alpha means dark world
   this.darkness.tint = 0x9900;
 
   game.add.tween(this.darkness).to(
-    {alpha: this.darknessAlphaLo}, this.dayLength, this.easingFunction, true, 0, -1, true
+    {alpha: Rob.globals.darknessAlphaLo}, this.dayLength, this.easingFunction, true, 0, -1, true
   );
 
   //this.darkness.visible = false;  // So I can see the debug lines while debugging

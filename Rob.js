@@ -14,13 +14,18 @@ var theSun = null;
 var theMannaGenerator = null;
 var theMannaGarden = null;
 
-window.onload = function() { Rob.go(runWhichState); };
+try {
+  window.onload = function() { Rob.go(runWhichState); };
+} catch (e) {};
 
 var Rob = {
   globals: {
     adultFatCalorieDensity: 500,    // Calories per gram of mass
+    archonCount: 1,
     babyFatCalorieDensity: 2000,    // Calories per gram of mass
     caloriesPerMannaMorsel: 50,
+    darknessAlphaHi: 0.3,
+    darknessAlphaLo: 0.0,
     embryoCalorieDensity: 10000,    // Very high density fat stored for making babies
     maxSpeed: 30,                   // pix/sec
     standardBabyMass: 0.5,          // Grams
@@ -34,8 +39,12 @@ var Rob = {
     // At this point, I don't expect them ever to weigh more than 10g.
     // For now I'll have them die when their mass gets down to 0.1g;
     // by default, until mutations set in, the birth mass is 0.5g
-    Rob.globals.archonMassRange = new Rob.Range(0.25, 10);
-    Rob.globals.archonSizeRange = new Rob.Range(0.07, 0.30);
+    Rob.globals.archonMassRange = Rob.Range(0.25, 10);
+    Rob.globals.archonSizeRange = Rob.Range(0.07, 0.30);
+    Rob.globals.standardArchonTolerableTempRange = Rob.Range(-200, 200);
+    Rob.globals.archonColorRange = Rob.Range(1, 255);
+    Rob.globals.darknessRange = Rob.Range(Rob.globals.darknessAlphaHi, Rob.globals.darknessAlphaLo);
+    Rob.globals.zeroToOneRange = Rob.Range(0, 1);
   },
 
   go: function(runWhichState) {

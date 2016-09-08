@@ -49,12 +49,17 @@ Rob.MannaGarden = function(mannaCount, smellPerMorsel, db) {
 Rob.MannaGarden.prototype.render = function() {
   var showDebugOutlines = false;
 
-  this.smellGroup.forEachAlive(function(s) {
-    if(showDebugOutlines) {
+  if(showDebugOutlines) {
+    this.smellGroup.forEachAlive(function(s) {
       game.debug.body(s, 'yellow', false);
       game.debug.spriteBounds(s, 'black', false);
-    }
-  });
+    });
+
+    this.foodGroup.forEachAlive(function(s) {
+      game.debug.body(s, 'yellow', false);
+      game.debug.spriteBounds(s, 'black', false);
+    });
+  }
 };
 
 Rob.MannaGarden.prototype.setEfficiency = function(efficiency) {
@@ -104,6 +109,7 @@ Rob.MannaGarden.prototype.setupMannaGenerator = function(mannaConfig) {
     m.birthday = 0;
     m.anchor.setTo(0.5, 0.5);
     m.scale.setTo(0.1, 0.1);
+    m.body.setSize(m.width, m.height);
     m.body.bounce.setTo(0, 0);
     m.body.collideWorldBounds = true;
 
@@ -127,6 +133,7 @@ Rob.MannaGarden.prototype.setupSmellGenerator = function(smellConfig) {
     s.birthday = 0;
     s.anchor.setTo(0.5, 0.5);
     s.scale.setTo(0.3, 0.3);
+    s.body.setSize(s.width, s.height);
     s.body.bounce.setTo(1, 1);
     game.physics.enable(s, Phaser.Physics.ARCADE);
   }, this);

@@ -125,10 +125,10 @@ Rob.Archons.prototype.render = function() {
 	if(showDebugOutlines) {
 		this.archonPool.forEachAlive(function(a) {
 	  	game.debug.body(a, 'yellow', false);
-			game.debug.body(a.archon.sensor, 'blue', false);
+		//	game.debug.body(a.archon.sensor, 'blue', false);
 
 			game.debug.spriteBounds(a, 'blue', false);
-	    game.debug.spriteBounds(a.archon.sensor, 'magenta', false);
+	  //  game.debug.spriteBounds(a.archon.sensor, 'magenta', false);
 		}, this);
 	}
 };
@@ -137,9 +137,9 @@ Rob.Archons.prototype.setSize = function(sprite, mass) {
 	var p = Rob.globals.archonSizeRange.convertPoint(mass, Rob.globals.archonMassRange);
 	sprite.scale.setTo(p, p);
 
-	var r = sprite.width / 2;	// Have to tell the body to keep up with the sprite
-	sprite.body.setSize(r, r);
-	sprite.body.setCircle(r);
+	var w = sprite.width;	// Have to tell the body to keep up with the sprite
+	sprite.body.setSize(w, w);
+	sprite.body.setCircle(w / 2);
 };
 
 Rob.Archons.prototype.setupSpritePools = function() {

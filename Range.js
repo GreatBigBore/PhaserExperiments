@@ -13,19 +13,33 @@ Rob.Range = function(lo, hi) {
     // in my range to a point in a different range
     convertPoint: function(thePointOnHisMap, hisRange) {
 
-      var hisCenter = hisRange.getCenter();
+      if(thePointOnHisMap === 0) {
+        return hisRange.hi;
+      } else {
+        //console.log('his point: ', thePointOnHisMap);
+        //console.log('his lo/hi/size: ', hisRange.lo, hisRange.hi, hisRange.getSize());
+        //console.log('my lo/hi/size: ', self.lo, self.hi, self.getSize());
 
-      var thePointOnMyMap = (
-        (thePointOnHisMap - hisCenter) * (self.getSize() / hisRange.getSize()) +
-        self.getCenter()
-      );
+        var asAPercentage = (hisRange.lo - thePointOnHisMap) / hisRange.getSize();
+        var relativeToMyScale = self.getSize() * asAPercentage;
+        var signAdjust = self.getSign() * hisRange.getSign();
+        var absoluteOnMyScale = self.lo - relativeToMyScale * signAdjust;
 
-      return thePointOnMyMap;
+        //console.log('%: ', asAPercentage);
+        //console.log('scaled to me: ', relativeToMyScale);
+        //console.log('my point:', absoluteOnMyScale);
+
+        return absoluteOnMyScale;
+      }
     },
 
     getCenter: function() {
       var base = (self.lo < self.hi) ? self.lo : self.hi;
       return base + self.getSize() / 2;
+    },
+
+    getSign: function() {
+      return Math.sign(self.hi - self.lo) || 1;
     },
 
     getSize: function() {

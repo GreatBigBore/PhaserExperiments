@@ -10,12 +10,17 @@ Rob.Spreader = function() {
   this.temperatureLo = -1000;
   this.temperatureHi = 1000;
   this.temperatureRange = Rob.Range(this.temperatureLo, this.temperatureHi);
-  this.yAxisRange = Rob.Range(0, game.height);
+  this.yAxisRange = Rob.Range(game.height, 0);
+  this.darknessRange = Rob.globals.darknessRange;
   this.stopped = false;
 
   // Phaser gives us mouseUp constantly. I want to ignore all
   // of these unless we've actually registered a mouseDown
   this.mouseUp = true;
+};
+
+Rob.Spreader.prototype.avoid = function(me, him) {
+  me.archon.mover.avoid(him);
 };
 
 Rob.Spreader.prototype.getWorldColorRange = function() {
@@ -30,7 +35,7 @@ Rob.Spreader.prototype.getWorldColorRange = function() {
   var lumaBR = rgb.l;
 
   // Bottom right is the cold end, top left is the hot
-  return Rob.Range(lumaTL, lumaBR);
+  return Rob.Range(lumaBR, lumaTL);
 };
 
 Rob.Spreader.prototype.create = function() {
@@ -39,15 +44,13 @@ Rob.Spreader.prototype.create = function() {
   Rob.setupBitmaps();
 
   this.archons = new Rob.Archons();
-  for(var i = 0; i < 2; i++) {
+  for(var i = 0; i < Rob.globals.archonCount; i++) {
     this.archons.breed();
   }
 
   this.motionVector = Rob.XY();
 
   this.sun = new Rob.Sun();
-
-  this.brightnessRange = theSun.getBrightnessRange();
 
   this.mannaGarden = new Rob.MannaGarden(300, 3, this.db);
 
@@ -80,15 +83,15 @@ Rob.Spreader.prototype.getTemperature = function(x, y) {
   Rob.bg.bm.getPixelRGB(x, y, rgb, true);
 
   var lumaComponent = this.temperatureRange.convertPoint(rgb.l, this.worldColorRange);
-  var yAxisComponent = this.temperatureRange.convertPoint(game.height - y, this.yAxisRange);
 
-  var sunStrength = theSun.getStrength() * this.brightnessRange.getSize();
-  var sunComponent =
-    this.temperatureRange.convertPoint(sunStrength, this.brightnessRange);
+  var darkness = theSun.darkness.alpha;
+  var darknessComponent = this.temperatureRange.convertPoint(darkness, this.darknessRange);
+
+  var yAxisComponent = this.temperatureRange.convertPoint(y, this.yAxisRange);
 
   // Give luma and sun most of the weight. The y-axis thing is there
   // just to help them not get stuck in the luma dead zone(s)
-  var final = (yAxisComponent + 10 * (lumaComponent + sunComponent)) / 21;
+  var final = (yAxisComponent + 10 * (lumaComponent + darknessComponent)) / 21;
 
   /*this.debugText(
     "Luma:  " + lumaComponent.toFixed(4) + ", " + rgb.l.toFixed(4) + "\n" +
@@ -184,6 +187,7 @@ Rob.Spreader.prototype.update = function() {
   game.physics.arcade.overlap(this.archons.sensorPool, this.mannaGarden.smellGroup, this.smell, null, this);
   game.physics.arcade.overlap(this.archons.sensorPool, this.mannaGarden.foodGroup, this.taste, null, this);
   game.physics.arcade.overlap(this.archons.archonPool, this.mannaGarden.foodGroup, this.eat, null, this);
+  game.physics.arcade.overlap(this.archons.sensorPool, this.archons.archonPool, this.avoid, null, this);
 
   /*Rob.db.draw(
     this.sensor,

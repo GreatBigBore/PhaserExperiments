@@ -28,11 +28,7 @@ Rob.aboriginalDNA = {
   tempRange: Rob.dnaConstants.archonStandardTempRange,
   velocityFactor: 1,
 
-  color: {
-    r: Rob.integerInRange(128, 255),
-    g: Rob.integerInRange(128, 255),
-    b: Rob.integerInRange(128, 255)
-  }
+  color: { r: 0x88, g: 0x88, b: 0x88 }
 };
 
 Rob.DNA = function() {
@@ -196,9 +192,9 @@ Rob.DNA.prototype.getRandomTint = function() {
 Rob.DNA.prototype.getTempFromColor = function(color) {
 	var temp = (2 * color.r + color.g + 3 * color.b) / 6;
 
-	temp *= (temp < 128) ? -1 : 1;
-
-	return temp;
+  return Rob.globals.standardArchonTolerableTempRange.convertPoint(
+    temp, Rob.globals.archonColorRange
+  );
 };
 
 Rob.DNA.prototype.setColor = function() {

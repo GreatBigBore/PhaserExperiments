@@ -17,6 +17,10 @@ Rob.Mover.prototype.init = function(archon) {
   this.motioner = archon.motioner;
 };
 
+Rob.Mover.prototype.avoid = function(him) {
+  this.motioner.avoid(him);
+};
+
 Rob.Mover.prototype.ensoul = function() {
   this.dna = this.archon.dna;
   this.frameCount = 0;
