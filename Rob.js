@@ -12,9 +12,7 @@ var theSpreader = null;
 var theAngles = null;
 var theSun = null;
 
-try {
-  window.onload = function() { Rob.go(runWhichState); };
-} catch (e) {};
+window.onload = function() { Rob.go(runWhichState); };
 
 var Rob = {
   debugText: "",
@@ -29,23 +27,13 @@ var Rob = {
     embryoCalorieDensity: 10000,    // Very high density fat stored for making babies
     maxSpeed: 100,                   // pix/sec
     standardBabyMass: 0.5,          // Grams
+    temperatureLo: -1000,
+    temperatureHi: 1000,
     worldBorder: 2                // Make room for our wall sprites
   },
 
   clamp: function(value, lo, hi) {
     var c = Math.max(value, lo); c = Math.min(value, hi); return c;
-  },
-
-  preGameInit: function() {
-    // At this point, I don't expect them ever to weigh more than 10g.
-    // For now I'll have them die when their mass gets down to 0.1g;
-    // by default, until mutations set in, the birth mass is 0.5g
-    Rob.globals.archonMassRange = Rob.Range(0.25, 10);
-    Rob.globals.archonSizeRange = Rob.Range(0.07, 0.30);
-    Rob.globals.standardArchonTolerableTempRange = Rob.Range(-200, 200);
-    Rob.globals.archonColorRange = Rob.Range(1, 255);
-    Rob.globals.darknessRange = Rob.Range(Rob.globals.darknessAlphaHi, Rob.globals.darknessAlphaLo);
-    Rob.globals.zeroToOneRange = Rob.Range(0, 1);
   },
 
   go: function(runWhichState) {
@@ -73,6 +61,19 @@ var Rob = {
     owner.alien.anchor.set(0.5, 0.5);
     owner.alien.inputEnabled = true;
     owner.alien.input.enableDrag();
+  },
+
+  preGameInit: function() {
+    // At this point, I don't expect them ever to weigh more than 10g.
+    // For now I'll have them die when their mass gets down to 0.1g;
+    // by default, until mutations set in, the birth mass is 0.5g
+    Rob.globals.archonMassRange = Rob.Range(0.25, 10);
+    Rob.globals.archonSizeRange = Rob.Range(0.07, 0.30);
+    Rob.globals.standardArchonTolerableTempRange = Rob.Range(-200, 200);
+    Rob.globals.archonColorRange = Rob.Range(1, 255);
+    Rob.globals.darknessRange = Rob.Range(Rob.globals.darknessAlphaHi, Rob.globals.darknessAlphaLo);
+    Rob.globals.zeroToOneRange = Rob.Range(0, 1);
+    Rob.globals.temperatureRange = Rob.Range(Rob.globals.temperatureLo, Rob.globals.temperatureHi);
   },
 
   realInRange: function(lo, hi) {

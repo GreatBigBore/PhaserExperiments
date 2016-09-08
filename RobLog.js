@@ -71,7 +71,7 @@ RobLog.prototype.log = function(/* arbitrary parameters */) {
     if(typeof v === "number") {
       if(!isNaN(v)) {
         if(isFinite(v)) {
-          //v = parseFloat(v).toFixed(2);
+          v = parseFloat(v).toFixed(2);
         } else {
           v = '<infinity>';
         }

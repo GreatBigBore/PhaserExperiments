@@ -7,9 +7,6 @@
 
 Rob.Spreader = function() {
   theSpreader = this; // jshint ignore: line
-  this.temperatureLo = -1000;
-  this.temperatureHi = 1000;
-  this.temperatureRange = Rob.Range(this.temperatureLo, this.temperatureHi);
   this.yAxisRange = Rob.Range(game.height, 0);
   this.darknessRange = Rob.globals.darknessRange;
   this.stopped = false;
@@ -17,6 +14,9 @@ Rob.Spreader = function() {
   // Phaser gives us mouseUp constantly. I want to ignore all
   // of these unless we've actually registered a mouseDown
   this.mouseUp = true;
+
+  var _this = this;
+  Rob.getTemperature = function(x, y) { return _this.getTemperature.call(_this, x, y); };
 };
 
 Rob.Spreader.prototype.avoid = function(me, him) {
@@ -84,25 +84,16 @@ Rob.Spreader.prototype.getTemperature = function(x, y) {
   var rgb = {};
   Rob.bg.bm.getPixelRGB(x, y, rgb, true);
 
-  var lumaComponent = this.temperatureRange.convertPoint(rgb.l, this.worldColorRange);
-  Rob.debugText += "Luma: " + lumaComponent + "(" + x + ", " + y + ")\n";
+  var lumaComponent = Rob.globals.temperatureRange.convertPoint(rgb.l, this.worldColorRange);
 
   var darkness = theSun.darkness.alpha;
-  var darknessComponent = this.temperatureRange.convertPoint(darkness, this.darknessRange);
+  var darknessComponent = Rob.globals.temperatureRange.convertPoint(darkness, this.darknessRange);
 
-  var yAxisComponent = this.temperatureRange.convertPoint(y, this.yAxisRange);
+  var yAxisComponent = Rob.globals.temperatureRange.convertPoint(y, this.yAxisRange);
 
   // Give luma and sun most of the weight. The y-axis thing is there
   // just to help them not get stuck in the luma dead zone(s)
   var final = (yAxisComponent + 10 * (lumaComponent + darknessComponent)) / 21;
-  //var final = lumaComponent;
-
-  /*this.debugText(
-    "Luma:  " + lumaComponent.toFixed(4) + ", " + rgb.l.toFixed(4) + "\n" +
-    "Sun:   " + sunComponent.toFixed(4) + "\n" +
-    "Y      " + yAxisComponent.toFixed(4) + "\n" +
-    "Final: " + final.toFixed(2)
-  );*/
 
   return final;
 };

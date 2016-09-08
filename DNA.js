@@ -5,8 +5,6 @@
 
 "use strict";
 
-var Rob = Rob || {};
-
 Rob.dnaConstants = {
   archonHeroSize: 100,
   archonMortalSizeScale: 0.0005,
