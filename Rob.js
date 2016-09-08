@@ -53,7 +53,7 @@ var Rob = {
   },
 
   integerInRange: function(lo, hi) {
-    return Math.floor(Rob.realInRange(lo, hi));
+    return game.rnd.integerInRange(lo, hi);
   },
 
   makeAlien: function(owner, x, y) {
@@ -77,10 +77,7 @@ var Rob = {
   },
 
   realInRange: function(lo, hi) {
-    var array = new Uint32Array(1);
-    window.crypto.getRandomValues(array);
-
-    return array[0] / Math.pow(2, 32) * (hi - lo) + lo;
+    return game.rnd.realInRange(lo, hi);
   },
 
   setupBitmaps: function() {

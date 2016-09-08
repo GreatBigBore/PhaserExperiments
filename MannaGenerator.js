@@ -6,6 +6,7 @@
 "use strict";
 
 Rob.MannaGenerator = function(config, db) {
+  this.uniqueID = 0;
   this.db = db;
   this.config = Object.assign({}, config);
   this.originalConfig = Object.assign({}, config);
@@ -35,6 +36,10 @@ Rob.MannaGenerator.prototype.emit_ = function(parentParticle) {
     var position = Rob.XY();
 
     if(parentParticle === undefined) {
+      if(thisParticle.uniqueID === undefined) {
+        thisParticle.uniqueID = this.uniqueID++;
+      }
+
       position.set(
         Rob.integerInRange(
           this.config.position.x - this.config.size.x / 2,
@@ -46,10 +51,19 @@ Rob.MannaGenerator.prototype.emit_ = function(parentParticle) {
           this.config.position.y + this.config.size.y / 2
         )
       );
+
+      // When to emit our first bubble
+      this.setNextEmit(thisParticle);
+
     } else {
-      position.set(parentParticle); // Children start life where their parent is
-      parentParticle.previousEmit = this.frameCount;  // Parent particle remember when you most recently stank
+      this.setNextEmit(parentParticle); // When to emit our next bubble
+      position.set(parentParticle);     // Children start life where their parent is
     }
+
+    // Somewhat random expiration, hopefully will make it
+    // look more natural, or at least less mechanical
+    thisParticle.expirationDate = this.frameCount +
+      Rob.integerInRange(this.config.lifetime / 2, this.config.lifetime);
 
     thisParticle.x = position.x; thisParticle.y = position.y;
 
@@ -64,44 +78,48 @@ Rob.MannaGenerator.prototype.emit_ = function(parentParticle) {
     thisParticle.revive();
     thisParticle.alpha = this.config.visible ? 1 : 0.1;
 
-    thisParticle.birthStamp = this.frameCount;      // Sprite remember when you were born
     this.previousEmit = this.frameCount;            // Generator remember the most recent birth
   }
 };
 
 Rob.MannaGenerator.prototype.emit = function() {
   if(this.config.parent === null) {
-    this.emit_();
-  } else {
-    for(var i = 0; i < 2; i++) {
-      // This is to make sure each food particle gets to emit one smell
-      // particle before anyone else gets to emit another one
-      var theLuckyNewParent = -1;
-      var lastBirthByLuckyParent = this.frameCount + 1;
-
-      this.config.parentGroup.forEachAlive(function(parentParticle) {
-        if(parentParticle.previousEmit < lastBirthByLuckyParent) {
-          theLuckyNewParent = this.config.parentGroup.getIndex(parentParticle);
-          lastBirthByLuckyParent = parentParticle.previousEmit;
-        }
-      }, this);
-
-      if(theLuckyNewParent !== -1) {
-        this.emit_(this.config.parentGroup.getChildAt(theLuckyNewParent));
-      }
+    // Manna emission can only be emitted at the intervals
+    if(this.frameCount >= this.previousEmit + this.config.interval) {
+      this.emit_();
     }
+  } else {
+    // Bubbles can come out of living manna at any time
+    this.config.parentGroup.forEachAlive(function(parentParticle) {
+      if(parentParticle.nextEmit > 0 && this.frameCount >= parentParticle.nextEmit) {
+        this.emit_(parentParticle);
+      }
+    }, this);
   }
+};
+
+Rob.MannaGenerator.prototype.setNextEmit = function(mannaParticle) {
+  var r = Rob.integerInRange(30, 60);
+  mannaParticle.nextEmit = this.frameCount + r;
 };
 
 Rob.MannaGenerator.prototype.start = function() {
   this.on = true;
 };
 
+Rob.MannaGenerator.prototype.kill = function(particle) {
+  particle.kill();
+
+  if(particle.nextEmit !== undefined) {
+    particle.nextEmit = -1;
+  }
+};
+
 Rob.MannaGenerator.prototype.stop = function() {
   this.on = false;
 
   this.config.particleSource.forEachAlive(function(p) {
-    p.kill();
+    this.kill(p);
   }, this);
 };
 
@@ -109,13 +127,11 @@ Rob.MannaGenerator.prototype.update = function() {
   this.frameCount++;
 
   if(this.on) {
-    if(this.frameCount >= this.previousEmit + this.config.interval) {
-      this.emit();
-    }
+    this.emit();  // Not necessarily an emit; each particle has its own timers
 
     this.config.particleSource.forEachAlive(function(p) {
-      if(this.frameCount >= p.birthStamp + this.config.lifetime) {
-        p.kill();
+      if(this.frameCount >= p.expirationDate) {
+        this.kill(p);
       }
     }, this);
   }

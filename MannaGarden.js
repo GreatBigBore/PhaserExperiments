@@ -65,7 +65,7 @@ Rob.MannaGarden.prototype.setEfficiency = function(efficiency) {
   // Easier than using some arbitrary and complex math; just set
   // specific emission intervals for each step of efficiency. For
   // each increment of 10%, change the interval to a particular value
-  efficiency = Math.ceil(efficiency * 10);
+  efficiency = Math.floor(efficiency * 10);
 
   var mannaEmitter = this.emitters[0];
   var smellEmitter = this.emitters[1];
