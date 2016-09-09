@@ -201,16 +201,19 @@ Rob.Motioner.prototype.sense = function(sense, sensee) {
     this.senseCounts[sense]++;
   }
 
-  /*var color = null;
-  switch(sense) {
-    case 'smell': color = 'yellow'; break;
-    case 'taste': color = 'cyan'; break;
-    default: throw "Bad sense '" + sense + "'";
-  }
+  var drawDebugLines = false;
+  if(drawDebugLines) {
+    var color = null;
+    switch(sense) {
+      case 'smell': color = 'yellow'; break;
+      case 'taste': color = 'cyan'; break;
+      default: throw "Bad sense '" + sense + "'";
+    }
 
-  if(sense !== 'smell') {
-    Rob.db.draw(this.sprite, sensee, color);
-  }*/
+    if(sense !== 'smell') {
+      Rob.db.draw(this.sprite, sensee, color);
+    }
+  }
 };
 
 Rob.Motioner.prototype.shootFoodTargets = function() {
@@ -236,7 +239,10 @@ Rob.Motioner.prototype.senseCompetitor = function(sensee) {
     this.senseCounts.avoidance++;
   }
 
-  Rob.db.draw(this.sprite, sensee, 'blue');
+  var drawDebugLines = false;
+  if(drawDebugLines) {
+    Rob.db.draw(this.sprite, sensee, 'blue');
+  }
 };
 
 Rob.Motioner.prototype.smell = function(smellyParticle) {
