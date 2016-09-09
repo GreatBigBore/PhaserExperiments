@@ -19,7 +19,7 @@ var Rob = {
 
   globals: {
     adultFatCalorieDensity: 500,    // Calories per gram of mass
-    archonCount: 1,
+    archonCount: 5,
     babyFatCalorieDensity: 2000,    // Calories per gram of mass
     caloriesPerMannaMorsel: 50,
     darknessAlphaHi: 0.3,

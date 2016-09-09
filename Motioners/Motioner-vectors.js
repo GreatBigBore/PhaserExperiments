@@ -281,7 +281,7 @@ Rob.Motioner.prototype.update = function() {
     this.dna.smellFactor = 100;
     this.dna.tasteFactor = 100;
     this.dna.velocityFactor = 1;
-    this.dna.avoidanceFactor = -15;
+    this.dna.avoidanceFactor = -1;
 
     if(this.frameCount % 10 === 0) {
       this.vectors.motion.reset();
@@ -320,9 +320,21 @@ Rob.Motioner.prototype.update = function() {
         this.vectors.taste.scalarMultiply(this.dna.tasteFactor);
       }
 
+      m = this.vectors.avoidance.getMagnitude();
+      if(m > 0) {
+        speed = Rob.globals.maxSpeed;
+
+        this.vectors.avoidance.normalize();
+        this.vectors.avoidance.scalarMultiply(this.sensor.width / 2);
+
+        a++;
+        this.vectors.avoidance.scalarMultiply(this.dna.avoidanceFactor);
+      }
+
       this.vectors.motion.add(this.vectors.temp).dividedByScalar(a);
       this.vectors.motion.add(this.vectors.smell).dividedByScalar(a);
       this.vectors.motion.add(this.vectors.taste).dividedByScalar(a);
+      this.vectors.motion.add(this.vectors.avoidance).dividedByScalar(a);
 
       if(this.archon.stopped) {
         this.body.velocity.setTo(0, 0);
@@ -331,7 +343,6 @@ Rob.Motioner.prototype.update = function() {
         scratch.x = Rob.clamp(scratch.x, 0, game.width);
         scratch.y = Rob.clamp(scratch.y, 0, game.height);
         this.accel.setTarget(scratch.x, scratch.y, speed, speed / 4);
-        //this.body.velocity.setTo(this.vectors.motion.x, this.vectors.motion.y);
       }
 
       this.motionIndicator.set(this.vectors.motion);
