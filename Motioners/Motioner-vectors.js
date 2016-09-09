@@ -1,7 +1,7 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global game, Rob */
+/* global game, Phaser, Rob, roblog */
 
 "use strict";
 
@@ -286,7 +286,7 @@ Rob.Motioner.prototype.update = function() {
     if(this.frameCount % 10 === 0) {
       this.vectors.motion.reset();
 
-      var m = null; var n = null; var a = 0;
+      var m = null; var a = 0;
       var speed = Rob.globals.maxSpeed / 2; // Go slower if only for temp
 
       m = this.vectors.temp.getMagnitude();
@@ -336,7 +336,7 @@ Rob.Motioner.prototype.update = function() {
 
       this.motionIndicator.set(this.vectors.motion);
       this.motionIndicator.normalize();
-      this.motionIndicator.scalarMultiply(this.sensor.width / 2)
+      this.motionIndicator.scalarMultiply(this.sensor.width / 2);
       this.motionIndicator.add(this.sprite);
     }
   }
@@ -413,9 +413,6 @@ Rob.Accel.prototype.setNewVelocity = function() {
 
   var deltaD = Math.sqrt(Math.pow(vX + relX, 2) + Math.pow(vY + relY, 2));
   var thetaToTarget = Math.atan2(vY + relY, vX + relX);
-
-  var bestVx = Math.cos(thetaToTarget) * deltaD;
-  var bestVy = Math.sin(thetaToTarget) * deltaD;
 
   this.needUpdate = (deltaD > this.currentSpeed);
   deltaD = Math.min(deltaD, this.currentSpeed);
