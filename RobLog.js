@@ -21,7 +21,7 @@ function roblog(/* arbitrary parameters */) {
   }
 
   if(
-    arguments[0] === 'manna'
+    arguments[0] === 'senses'
   ) {
     theRobLogObject.log.apply(theRobLogObject, arguments);
   }

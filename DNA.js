@@ -201,9 +201,7 @@ Rob.DNA.prototype.setColor = function() {
 	this.color = this.getRandomTint();
 };
 
-console.log('barf');
 if(typeof window === "undefined") {
-  console.log('carf');
   exports.DNA = new Rob.DNA();
   //exports.DNA.mutateYN();
   //console.log(exports);

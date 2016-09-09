@@ -39,7 +39,10 @@ Rob.Motioner.prototype.init = function(archon) {
 
 Rob.Motioner.prototype.ensoul = function() {
   this.zeroToOneRange = Rob.globals.zeroToOneRange;
-  this.senseRange = Rob.Range(1, 1 / Math.pow(this.sensor.width, 2));
+
+  var radius = this.sensor.width / 2;
+
+  this.senseRange = Rob.Range(-radius, radius);
   this.hungerRange = Rob.Range(0, this.dna.embryoThreshold);
   this.speedRange = Rob.Range(-Rob.globals.maxSpeed, Rob.globals.maxSpeed);
   this.centeredZeroToOneRange = Rob.Range(-0.5, 0.5);
@@ -63,53 +66,93 @@ Rob.Motioner.prototype.getTempVector = function() {
     }
   };
 
-  addCandidate(this, Rob.XY(this.sprite.x, this.sprite.y - this.sensor.width / 2));
-  addCandidate(this, Rob.XY(this.sprite));
-  addCandidate(this, Rob.XY(this.sprite.x, this.sprite.y + this.sensor.width / 2));
+  addCandidate(this, Rob.XY(this.sensor.x, this.sensor.y - this.sensor.width / 2));
+  addCandidate(this, Rob.XY(this.sensor));
+  addCandidate(this, Rob.XY(this.sensor.x, this.sensor.y + this.sensor.width / 2));
 
-  var bestDelta = testPoints[0].a;
-  var bestIndex = 0;
-  for(var i = 0; i < testPoints.length; i++) {
-    if(testPoints[i].a < bestDelta) {
-      bestIndex = i;
-      bestDelta = testPoints[i].a;
+  if(testPoints.length === 0) {
+    console.log('wtf temp vector got no love');
+    this.vectors.temp.set(0, 0);
+  } else {
+    var bestDelta = testPoints[0].a;
+    var bestIndex = 0;
+    for(var i = 0; i < testPoints.length; i++) {
+      if(testPoints[i].a < bestDelta) {
+        bestIndex = i;
+        bestDelta = testPoints[i].a;
+      }
     }
+
+    var bestD = testPoints[bestIndex].d;
+
+    var myPointOnTheNormalScale = this.centeredZeroToOneRange.convertPoint(
+      bestD, Rob.globals.standardArchonTolerableTempRange
+    );
+
+    this.vectors.temp.set(0, myPointOnTheNormalScale);
   }
-
-  var bestD = testPoints[bestIndex].d;
-
-  var myPointOnTheNormalScale = this.centeredZeroToOneRange.convertPoint(
-    bestD, Rob.globals.standardArchonTolerableTempRange
-  );
-
-  this.vectors.temp.set(0, myPointOnTheNormalScale);
 };
 
 Rob.Motioner.prototype.getSenseVector = function(sense) {
-  // Get the average of all the smell points
   if(this.senseCounts[sense] !== 0) {
+    var debugText = "";
+
+    //Rob.debugText += "sv0 (" + this.vectors.smell.x + ", " + this.vectors.smell.y + ")\n"
+    debugText += (
+      'Summary ' + sense + ': ' +
+      ' count ' + this.senseCounts[sense] +
+      ' vector before (' + this.vectors[sense].X() + ', ' + this.vectors[sense].Y() + ')'
+    );
+
+    roblog('senses', debugText); debugText = "";
+
+    this.vectors[sense].scalarDivide(this.senseCounts[sense]);
+
+    //Rob.debugText += "sv1 (" + this.vectors.smell.x + ", " + this.vectors.smell.y + ")\n"
+
     var m = this.vectors[sense].getMagnitude();
-    var c = this.zeroToOneRange.convertPoint(m, this.senseRange);
+    var c = this.centeredZeroToOneRange.convertPoint(m, this.senseRange);
 
-    this.vectors[sense].scalarMultiply(c / m);
+    if(m < c) {
+      console.log('wtf m < c');
+      this.vectors[sense].set(0, 0);
+    } else {
+      this.vectors[sense].scalarMultiply(c / m);
+      //Rob.debugText += "sv2 (" + this.vectors.smell.x + ", " + this.vectors.smell.y + ")\n"
+    }
 
-    this.senseCounts[sense] = 0;
+    debugText += (
+      ' vector after (' + this.vectors[sense].X() + ', ' + this.vectors[sense].Y() + ')' +
+      ' m = ' + m + ', c = ' + c + ', new m = ' + (c / m).toFixed(4)
+    );
 
+    roblog('senses', debugText); debugText = "";
   }
 };
 
 Rob.Motioner.prototype.sense = function(sense, sensee) {
-  var relativePosition = Rob.XY(sensee).minus(this.sprite);
+  var debugText = "";
+
+  var radius = this.sensor.width / 2;
+  var relativePosition = Rob.XY(sensee).minus(this.sensor);
+
   var distance = relativePosition.getMagnitude();
+  distance = Rob.clamp(distance, 0, radius);
 
-  // Value falls off like gravity
-  var value = (distance === 0) ? 0 : (1 / distance);
-
-  //roblog('temp yank', sense, 'd', (distance * 10000).toFixed(4), 'v', (value * 10000).toFixed(4));
+  var value = radius - distance;
 
   relativePosition.scalarMultiply(value);
   this.vectors[sense].add(relativePosition);
   this.senseCounts[sense]++;
+
+  debugText += (
+    'sense ' + sense +
+    ' distance ' + distance +
+    ' value ' + value +
+    ' vector (' + relativePosition.X() + ', ' + relativePosition.Y() + ')'
+  );
+
+  roblog('senses', debugText);
 
   var color = null;
   switch(sense) {
@@ -123,7 +166,7 @@ Rob.Motioner.prototype.sense = function(sense, sensee) {
 
 Rob.Motioner.prototype.senseCompetitor = function(sensee) {
   if(this.archon.uniqueID !== sensee.archon.uniqueID) {
-    var relativePosition = Rob.XY(sensee).minus(this.sprite);
+    var relativePosition = Rob.XY(sensee).minus(this.sensor);
     var distance = relativePosition.getMagnitude();
 
     // Value falls off like gravity
@@ -165,9 +208,18 @@ Rob.Motioner.prototype.update = function() {
   this.getTasteVector();
   this.getAvoidanceVector();
 
-  // The more manna we can taste nearby, the less
-  // important smell from distant manna should become
-  if(this.senseCounts.taste !== 0) {
+  if(this.senseCounts.taste > 0) {
+    // If there's food in our sense range rather than
+    // just the smell of food, then let's add a lot
+    // more weight to the actual food. Heavily weight
+    // the food and add only a fraction of the smell.
+    // Note that the taste vector has all the info now,
+    // so we zero out the smell vector
+    var foodFactor = 5;
+
+    this.vectors.taste.scalarMultiply(foodFactor);
+    this.vectors.taste.add(this.vectors.smell);
+    this.vectors.taste.scalarDivide(foodFactor + 1);
     this.vectors.smell.set(0, 0);
   }
 
@@ -182,12 +234,24 @@ Rob.Motioner.prototype.update = function() {
 
   if(this.frameCount % 10 === 0) {
     this.vectors.motion.reset();
-    this.vectors.temp.scalarMultiply(this.dna.tempFactor);
+    /*this.vectors.temp.scalarMultiply(this.dna.tempFactor);
     this.vectors.motion.add(this.vectors.temp);
-
     var m = this.vectors.motion.getMagnitude();
     var n = this.speedRange.convertPoint(m, this.centeredZeroToOneRange);
+    this.vectors.motion.scalarMultiply(n);*/
+
+    //Rob.debugText += "Vector before (" + this.vectors.smell.x + ", " + this.vectors.smell.y + ")\n"
+
+    this.vectors.smell.scalarMultiply(this.dna.smellFactor);
+    this.vectors.motion.add(this.vectors.smell);
+    this.vectors.taste.scalarMultiply(this.dna.tasteFactor);
+    this.vectors.motion.add(this.vectors.taste);
+
+    var m = this.vectors.motion.getMagnitude() / 2; // div by 2 for the average
+    var n = this.speedRange.convertPoint(m, this.centeredZeroToOneRange);
     this.vectors.motion.scalarMultiply(n);
+
+    //Rob.debugText += "Vector after (" + this.vectors.motion.x + ", " + this.vectors.motion.y + ")\n"
 
     if(this.archon.stopped) {
       this.body.velocity.setTo(0, 0);
@@ -214,7 +278,8 @@ Rob.Motioner.prototype.update = function() {
 
   this.sensor.x = this.sprite.x; this.sensor.y = this.sprite.y;
 
-  for(var i in this.vectors) {
-    this.vectors[i].reset();
-  }
+  for(var i in this.vectors) { this.vectors[i].reset(); }
+  for(i in this.senseCounts) { this.senseCounts[i] = 0; }
+
+
 };

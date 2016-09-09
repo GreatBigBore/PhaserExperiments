@@ -90,7 +90,7 @@ Rob.Archons.prototype.initialize = function() {
 	this.setupSpritePools();
 	this.prepSpritesForLife();
 	this.enablePhysicsBodies();
-	this.setupWalls();
+	//this.setupWalls();
 };
 
 Rob.Archons.prototype.prepSpritesForLife = function() {
@@ -166,7 +166,6 @@ Rob.Archons.prototype.setupSpritePools = function() {
 
 Rob.Archons.prototype.setupWalls = function() {
 	this.cursors = game.input.keyboard.createCursorKeys();
-  game.world.setBounds(-100, -100, game.width + 200, game.height + 200);
 
 	this.wallsGroup = game.add.group();
 	this.wallsGroup.enableBody = true;
