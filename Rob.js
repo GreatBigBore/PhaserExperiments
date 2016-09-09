@@ -25,7 +25,7 @@ var Rob = {
     darknessAlphaHi: 0.3,
     darknessAlphaLo: 0.0,
     embryoCalorieDensity: 10000,    // Very high density fat stored for making babies
-    maxSpeed: 100,                   // pix/sec
+    maxSpeed: 50,                   // pix/sec
     standardBabyMass: 0.5,          // Grams
     temperatureLo: -1000,
     temperatureHi: 1000,

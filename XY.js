@@ -86,13 +86,6 @@ Rob.XY = function(sourceOrMaybeX, maybeY) {
       return scratch;
     },
 
-    normalizeWithSign: function() {
-      var sign = Math.sign(self.x) * Math.sign(self.y);
-      self.normalize();
-      self.scalarMultiply(sign);
-      return self;
-    },
-
     polar: function(r, theta) {
       self.x = Math.cos(theta) * r;
       self.y = Math.sin(theta) * r;

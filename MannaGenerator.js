@@ -76,7 +76,7 @@ Rob.MannaGenerator.prototype.emit_ = function(parentParticle) {
     );
 
     thisParticle.revive();
-    thisParticle.alpha = this.config.visible ? 1 : 0.1;
+    thisParticle.alpha = this.config.visible ? 1 : 0;
 
     this.previousEmit = this.frameCount;            // Generator remember the most recent birth
   }

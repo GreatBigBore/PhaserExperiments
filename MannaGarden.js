@@ -124,7 +124,7 @@ Rob.MannaGarden.prototype.setupMannaGenerator = function(mannaConfig) {
 Rob.MannaGarden.prototype.setupSmellGenerator = function(smellConfig) {
   this.smellGroup = game.add.group();
   this.smellGroup.enableBody = true;
-  this.smellGroup.createMultiple(this.mannaCount * this.smellPerManna, 'particles', 0, false);
+  this.smellGroup.createMultiple(this.mannaCount * this.smellPerManna / 4, 'particles', 0, false);
   game.physics.enable(this.smellGroup, Phaser.Physics.ARCADE);
 
   this.smellGroup.forEach(function(s) {

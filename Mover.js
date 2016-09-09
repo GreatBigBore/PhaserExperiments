@@ -31,9 +31,6 @@ Rob.Mover.prototype.ensoul = function() {
 };
 
 Rob.Mover.prototype.eat = function(foodParticle) {
-  this.motioner.eat();
-
-  foodParticle.kill();
 };
 
 Rob.Mover.prototype.smell = function(smellyParticle) {

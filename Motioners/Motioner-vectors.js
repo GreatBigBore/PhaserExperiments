@@ -35,8 +35,14 @@ Rob.Motioner.prototype.init = function(archon) {
   this.lizer = archon.lizer;
   this.sensor = archon.sensor;
   this.dna = archon.dna;
+  this.reach = this.sprite.width * 2;
+
+  this.currentFoodTargets = [];
+  this.zapThreshold = 20;
 
   this.accel = new Rob.Accel(this.sprite, Rob.globals.maxSpeed);
+
+  this.motionIndicator = Rob.XY();
 };
 
 Rob.Motioner.prototype.ensoul = function() {
@@ -50,8 +56,9 @@ Rob.Motioner.prototype.ensoul = function() {
   this.centeredZeroToOneRange = Rob.Range(-0.5, 0.5);
 };
 
-Rob.Motioner.prototype.eat = function() {
-
+Rob.Motioner.prototype.eat = function(foodParticle) {
+  //this.lizer.eat();
+  foodParticle.kill();
 };
 
 Rob.Motioner.prototype.getTempVector = function() {
@@ -132,38 +139,86 @@ Rob.Motioner.prototype.getSenseVector = function(sense) {
   }
 };
 
-Rob.Motioner.prototype.sense = function(sense, sensee) {
-  var debugText = "";
+Rob.Motioner.prototype.getSmellVector = function() {
+  this.getSenseVector('smell');
+};
 
+Rob.Motioner.prototype.getTasteVector = function() {
+  this.getSenseVector('taste');
+};
+
+Rob.Motioner.prototype.purgeFoodTargets = function() {
+  var retain = [];
+
+  for(var i = 0; i < this.currentFoodTargets.length; i++) {
+    var e = this.currentFoodTargets[i];
+
+    // If frame count increases more than one tick
+    // past our current timestamp, then we have
+    // lost track of the candidate; forget about it
+    if(this.frameCount === e.timestamp + e.zapCount + 1) {
+      retain.push(e);
+    }
+  }
+
+  this.currentFoodTargets = retain.slice(); // A surprising way to clone an array
+};
+
+Rob.Motioner.prototype.sense = function(sense, sensee) {
   var radius = this.sensor.width / 2;
   var relativePosition = Rob.XY(sensee).minus(this.sensor);
 
   var distance = relativePosition.getMagnitude();
   distance = Rob.clamp(distance, 0, radius);
 
-  var value = radius - distance;
+  var eaten = false;
+  if(sense === 'taste') {
+    if(distance <= this.reach) {
+      var senseeLocation = Rob.XY( Math.floor(sensee.x), Math.floor(sensee.y));
 
-  relativePosition.scalarMultiply(value);
-  this.vectors[sense].add(relativePosition);
-  this.senseCounts[sense]++;
+      var f = this.currentFoodTargets.findIndex(function(testSensee) {
+        return testSensee.location.isEqualTo(senseeLocation);
+      }, this);
 
-  debugText += (
-    'sense ' + sense +
-    ' distance ' + distance +
-    ' value ' + value +
-    ' vector (' + relativePosition.X() + ', ' + relativePosition.Y() + ')'
-  );
+      if(f === -1) {
+        this.currentFoodTargets.push({ location: senseeLocation, zapCount: 0, timestamp: this.frameCount });
+      } else {
+        this.currentFoodTargets[f].zapCount++;
+        if(this.currentFoodTargets[f].zapCount > this.zapThreshold) {
+          this.currentFoodTargets.splice(f, 1);
+          this.eat(sensee);
+          eaten = true;
+        }
+      }
+    }
+  }
 
-  roblog('senses', debugText);
+  if(!eaten) {
+    var value = radius - distance;
 
-  var color = null;
+    relativePosition.scalarMultiply(value);
+    this.vectors[sense].add(relativePosition);
+    this.senseCounts[sense]++;
+  }
+
+  /*var color = null;
   switch(sense) {
     case 'smell': color = 'yellow'; break;
     case 'taste': color = 'cyan'; break;
     default: throw "Bad sense '" + sense + "'";
   }
 
-  Rob.db.draw(this.sprite, sensee, color);
+  if(sense !== 'smell') {
+    Rob.db.draw(this.sprite, sensee, color);
+  }*/
+};
+
+Rob.Motioner.prototype.shootFoodTargets = function() {
+  for(var i = 0; i < this.currentFoodTargets.length; i++) {
+    var loc = this.currentFoodTargets[i].location;
+
+    Rob.db.draw(this.sprite, loc, 'Chartreuse');
+  }
 };
 
 Rob.Motioner.prototype.senseCompetitor = function(sensee) {
@@ -184,14 +239,6 @@ Rob.Motioner.prototype.senseCompetitor = function(sensee) {
   Rob.db.draw(this.sprite, sensee, 'blue');
 };
 
-Rob.Motioner.prototype.getTasteVector = function() {
-  this.getSenseVector('taste');
-};
-
-Rob.Motioner.prototype.getSmellVector = function() {
-  this.getSenseVector('smell');
-};
-
 Rob.Motioner.prototype.smell = function(smellyParticle) {
   this.sense('smell', smellyParticle);
   this.smellCount++;
@@ -204,6 +251,9 @@ Rob.Motioner.prototype.taste = function(tastyParticle) {
 
 Rob.Motioner.prototype.update = function() {
   this.frameCount++;
+
+  this.purgeFoodTargets();  // Forget any food we can no longer reach
+  this.shootFoodTargets();  // Show the little guy reaching to those within range
 
   this.accel.tick();
   if(this.accel.maneuverComplete) {
@@ -237,6 +287,7 @@ Rob.Motioner.prototype.update = function() {
       this.vectors.motion.reset();
 
       var m = null; var n = null; var a = 0;
+      var speed = Rob.globals.maxSpeed / 2; // Go slower if only for temp
 
       m = this.vectors.temp.getMagnitude();
       if(m > 0) {
@@ -249,6 +300,8 @@ Rob.Motioner.prototype.update = function() {
 
       m = this.vectors.smell.getMagnitude();
       if(m > 0) {
+        speed = Rob.globals.maxSpeed;
+
         this.vectors.smell.normalize();
         this.vectors.smell.scalarMultiply(this.sensor.width / 2);
 
@@ -258,6 +311,8 @@ Rob.Motioner.prototype.update = function() {
 
       m = this.vectors.taste.getMagnitude();
       if(m > 0) {
+        speed = Rob.globals.maxSpeed;
+
         this.vectors.taste.normalize();
         this.vectors.taste.scalarMultiply(this.sensor.width / 2);
 
@@ -275,16 +330,20 @@ Rob.Motioner.prototype.update = function() {
         var scratch = this.vectors.motion.plus(this.sprite);
         scratch.x = Rob.clamp(scratch.x, 0, game.width);
         scratch.y = Rob.clamp(scratch.y, 0, game.height);
-        this.accel.setTarget(scratch.x, scratch.y);
+        this.accel.setTarget(scratch.x, scratch.y, speed, speed / 4);
         //this.body.velocity.setTo(this.vectors.motion.x, this.vectors.motion.y);
       }
 
-      Rob.db.draw(
-        this.sprite,
-        this.vectors.motion.normalized().timesScalar(this.sensor.width / 2).plus(this.sprite),
-        'green', 1
-      );
+      this.motionIndicator.set(this.vectors.motion);
+      this.motionIndicator.normalize();
+      this.motionIndicator.scalarMultiply(this.sensor.width / 2)
+      this.motionIndicator.add(this.sprite);
     }
+  }
+
+  var drawDebugLine = false;
+  if(drawDebugLine && !this.motionIndicator.isEqualTo(0, 0)) {
+    Rob.db.draw(this.sprite, this.motionIndicator, 'green', 1);
   }
 
   this.sensor.x = this.sprite.x; this.sensor.y = this.sprite.y;
@@ -308,6 +367,9 @@ Rob.Accel = function(sprite, maxSpeed) {
   this.maxSpeed = maxSpeed;
   this.maxAcceleration = maxSpeed / 4;
 
+  this.currentSpeed = this.maxSpeed;
+  this.currentAcceleration = this.maxAccleration;
+
   this.currentTargetX = this.sprite.x;
   this.currentTargetY = this.sprite.y;
 
@@ -316,7 +378,13 @@ Rob.Accel = function(sprite, maxSpeed) {
   this.previousY = sprite.y;
 };
 
-Rob.Accel.prototype.setTarget = function(hisX, hisY) {
+Rob.Accel.prototype.setTarget = function(hisX, hisY, speed, acceleration) {
+  if(speed === undefined) { speed = this.maxSpeed; }
+  if(acceleration === undefined) { acceleration = this.maxAcceleration; }
+
+  this.currentSpeed = speed;
+  this.currentAcceleration = acceleration;
+
   this.hisX = hisX;
   this.hisY = hisY;
 
@@ -349,8 +417,8 @@ Rob.Accel.prototype.setNewVelocity = function() {
   var bestVx = Math.cos(thetaToTarget) * deltaD;
   var bestVy = Math.sin(thetaToTarget) * deltaD;
 
-  this.needUpdate = (deltaD > this.maxSpeed);
-  deltaD = Math.min(deltaD, this.maxSpeed);
+  this.needUpdate = (deltaD > this.currentSpeed);
+  deltaD = Math.min(deltaD, this.currentSpeed);
 
   var vCurtailedX = Math.cos(thetaToTarget) * deltaD;
   var vCurtailedY = Math.sin(thetaToTarget) * deltaD;
@@ -367,11 +435,11 @@ Rob.Accel.prototype.setNewVelocity = function() {
   var aCurtailedX = vCurtailedX;
   var aCurtailedY = vCurtailedY;
 
-  if(deltaV > this.maxAcceleration) {
+  if(deltaV > this.currentAcceleration) {
     this.needUpdate = true;
 
-    bestDeltaX *= this.maxAcceleration / deltaV;
-    bestDeltaY *= this.maxAcceleration / deltaV;
+    bestDeltaX *= this.currentAcceleration / deltaV;
+    bestDeltaY *= this.currentAcceleration / deltaV;
 
     aCurtailedX = bestDeltaX + this.body.velocity.x;
     aCurtailedY = bestDeltaY + this.body.velocity.y;
@@ -403,13 +471,15 @@ Rob.Accel.prototype.tick = function() {
   if(this.maneuverComplete) {
     this.body.velocity.x *= 0.9; this.body.velocity.y *= 0.9;
   } else {
-    var me = new Phaser.Point(this.hisX, this.hisY);
-
-    if(this.previousX === this.sprite.x && this.previousY === this.sprite.y) {
+    if(this.previousX === Math.floor(this.sprite.x) &&
+      this.previousY === Math.floor(this.sprite.y)) {
       this.stuckCount++;
     }
 
-    this.previousX = this.sprite.x; this.previousY = this.sprite.y;
+    var me = new Phaser.Point(this.hisX, this.hisY);
+    me.floor();
+
+    this.previousX = Math.floor(this.sprite.x); this.previousY = Math.floor(this.sprite.y);
 
     if(Phaser.Point.distance(me, this.sprite) < 20 || this.stuckCount > 30) {
       this.maneuverComplete = true;
