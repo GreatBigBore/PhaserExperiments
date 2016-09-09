@@ -75,6 +75,7 @@ Rob.XY = function(sourceOrMaybeX, maybeY) {
 
     normalize: function() {
       var m = self.getMagnitude();
+      if(m === 0) { m = 1; }
       self.scalarDivide(m);
       return self;
     },
