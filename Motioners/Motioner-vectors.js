@@ -35,6 +35,8 @@ Rob.Motioner.prototype.init = function(archon) {
   this.lizer = archon.lizer;
   this.sensor = archon.sensor;
   this.dna = archon.dna;
+
+  this.accel = new Rob.Accel(this.sprite, Rob.globals.maxSpeed);
 };
 
 Rob.Motioner.prototype.ensoul = function() {
@@ -203,83 +205,215 @@ Rob.Motioner.prototype.taste = function(tastyParticle) {
 Rob.Motioner.prototype.update = function() {
   this.frameCount++;
 
-  this.getTempVector();
-  this.getSmellVector();
-  this.getTasteVector();
-  this.getAvoidanceVector();
+  this.accel.tick();
+  if(this.accel.maneuverComplete) {
+    this.getTempVector();
+    this.getSmellVector();
+    this.getTasteVector();
+    this.getAvoidanceVector();
 
-  if(this.senseCounts.taste > 0) {
-    // If there's food in our sense range rather than
-    // just the smell of food, then let's add a lot
-    // more weight to the actual food. Heavily weight
-    // the food and add only a fraction of the smell.
-    // Note that the taste vector has all the info now,
-    // so we zero out the smell vector
-    var foodFactor = 5;
+    if(this.senseCounts.taste > 0) {
+      // If there's food in our sense range rather than
+      // just the smell of food, then let's add a lot
+      // more weight to the actual food. Heavily weight
+      // the food and add only a fraction of the smell.
+      // Note that the taste vector has all the info now,
+      // so we zero out the smell vector
+      var foodFactor = 5;
 
-    this.vectors.taste.scalarMultiply(foodFactor);
-    this.vectors.taste.add(this.vectors.smell);
-    this.vectors.taste.scalarDivide(foodFactor + 1);
-    this.vectors.smell.set(0, 0);
-  }
-
-  this.dna.tempFactor = 1;
-  this.dna.smellFactor = 1;
-  this.dna.tasteFactor = 1;
-  this.dna.velocityFactor = 1;
-  this.dna.avoidanceFactor = -15;
-  if(this.saveDebugText === undefined) {
-    this.saveDebugText = Rob.debugText;
-  }
-
-  if(this.frameCount % 10 === 0) {
-    this.vectors.motion.reset();
-    /*this.vectors.temp.scalarMultiply(this.dna.tempFactor);
-    this.vectors.motion.add(this.vectors.temp);
-    var m = this.vectors.motion.getMagnitude();
-    var n = this.speedRange.convertPoint(m, this.centeredZeroToOneRange);
-    this.vectors.motion.scalarMultiply(n);*/
-
-    //Rob.debugText += "Vector before (" + this.vectors.smell.x + ", " + this.vectors.smell.y + ")\n"
-
-    this.vectors.smell.scalarMultiply(this.dna.smellFactor);
-    this.vectors.motion.add(this.vectors.smell);
-    this.vectors.taste.scalarMultiply(this.dna.tasteFactor);
-    this.vectors.motion.add(this.vectors.taste);
-
-    var m = this.vectors.motion.getMagnitude() / 2; // div by 2 for the average
-    var n = this.speedRange.convertPoint(m, this.centeredZeroToOneRange);
-    this.vectors.motion.scalarMultiply(n);
-
-    //Rob.debugText += "Vector after (" + this.vectors.motion.x + ", " + this.vectors.motion.y + ")\n"
-
-    if(this.archon.stopped) {
-      this.body.velocity.setTo(0, 0);
-    } else {
-      this.body.velocity.setTo(this.vectors.motion.x, this.vectors.motion.y);
+      this.vectors.taste.scalarMultiply(foodFactor);
+      this.vectors.taste.add(this.vectors.smell);
+      this.vectors.taste.scalarDivide(foodFactor + 1);
+      this.vectors.smell.set(0, 0);
     }
 
-    Rob.db.draw(
-      this.sprite,
-      this.vectors.motion.normalized().timesScalar(this.sensor.width / 2).plus(this.sprite),
-      'green', 1
-    );
-  }
+    this.dna.tempFactor = 1;
+    this.dna.smellFactor = 100;
+    this.dna.tasteFactor = 100;
+    this.dna.velocityFactor = 1;
+    this.dna.avoidanceFactor = -15;
 
-  if(this.archon.uniqueID === 0) {
-    Rob.db.text(0, 0, this.saveDebugText);
+    if(this.frameCount % 10 === 0) {
+      this.vectors.motion.reset();
 
-    if(this.frameCount % 30 === 0) {
-      this.saveDebugText = Rob.debugText;
+      var m = null; var n = null; var a = 0;
+
+      m = this.vectors.temp.getMagnitude();
+      if(m > 0) {
+        this.vectors.temp.normalize();
+        this.vectors.temp.scalarMultiply(this.sensor.width / 2);
+
+        a++;
+        this.vectors.temp.scalarMultiply(this.dna.tempFactor);
+      }
+
+      m = this.vectors.smell.getMagnitude();
+      if(m > 0) {
+        this.vectors.smell.normalize();
+        this.vectors.smell.scalarMultiply(this.sensor.width / 2);
+
+        a++;
+        this.vectors.smell.scalarMultiply(this.dna.smellFactor);
+      }
+
+      m = this.vectors.taste.getMagnitude();
+      if(m > 0) {
+        this.vectors.taste.normalize();
+        this.vectors.taste.scalarMultiply(this.sensor.width / 2);
+
+        a++;
+        this.vectors.taste.scalarMultiply(this.dna.tasteFactor);
+      }
+
+      this.vectors.motion.add(this.vectors.temp).dividedByScalar(a);
+      this.vectors.motion.add(this.vectors.smell).dividedByScalar(a);
+      this.vectors.motion.add(this.vectors.taste).dividedByScalar(a);
+
+      if(this.archon.stopped) {
+        this.body.velocity.setTo(0, 0);
+      } else {
+        var scratch = this.vectors.motion.plus(this.sprite);
+        scratch.x = Rob.clamp(scratch.x, 0, game.width);
+        scratch.y = Rob.clamp(scratch.y, 0, game.height);
+        this.accel.setTarget(scratch.x, scratch.y);
+        //this.body.velocity.setTo(this.vectors.motion.x, this.vectors.motion.y);
+      }
+
+      Rob.db.draw(
+        this.sprite,
+        this.vectors.motion.normalized().timesScalar(this.sensor.width / 2).plus(this.sprite),
+        'green', 1
+      );
     }
   }
-
-  Rob.debugText = "";
 
   this.sensor.x = this.sprite.x; this.sensor.y = this.sprite.y;
 
   for(var i in this.vectors) { this.vectors[i].reset(); }
   for(i in this.senseCounts) { this.senseCounts[i] = 0; }
+};
 
+Rob.Accel = function(sprite, maxSpeed) {
+  this.frameCount = 0;
+  this.maneuverStamp = 0;
+  this.maneuverComplete = true;
+  this.needUpdate = false;
+  this.damper = 10;
+  this.cancelAfter = 30; // Cancel maneuvers that take too long
+  this.expiresAt = 0;
 
+  this.sprite = sprite;
+  this.body = sprite.body;
+
+  this.maxSpeed = maxSpeed;
+  this.maxAcceleration = maxSpeed / 4;
+
+  this.currentTargetX = this.sprite.x;
+  this.currentTargetY = this.sprite.y;
+
+  this.stuckCount = 0;
+  this.previousX = sprite.x;
+  this.previousY = sprite.y;
+};
+
+Rob.Accel.prototype.setTarget = function(hisX, hisY) {
+  this.hisX = hisX;
+  this.hisY = hisY;
+
+  this.maneuverComplete = false;
+  this.expiresAt = this.frameCount + this.cancelAfter;
+  this.setNewVelocity();
+};
+
+Rob.Accel.prototype.setNewVelocity = function() {
+  if(this.frameCount > this.expiresAt) {
+    this.maneuverComplete = true;
+    return;
+  }
+
+  this.maneuverStamp = this.frameCount;
+
+  // Get his into the same frame of reference as the velocity vector
+  var relX = this.hisX - this.sprite.x;
+  var relY = this.hisY - this.sprite.y;
+
+  var vX = this.body.velocity.x;
+  var vY = this.body.velocity.y;
+
+  // Get the angle between my velocity vector and
+  // the distance vector from me to him.
+
+  var deltaD = Math.sqrt(Math.pow(vX + relX, 2) + Math.pow(vY + relY, 2));
+  var thetaToTarget = Math.atan2(vY + relY, vX + relX);
+
+  var bestVx = Math.cos(thetaToTarget) * deltaD;
+  var bestVy = Math.sin(thetaToTarget) * deltaD;
+
+  this.needUpdate = (deltaD > this.maxSpeed);
+  deltaD = Math.min(deltaD, this.maxSpeed);
+
+  var vCurtailedX = Math.cos(thetaToTarget) * deltaD;
+  var vCurtailedY = Math.sin(thetaToTarget) * deltaD;
+
+  // Now we need to know how much change we intend to apply
+  // to the current velocity vectors, so we can scale that
+  // change back to limit the acceleration.
+  var bestDeltaX = vCurtailedX - vX;
+  var bestDeltaY = vCurtailedY - vY;
+
+  var deltaV = Math.sqrt(Math.pow(bestDeltaX, 2) + Math.pow(bestDeltaY, 2));
+
+  // These two are just so I can show debug info
+  var aCurtailedX = vCurtailedX;
+  var aCurtailedY = vCurtailedY;
+
+  if(deltaV > this.maxAcceleration) {
+    this.needUpdate = true;
+
+    bestDeltaX *= this.maxAcceleration / deltaV;
+    bestDeltaY *= this.maxAcceleration / deltaV;
+
+    aCurtailedX = bestDeltaX + this.body.velocity.x;
+    aCurtailedY = bestDeltaY + this.body.velocity.y;
+  }
+
+  var finalX = bestDeltaX + this.body.velocity.x;
+  var finalY = bestDeltaY + this.body.velocity.y;
+
+  this.body.velocity.setTo(finalX, finalY);
+
+  /*this.db.text(
+    0, 0,
+    "Ship to mouse: (" + relX.toFixed(0) + ", " + relY.toFixed(0) + ")\n" +
+    "Max change: (" + bestVx.toFixed(4) + ", " + bestVy.toFixed(4) + ")\n" +
+    "Cut vchange: (" + vCurtailedX.toFixed(4) + ", " + vCurtailedY.toFixed(4) + ")\n" +
+    "Cut achange: (" + aCurtailedX.toFixed(4) + ", " + aCurtailedY.toFixed(4) + ")\n"
+  );*/
+};
+
+Rob.Accel.prototype.tick = function() {
+  this.frameCount++;
+
+  if(
+    !this.maneuverComplete && this.needUpdate &&
+    this.frameCount > this.maneuverStamp + this.damper) {
+    this.setNewVelocity();
+  }
+
+  if(this.maneuverComplete) {
+    this.body.velocity.x *= 0.9; this.body.velocity.y *= 0.9;
+  } else {
+    var me = new Phaser.Point(this.hisX, this.hisY);
+
+    if(this.previousX === this.sprite.x && this.previousY === this.sprite.y) {
+      this.stuckCount++;
+    }
+
+    this.previousX = this.sprite.x; this.previousY = this.sprite.y;
+
+    if(Phaser.Point.distance(me, this.sprite) < 20 || this.stuckCount > 30) {
+      this.maneuverComplete = true;
+      this.stuckCount = 0;
+    }
+  }
 };
