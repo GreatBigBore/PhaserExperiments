@@ -235,7 +235,4 @@ Rob.DNA.prototype.setColor = function() {
 
 if(typeof window === "undefined") {
   exports.DNA = new Rob.DNA();
-  //exports.DNA.mutateYN();
-  //console.log(exports);
-  console.log('looks like real DNA.js is working');
 }
