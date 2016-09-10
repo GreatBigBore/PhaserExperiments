@@ -107,8 +107,9 @@ Rob.Spreader.prototype.handleClick = function(pointer) {
     // sprite, just allow the sprite to be dragged around,
     // don't start the world again
     var clickedOnASprite = false;
+    var whichSprite = null;
     this.archons.archonPool.forEachAlive(function(a) {
-      if(clickedOnASprite) { return; }
+      if(clickedOnASprite) { whichSprite = a; return; }
 
       var radius = a.width / 2;
       var rect = new Phaser.Rectangle(
@@ -120,8 +121,12 @@ Rob.Spreader.prototype.handleClick = function(pointer) {
       }
     }, this);
 
-    // Clicked out in the open; start the world up again
-    if(!clickedOnASprite) { this.stopped = false; changeState = true; }
+    if(clickedOnASprite) {
+      this.report(whichSprite);
+    } else {
+      // Clicked out in the open; start the world up again
+      this.stopped = false; changeState = true;
+    }
   } else {
     // We're running normally; a click anywhere stops everyone
     this.stopped = true;
@@ -151,6 +156,16 @@ Rob.Spreader.prototype.preload = function() {
 Rob.Spreader.prototype.render = function() {
   this.archons.render();
   this.mannaGarden.render();
+};
+
+Rob.Spreader.prototype.report = function(whichSprite) {
+  var a = whichSprite.archon;
+
+  console.log("Sprite " + a.uniqueID);
+  console.log("Mass = " + a.lizer.getMass());
+  console.log("Adult fat = " + a.lizer.adultCalorieBudget.toFixed() + ", embryo storage = " + a.lizer.embryoCalorieBudget.toFixed());
+  console.log("DNA:");
+  console.log("Temps: " + a.dna.optimalLoTemp + ", " + a.dna.optimalTemp + ", " + a.dna.optimalHiTemp);
 };
 
 Rob.Spreader.prototype.smell = function(sprite, smellyParticle) {

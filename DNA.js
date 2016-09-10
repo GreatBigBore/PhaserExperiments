@@ -10,23 +10,29 @@ Rob.dnaConstants = {
   archonMortalSizeScale: 0.0005,
   archonStandardOptimalTemp: 0,
   archonStandardTempRange: 400,
-  embryoThresholdMultiplier: 1.1
+  embryoThresholdMultiplier: 1.1,
+  avoidanceFactor: -100,
+  smellFactor: 200,
+  tempFactor: 100,
+  velocityFactor: 1,
+  tasteFactor: 300
 };
 
 Rob.aboriginalDNA = {
+  avoidanceFactor: Rob.dnaConstants.avoidanceFactor,
   massOfMyBabies: Rob.globals.standardBabyMass,
   embryoThreshold: 0,
-  tasteFactor: 300,
+  tasteFactor: Rob.dnaConstants.tasteFactor,
   maxAcceleration: 30,
   maxVelocity: 60,
   motionMultiplier: 30,
   optimalMass: 5,
   optimalTemp: Rob.dnaConstants.archonStandardOptimalTemp,
   sensorSize: 1,
-  smellFactor: 200,
-  tempFactor: 100,
+  smellFactor: Rob.dnaConstants.smellFactor,
+  tempFactor: Rob.dnaConstants.tempFactor,
   tempRange: Rob.dnaConstants.archonStandardTempRange,
-  velocityFactor: 1,
+  velocityFactor: Rob.dnaConstants.velocityFactor,
 
   color: { r: 0x88, g: 0x88, b: 0x88 }
 };
@@ -50,6 +56,8 @@ Rob.DNA.prototype.ensoul = function(parent) {
     }
 
   } else {
+    this.color = Object.assign({}, parent.dna.color);
+
     for(var i in parent.dna) {
       this.mutate(i, parent.dna);
     }
@@ -59,9 +67,9 @@ Rob.DNA.prototype.ensoul = function(parent) {
 };
 
 Rob.DNA.prototype.finalSetup = function(dnaSource) {
-  dnaSource.embryoThreshold = (
+  this.embryoThreshold = (
     Rob.dnaConstants.embryoThresholdMultiplier *
-    ((dnaSource.massOfMyBabies * Rob.globals.babyFatCalorieDensity) +
+    ((dnaSource.massOfMyBabies * Rob.globals.embryoCalorieDensity) +
     (dnaSource.optimalMass * Rob.globals.adultFatCalorieDensity))
   );
 
@@ -76,8 +84,7 @@ Rob.DNA.prototype.finalSetup = function(dnaSource) {
 	this.optimalHiTemp += colorAdjustment;
 	this.optimalLoTemp += colorAdjustment;
 
-  this.optimalHiTemp = Math.max(this.optimalHiTemp, this.optimalTemp);
-	this.optimalLoTemp = Math.min(this.optimalLoTemp, this.optimalTemp);
+  this.clampTemp();
 };
 
 Rob.DNA.prototype.getTint = function() {
@@ -102,16 +109,30 @@ Rob.DNA.prototype.scalarMutations = {
 	sensorSize:  { probability: 10, range: 10 },
   smellFactor: { probability: 10, range: 10 },
   tempFactor: { probability: 10, range: 10 },
-  velocityFactor: { probability: 10, range: 10 }
+  velocityFactor: { probability: 10, range: 10 },
+  avoidanceFactor: { probability: 10, range: 10 },
+  tasteFactor: { probability: 10, range: 10 }
+
+};
+
+Rob.DNA.prototype.clampTemp = function() {
+  this.optimalHiTemp = Math.min(this.optimalHiTemp, this.optimalTemp);
+	this.optimalLoTemp = Math.max(this.optimalLoTemp, this.optimalTemp);
 };
 
 Rob.DNA.prototype.mutate = function(traitName, parentDNA) {
+  if(parentDNA[traitName] instanceof Function) {
+    return;
+  }
+
 	switch(traitName) {
 		case 'color': this.mutateColor(parentDNA.color); break;
 		case 'optimalTemp': this.mutateTemperatureStuff(); break;
+    case 'tempRange': break;
 		case 'optimalHiTemp': break;	// We do this along with optimal temp
 		case 'optimalLoTemp': break;	// We do this along with optimal temp
 		case 'scalarMutations': break;	// Not a mutatable kind of thing!
+    case 'sprite': break;           // Again, not mutatable kind of thing
 		default: {
 
       // Just for showing the cool message about mutation
@@ -137,19 +158,20 @@ Rob.DNA.prototype.mutateColor = function(parentColors) {
 	var colors = ['r', 'g', 'b'];
 	var mutated = false;
 	for(var i in colors) {
-		this.color[i] = Math.floor(this.mutateScalar(
-      parentColors[i],
+    var c = colors[i];
+		this.color[c] = Math.floor(this.mutateScalar_(
+      parentColors[c],
       this.scalarMutations.color.probability,
       this.scalarMutations.color.range
     ));
 
     // Just so I can show the cool message about color mutation
-		if(this.color[i].toString(16) !== parentColors[i].toString(16)) { mutated = true; }
+		if(this.color[c].toString(16) !== parentColors[c].toString(16)) { mutated = true; }
 	}
 
 	if(mutated) {
 		console.log(
-			'Color mutated to ',
+			'Color mutated to',
 			this.color.r.toString(16) + this.color.g.toString(16) + this.color.b.toString(16),
 			'from',
 			parentColors.r.toString(16) + parentColors.g.toString(16) + parentColors.b.toString(16)
@@ -176,6 +198,15 @@ Rob.DNA.prototype.mutateScalar_ = function(value, probability, range) {
   }
 };
 
+Rob.DNA.prototype.mutateTemperatureStuff = function(parentDNA) {
+  this.mutateScalar_('optimalTemp', parentDNA);
+  this.mutateScalar_('optimalHiTemp', parentDNA);
+  this.mutateScalar_('optimalLoTemp', parentDNA);
+  this.clampTemp();
+
+  this.tempRange = this.optimalHiTemp = this.optimalLoTemp;
+};
+
 Rob.DNA.prototype.mutateYN = function(probability) {
 	return game.rnd.integerInRange(1, 100) < probability;
 };
@@ -199,6 +230,7 @@ Rob.DNA.prototype.getTempFromColor = function(color) {
 
 Rob.DNA.prototype.setColor = function() {
 	this.color = this.getRandomTint();
+  console.log('color set to', this.color);
 };
 
 if(typeof window === "undefined") {

@@ -212,5 +212,6 @@ Rob.Archons.prototype.setupWalls = function() {
 Rob.Archons.prototype.update = function() {
 	this.archonPool.forEachAlive(function(a) {
 		a.archon.mover.update();
+		a.archon.lizer.update();
 	});
 };
