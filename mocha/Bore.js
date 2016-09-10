@@ -3,9 +3,13 @@
 
 "use strict";
 
-Bore = {
+var Bore = {
   someGlobalData: { foo: 1, bar: 2 },
   aGlobalFunction: function() { console.log('Global Function'); }
+};
+
+Bore.another = function() {
+  console.log("another");
 };
 
 if(typeof window === "undefined") {
