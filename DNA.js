@@ -15,11 +15,11 @@ Rob.dnaConstants = {
   archonStandardOptimalTemp: 0,
   archonStandardTempRange: 400,
   embryoThresholdMultiplier: 1.1,
-  avoidanceFactor: -100,
-  smellFactor: 200,
-  tempFactor: 100,
+  avoidanceFactor: -1,
+  smellFactor: 2,
+  tempFactor: 1,
   velocityFactor: 1,
-  tasteFactor: 300
+  tasteFactor: 3
 };
 
 Rob.aboriginalDNA = {
@@ -27,8 +27,8 @@ Rob.aboriginalDNA = {
   massOfMyBabies: Rob.globals.standardBabyMass,
   embryoThreshold: 0,
   tasteFactor: Rob.dnaConstants.tasteFactor,
-  maxAcceleration: 30,
-  maxVelocity: 60,
+  maxAcceleration: Rob.globals.maxAcceleration,
+  maxVelocity: Rob.globals.maxSpeed,
   motionMultiplier: 30,
   optimalMass: 5,
   optimalTemp: Rob.dnaConstants.archonStandardOptimalTemp,
@@ -120,8 +120,8 @@ Rob.DNA.prototype.scalarMutations = {
 };
 
 Rob.DNA.prototype.clampTemp = function() {
-  this.optimalHiTemp = Math.min(this.optimalHiTemp, this.optimalTemp);
-	this.optimalLoTemp = Math.max(this.optimalLoTemp, this.optimalTemp);
+  this.optimalHiTemp = Math.max(this.optimalHiTemp, this.optimalTemp);
+	this.optimalLoTemp = Math.min(this.optimalLoTemp, this.optimalTemp);
 };
 
 Rob.DNA.prototype.mutate = function(traitName, parentDNA) {

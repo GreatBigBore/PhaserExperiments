@@ -21,12 +21,16 @@ Rob.Archons.prototype.breed = function(parent, birthWeight) {
 		throw "No more archons in pool";
 	}
 
-	// totally arbitrary, just staying within the bounds of the wall sprites
-	var center = game.width / 2;
-	var maxDFromCenter = game.width / 2 - 20;
+	if(parent === undefined) {
+		// totally arbitrary, just staying within the bounds of the world
+		var center = game.width / 2;
+		var maxDFromCenter = game.width / 2 - 20;
 
-	a.x = Rob.integerInRange(center - maxDFromCenter, center + maxDFromCenter);
-	a.y = Rob.integerInRange(center - maxDFromCenter, center + maxDFromCenter);
+		a.x = Rob.integerInRange(center - maxDFromCenter, center + maxDFromCenter);
+		a.y = Rob.integerInRange(center - maxDFromCenter, center + maxDFromCenter);
+	} else {
+		a.x = parent.sprite.x; a.y = parent.sprite.y;
+	}
 
 	if(birthWeight === undefined) { birthWeight = Rob.globals.standardBabyMass; }
 	this.ensoul(a, parent, birthWeight);
@@ -59,6 +63,8 @@ Rob.Archons.prototype.enablePhysicsBodies = function() {
 
 Rob.Archons.prototype.ensoul = function(sprite, parent, birthWeight) {
 	if(sprite.archon === undefined) { throw "How did we get a sprite with no archon?"; }
+
+	sprite.archon.justBorn = true;	// Allows motioner to launch them away from parent
 
 	if(!sprite.archon.ensouled) {
 		sprite.archon.uniqueID = this.archonUniqueID++;
