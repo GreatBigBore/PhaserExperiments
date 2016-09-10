@@ -31,7 +31,7 @@ Rob.aboriginalDNA = {
   maxVelocity: 60,
   motionMultiplier: 30,
   optimalMass: 5,
-  optimalTemp: 0,//Rob.dnaConstants.archonStandardOptimalTemp,
+  optimalTemp: Rob.dnaConstants.archonStandardOptimalTemp,
   sensorSize: 1,
   smellFactor: Rob.dnaConstants.smellFactor,
   tempFactor: Rob.dnaConstants.tempFactor,
