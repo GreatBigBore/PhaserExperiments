@@ -17,14 +17,15 @@ var Rob = (function() {
   debugText: "",
 
   globals: {
-    adultFatCalorieDensity: 500,    // Calories per gram of mass
+    adultFatCalorieDensity: 250,    // Calories per gram of mass
     archonCount: 5,
-    babyFatCalorieDensity: 2000,    // Calories per gram of mass
-    caloriesPerMannaMorsel: 50,
+    babyFatCalorieDensity: 1000,    // Calories per gram of mass
+    caloriesPerMannaMorsel: 25,
     darknessAlphaHi: 0.3,
     darknessAlphaLo: 0.0,
-    embryoCalorieDensity: 10000,    // Very high density fat stored for making babies
+    embryoCalorieDensity: 5000,    // Very high density fat stored for making babies
     maxSpeed: 50,                   // pix/sec
+    minimumAdultMass: 1,            // Below this, an adult will die
     standardBabyMass: 0.5,          // Grams
     temperatureLo: -1000,
     temperatureHi: 1000,
@@ -67,7 +68,7 @@ var Rob = (function() {
     // For now I'll have them die when their mass gets down to 0.1g;
     // by default, until mutations set in, the birth mass is 0.5g
     Rob.globals.archonMassRange = Rob.Range(0.25, 10);
-    Rob.globals.archonSizeRange = Rob.Range(0.07, 0.30);
+    Rob.globals.archonSizeRange = Rob.Range(0.07, 0.25);
     Rob.globals.standardArchonTolerableTempRange = Rob.Range(-200, 200);
     Rob.globals.archonColorRange = Rob.Range(1, 255);
     Rob.globals.darknessRange = Rob.Range(Rob.globals.darknessAlphaHi, Rob.globals.darknessAlphaLo);

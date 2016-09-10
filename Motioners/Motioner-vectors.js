@@ -43,6 +43,7 @@ Rob.Motioner.prototype.init = function(archon) {
   this.accel = new Rob.Accel(this.sprite, Rob.globals.maxSpeed);
 
   this.motionIndicator = Rob.XY();
+  this.previousStartingPoint = Rob.XY();;
 };
 
 Rob.Motioner.prototype.ensoul = function() {
@@ -57,7 +58,7 @@ Rob.Motioner.prototype.ensoul = function() {
 };
 
 Rob.Motioner.prototype.eat = function(foodParticle) {
-  //this.lizer.eat();
+  this.lizer.eat();
   foodParticle.kill();
 };
 
@@ -80,7 +81,6 @@ Rob.Motioner.prototype.getTempVector = function() {
   addCandidate(this, Rob.XY(this.sensor.x, this.sensor.y + this.sensor.width / 2));
 
   if(testPoints.length === 0) {
-    console.log('wtf temp vector got no love');
     this.vectors.temp.set(0, 0);
   } else {
     var bestDelta = testPoints[0].a;
@@ -123,7 +123,6 @@ Rob.Motioner.prototype.getSenseVector = function(sense) {
     var c = this.centeredZeroToOneRange.convertPoint(m, this.senseRange);
 
     if(m < c) {
-      console.log('wtf m < c');
       this.vectors[sense].set(0, 0);
     } else {
       this.vectors[sense].scalarMultiply(Math.abs(c / m));
@@ -230,9 +229,9 @@ Rob.Motioner.prototype.senseCompetitor = function(sensee) {
     var distance = relativePosition.getMagnitude();
 
     // Value falls off like gravity
-    var value = 1 / Math.pow(distance, 3);
+    var value = 1 / Math.pow(distance, 2);
     value *= this.lizer.getMass() / sensee.archon.lizer.getMass();
-    Rob.clamp(value, 1, 1);
+    Rob.clamp(value, 0, 1);
 
     relativePosition.scalarMultiply(value);
     this.vectors.avoidance.add(relativePosition);
@@ -258,6 +257,9 @@ Rob.Motioner.prototype.taste = function(tastyParticle) {
 Rob.Motioner.prototype.update = function() {
   this.frameCount++;
 
+  var i = null;           // One of the few things I hate about javascript
+  var scratch = Rob.XY();
+
   this.purgeFoodTargets();  // Forget any food we can no longer reach
   this.shootFoodTargets();  // Show the little guy reaching to those within range
 
@@ -266,7 +268,7 @@ Rob.Motioner.prototype.update = function() {
     this.getTempVector();
     this.getSmellVector();
     this.getTasteVector();
-    this.getAvoidanceVector();
+    //this.getAvoidanceVector();
 
     if(this.senseCounts.taste > 0) {
       // If there's food in our sense range rather than
@@ -283,12 +285,6 @@ Rob.Motioner.prototype.update = function() {
       this.vectors.smell.set(0, 0);
     }
 
-    this.dna.tempFactor = 1;
-    this.dna.smellFactor = 100;
-    this.dna.tasteFactor = 100;
-    this.dna.velocityFactor = 1;
-    this.dna.avoidanceFactor = -1;
-
     if(this.frameCount % 10 === 0) {
       this.vectors.motion.reset();
 
@@ -302,6 +298,8 @@ Rob.Motioner.prototype.update = function() {
 
         a++;
         this.vectors.temp.scalarMultiply(this.dna.tempFactor);
+
+        scratch.add(this.vectors.temp);
       }
 
       m = this.vectors.smell.getMagnitude();
@@ -313,6 +311,8 @@ Rob.Motioner.prototype.update = function() {
 
         a++;
         this.vectors.smell.scalarMultiply(this.dna.smellFactor);
+
+        scratch.add(this.vectors.smell);
       }
 
       m = this.vectors.taste.getMagnitude();
@@ -324,6 +324,8 @@ Rob.Motioner.prototype.update = function() {
 
         a++;
         this.vectors.taste.scalarMultiply(this.dna.tasteFactor);
+
+        scratch.add(this.vectors.taste);
       }
 
       m = this.vectors.avoidance.getMagnitude();
@@ -335,6 +337,25 @@ Rob.Motioner.prototype.update = function() {
 
         a++;
         this.vectors.avoidance.scalarMultiply(this.dna.avoidanceFactor);
+
+        scratch.add(this.vectors.avoidance);
+      }
+
+      // Give the temp vector an average of the other vectors
+      // available, so we don't end up forcing them to go straight
+      // up, in which case they have trouble getting away from
+      // each other for avoidance purposes
+      for(i in this.vectors) {
+        if(i !== 'motion' && i !== 'temp') {
+          var v = this.vectors[i];
+
+          this.vectors.temp.x += v.x / a;
+        }
+      }
+
+      if(Math.abs(scratch.x) < 10) {
+        var y = Math.abs(scratch.y);
+        this.vectors.temp.x = game.rnd.integerInRange(-y, y);
       }
 
       this.vectors.motion.add(this.vectors.temp).dividedByScalar(a);
@@ -345,11 +366,21 @@ Rob.Motioner.prototype.update = function() {
       if(this.archon.stopped) {
         this.body.velocity.setTo(0, 0);
       } else {
-        var scratch = this.vectors.motion.plus(this.sprite);
+        scratch = this.vectors.motion.plus(this.sprite);
         scratch.x = Rob.clamp(scratch.x, 0, game.width);
         scratch.y = Rob.clamp(scratch.y, 0, game.height);
         this.accel.setTarget(scratch.x, scratch.y, speed, speed / 4);
       }
+
+      // Tell the lizer about the the energy we're spending to move around
+      if(this.previousStartingPoint.isEqualTo(0)) {
+        this.previousStartingPoint.set(this.sprite); // No cost for the first movement in life
+      }
+
+      var c = this.previousStartingPoint.getDistanceTo(this.sprite);
+      this.lizer.accumulatedMetabolismCost += c;
+
+      this.previousStartingPoint.set(this.sprite);
 
       this.motionIndicator.set(this.vectors.motion);
       this.motionIndicator.normalize();
@@ -365,7 +396,7 @@ Rob.Motioner.prototype.update = function() {
 
   this.sensor.x = this.sprite.x; this.sensor.y = this.sprite.y;
 
-  for(var i in this.vectors) { this.vectors[i].reset(); }
+  for(i in this.vectors) { this.vectors[i].reset(); }
   for(i in this.senseCounts) { this.senseCounts[i] = 0; }
 };
 
