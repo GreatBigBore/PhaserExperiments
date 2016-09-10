@@ -126,7 +126,7 @@ Rob.Motioner.prototype.getSenseVector = function(sense) {
       console.log('wtf m < c');
       this.vectors[sense].set(0, 0);
     } else {
-      this.vectors[sense].scalarMultiply(c / m);
+      this.vectors[sense].scalarMultiply(Math.abs(c / m));
       //Rob.debugText += "sv2 (" + this.vectors.smell.x + ", " + this.vectors.smell.y + ")\n"
     }
 
