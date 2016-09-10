@@ -1,9 +1,9 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global Rob */
-
 "use strict";
+
+var Rob = Rob || {};
 
 Rob.Range = function(lo, hi) {
   var self = {
@@ -13,24 +13,20 @@ Rob.Range = function(lo, hi) {
     // in my range to a point in a different range
     convertPoint: function(thePointOnHisMap, hisRange) {
 
-      if(thePointOnHisMap === 0) {
-        return hisRange.hi;
-      } else {
-        //console.log('his point: ', thePointOnHisMap);
-        //console.log('his lo/hi/size: ', hisRange.lo, hisRange.hi, hisRange.getSize());
-        //console.log('my lo/hi/size: ', self.lo, self.hi, self.getSize());
+      // This is a signed value, indicating both his distance
+      // and direction from his center; if it's a negative
+      // value, then he's to the negative side of his center
+      var hisDistanceFromCenter = thePointOnHisMap - hisRange.getCenter();
 
-        var asAPercentage = (hisRange.lo - thePointOnHisMap) / hisRange.getSize();
-        var relativeToMyScale = self.getSize() * asAPercentage;
-        var signAdjust = self.getSign() * hisRange.getSign();
-        var absoluteOnMyScale = self.lo - relativeToMyScale * signAdjust;
+      // But if he's a hi to lo range, then we need to flip
+      // the sign, unless, of course, we both are
+      var signAdjust = self.getSign() * hisRange.getSign();
 
-        //console.log('%: ', asAPercentage);
-        //console.log('scaled to me: ', relativeToMyScale);
-        //console.log('my point:', absoluteOnMyScale);
+      var asAPercentage = signAdjust * hisDistanceFromCenter / hisRange.getSize();
+      var relativeToMyScale = self.getSize() * asAPercentage;
+      var absoluteOnMyScale = self.getCenter() + relativeToMyScale;
 
-        return absoluteOnMyScale;
-      }
+      return absoluteOnMyScale;
     },
 
     getCenter: function() {
@@ -55,3 +51,7 @@ Rob.Range = function(lo, hi) {
 
   return self.set(lo, hi);
 };
+
+if(typeof window === "undefined") {
+  exports.Range = Rob.Range;
+}
