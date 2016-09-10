@@ -5,6 +5,10 @@
 
 "use strict";
 
+if(typeof window === "undefined") {
+  exports.Rob = require('./Rob.js').Rob;
+}
+
 Rob.dnaConstants = {
   archonHeroSize: 100,
   archonMortalSizeScale: 0.0005,
@@ -14,18 +18,18 @@ Rob.dnaConstants = {
 };
 
 Rob.aboriginalDNA = {
-  massOfMyBabies: Rob.globals.standardBabyMass,
+  massOfMyBabies: 0,//Rob.globals.standardBabyMass,
   embryoThreshold: 0,
   tasteFactor: 300,
   maxAcceleration: 30,
   maxVelocity: 60,
   motionMultiplier: 30,
   optimalMass: 5,
-  optimalTemp: Rob.dnaConstants.archonStandardOptimalTemp,
+  optimalTemp: 0,//Rob.dnaConstants.archonStandardOptimalTemp,
   sensorSize: 1,
   smellFactor: 200,
   tempFactor: 100,
-  tempRange: Rob.dnaConstants.archonStandardTempRange,
+  tempRange: 0,//Rob.dnaConstants.archonStandardTempRange,
   velocityFactor: 1,
 
   color: { r: 0x88, g: 0x88, b: 0x88 }
@@ -202,8 +206,5 @@ Rob.DNA.prototype.setColor = function() {
 };
 
 if(typeof window === "undefined") {
-  exports.DNA = new Rob.DNA();
-  //exports.DNA.mutateYN();
-  //console.log(exports);
-  console.log('looks like real DNA.js is working');
+  exports.Rob.DNA = new Rob.DNA();
 }

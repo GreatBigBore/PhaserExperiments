@@ -1,0 +1,14 @@
+{
+  "name": "range",
+  "version": "1.0.0",
+  "description": "Scales a value in one range to a value in another range",
+  "main": "rangeTest.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "data-driven": "1.2.1"
+  },
+  "author": "Rob Bishop",
+  "license": "ISC"
+}

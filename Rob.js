@@ -12,9 +12,8 @@ var theSpreader = null;
 var theAngles = null;
 var theSun = null;
 
-window.onload = function() { Rob.go(runWhichState); };
-
-var Rob = {
+var Rob = (function() {
+  var thing = {
   debugText: "",
 
   globals: {
@@ -87,3 +86,12 @@ var Rob = {
     Rob.rg = new Rob.Bitmap('wallsGoo');
   }
 };
+
+  return thing;
+})();
+
+if(typeof window === "undefined") {
+  exports.Rob = Rob;
+} else {
+  window.onload = function() { Rob.go(runWhichState); };
+}
