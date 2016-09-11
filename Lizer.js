@@ -1,7 +1,7 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global Rob */
+/* global Rob, tinycolor */
 
 "use strict";
 
@@ -54,8 +54,9 @@ Rob.Lizer.prototype.launch = function(parent, birthWeight) {
 	this.embryoCalorieBudget = birthWeight * Rob.globals.embryoCalorieDensity;
 	this.accumulatedMetabolismCost = 0;
 
-	this.costForHavingBabies =
-		this.dna.massOfMyBabies * Rob.globals.embryoCalorieDensity;
+	this.costForHavingBabies = this.dna.massOfMyBabies * Rob.globals.embryoCalorieDensity;
+		
+	this.optimalTempRange = Rob.Range(this.dna.optimalLoTemp, this.dna.optimalHiTemp);
 
 	this.archon.god.setSize(this.sprite, this.getMass());
 };
@@ -80,6 +81,19 @@ Rob.Lizer.prototype.metabolize = function() {
 	var cost = 0, c = 0, t = "Lizer: ";
 	var temp = this.getTemperature();
 	var speed = this.getSpeed();
+	
+	// While we're here, set the button color
+	var tempDelta = temp - this.dna.optimalTemp;
+	tempDelta = Rob.clamp(tempDelta, this.dna.optimalLoTemp, this.dna.optimalHiTemp);
+	
+	var hue = Rob.globals.buttonHueRange.convertPoint(tempDelta, this.optimalTempRange);
+	var hsl = 'hsl(' + Math.floor(hue) + ', 100%, 50%)';
+	var rgb = tinycolor(hsl).toHex();
+	var tint = parseInt(rgb, 16);
+
+	//if(this.archon.uniqueID === 0 && this.frameCount % 60 === 0) { console.log(tempDelta.toFixed(), hsl, rgb); }
+
+	this.archon.button.tint = tint;
 
 	// Costs for keeping the body warm, for moving, and
 	// for simply maintaining the body

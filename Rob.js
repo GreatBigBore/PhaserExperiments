@@ -38,7 +38,7 @@ var Rob = (function() {
   },
 
   clamp: function(value, lo, hi) {
-    var c = Math.max(value, lo); c = Math.min(value, hi); return c;
+    var c = Math.max(value, lo); c = Math.min(c, hi); return c;
   },
 
   dumpGenePool: function() {
@@ -84,6 +84,7 @@ var Rob = (function() {
     Rob.globals.zeroToOneRange = Rob.Range(0, 1);
     Rob.globals.oneToZeroRange = Rob.Range(1, 0);
     Rob.globals.temperatureRange = Rob.Range(Rob.globals.temperatureLo, Rob.globals.temperatureHi);
+		Rob.globals.buttonHueRange = Rob.Range(240, 0);	// Blue (240) is cold, Red (0) is hot
   },
 
   realInRange: function(lo, hi) {
