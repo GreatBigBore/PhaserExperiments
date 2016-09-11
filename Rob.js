@@ -74,6 +74,7 @@ var Rob = (function() {
     Rob.globals.archonColorRange = Rob.Range(1, 255);
     Rob.globals.darknessRange = Rob.Range(Rob.globals.darknessAlphaHi, Rob.globals.darknessAlphaLo);
     Rob.globals.zeroToOneRange = Rob.Range(0, 1);
+    Rob.globals.oneToZeroRange = Rob.Range(1, 0);
     Rob.globals.temperatureRange = Rob.Range(Rob.globals.temperatureLo, Rob.globals.temperatureHi);
   },
 

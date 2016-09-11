@@ -52,8 +52,12 @@ Rob.MannaGenerator.prototype.emit_ = function(parentParticle) {
         )
       );
 
-      // When to emit our first bubble
-      this.setNextEmit(thisParticle);
+      if(position.y < this.config.position.y - this.config.size.y / 4) {
+        // When to emit our first bubble
+        this.setNextEmit(thisParticle);
+      } else {
+        thisParticle.nextEmit = -1;   // only the topmost manna emits bubbles
+      }
 
     } else {
       this.setNextEmit(parentParticle); // When to emit our next bubble
@@ -76,7 +80,7 @@ Rob.MannaGenerator.prototype.emit_ = function(parentParticle) {
     );
 
     thisParticle.revive();
-    thisParticle.alpha = this.config.visible ? 1 : 0;
+    thisParticle.alpha = this.config.visible ? 1 : 0.1;
 
     this.previousEmit = this.frameCount;            // Generator remember the most recent birth
   }
@@ -91,7 +95,10 @@ Rob.MannaGenerator.prototype.emit = function() {
   } else {
     // Bubbles can come out of living manna at any time
     this.config.parentGroup.forEachAlive(function(parentParticle) {
-      if(parentParticle.nextEmit > 0 && this.frameCount >= parentParticle.nextEmit) {
+      if(
+        parentParticle.nextEmit > 0 &&
+        this.frameCount >= parentParticle.nextEmit
+      ) {
         this.emit_(parentParticle);
       }
     }, this);

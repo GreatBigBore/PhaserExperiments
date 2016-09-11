@@ -17,7 +17,7 @@ Rob.MannaGarden = function(mannaCount, smellPerMorsel, db) {
   var mannaConfig = {
     interval: 1,            // Emit one particle per frame
     lifetime: 5 * 60,       // lifetime in seconds
-    size: Rob.XY(game.width, 150),
+    size: Rob.XY(game.width, 100),
     position: Rob.XY(game.width / 2, game.height / 4),
     maxVelocity: Rob.XY(),
     minVelocity: Rob.XY(),
@@ -70,10 +70,10 @@ Rob.MannaGarden.prototype.setEfficiency = function(efficiency) {
   var mannaEmitter = this.emitters[0];
   var smellEmitter = this.emitters[1];
 
-  var lifetimeMap = [ 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0 ];
+  var lifetimeMap = [ 7.0, 3.0, 2.0, 1.5, 2.5, 3.5, 4.5, 5.0, 5.0 ];
   mannaEmitter.config.lifetime = lifetimeMap[efficiency] * 60;
 
-  var intervalMap = [ 60, 60, 40, 40, 10, 5, 3, 2, 1, 1, 1 ];
+  var intervalMap = [ 5, 10, 15, 30, 10, 5, 3, 1, 1, 1, 1 ];
   smellEmitter.config.interval = intervalMap[efficiency];
   mannaEmitter.config.interval = intervalMap[efficiency];
 };
@@ -81,7 +81,7 @@ Rob.MannaGarden.prototype.setEfficiency = function(efficiency) {
 Rob.MannaGarden.prototype.setPosition = function(sunStrength) {
   var mannaEmitter = this.emitters[0];
 
-  var topOfMyRange = game.height / 2;
+  var topOfMyRange = game.height / 3;
   var bottomOfMyRange = game.height - (this.emitters[0].config.size.y / 2);
 
   var myRangeSize = (bottomOfMyRange - topOfMyRange);

@@ -13,6 +13,7 @@ Rob.dnaConstants = {
   archonHeroSize: 100,
   archonMortalSizeScale: 0.0005,
   archonStandardOptimalTemp: 0,
+  archonStandardLifetime: 5 * 60 * 60,  // Five minutes
   archonStandardTempRange: 400,
   embryoThresholdMultiplier: 1.1,
   avoidanceFactor: -1,
@@ -27,6 +28,7 @@ Rob.aboriginalDNA = {
   massOfMyBabies: Rob.globals.standardBabyMass,
   embryoThreshold: 0,
   tasteFactor: Rob.dnaConstants.tasteFactor,
+  lifetime: Rob.dnaConstants.archonStandardLifetime,
   maxAcceleration: Rob.globals.maxAcceleration,
   maxVelocity: Rob.globals.maxSpeed,
   motionMultiplier: 30,
@@ -105,6 +107,7 @@ Rob.DNA.prototype.getTint = function() {
 Rob.DNA.prototype.scalarMutations = {
   color: { probability: 10, range: 10 },
 	embryoThreshold: { probability: 10, range: 10 },
+  lifetime: { probability: 10, range: 10 },
   massOfMyBabies: { probability: 10, range: 10 },
 	maxAcceleration: { probability: 10, range: 10 },
 	maxVelocity: { probability: 10, range: 10 },
@@ -192,14 +195,21 @@ Rob.DNA.prototype.mutateScalar = function(traitName, parentDNA) {
 };
 
 Rob.DNA.prototype.mutateScalar_ = function(value, probability, range) {
-  if(this.mutateYN(probability)) {
-    return game.rnd.realInRange(
-      value * (1 - range / 100),
-      value * (1 + range / 100)
-    );
-	} else {
-    return value;
+  var scratchRange = 0;
+
+  // Just to make it interesting, every once in a while, a big change
+  for(var i = 0; i < 3; i++) {
+    if(this.mutateYN(probability)) {
+      scratchRange += range;
+      probability += 10;
+    } else {
+      break;
+    }
   }
+
+  return game.rnd.realInRange(
+    value * (1 - scratchRange / 100), value * (1 + scratchRange / 100)
+  );
 };
 
 Rob.DNA.prototype.mutateTemperatureStuff = function(parentDNA) {

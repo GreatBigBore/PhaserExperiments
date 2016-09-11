@@ -14,10 +14,14 @@ Rob.Lizer.prototype.init = function(archon) {
 	this.body = archon.sprite.body;
 	this.dna = archon.dna;
 	this.frameCount = 0;
+
+	this.mannaNutritionRange =
+		Rob.Range(Rob.globals.caloriesPerMannaMorsel, 3 * Rob.globals.caloriesPerMannaMorsel);
 };
 
 Rob.Lizer.prototype.eat = function() {
-	var calories = Rob.globals.caloriesPerMannaMorsel;
+	var sunStrength = Rob.globals.theSun.getStrength();
+	var calories = this.mannaNutritionRange.convertPoint(sunStrength, Rob.globals.oneToZeroRange);
 
   if(this.adultCalorieBudget > this.dna.embryoThreshold) {
     // Store up for breeding if we have enough reserves already
@@ -44,6 +48,7 @@ Rob.Lizer.prototype.eat = function() {
 };
 
 Rob.Lizer.prototype.ensoul = function(parent, birthWeight) {
+	this.expirationDate = this.dna.lifetime + this.frameCount;
 	this.adultCalorieBudget = 0;
 	this.babyCalorieBudget = 0;
 	this.embryoCalorieBudget = birthWeight * Rob.globals.embryoCalorieDensity;
@@ -87,10 +92,19 @@ Rob.Lizer.prototype.metabolize = function() {
 		}
 	}
 
-	this.adultCalorieBudget -= cost;
-	if(cost > 0 &&
-		this.adultCalorieBudget < Rob.globals.minimumAdultMass * Rob.globals.adultFatCalorieDensity) {
-		console.log('Archon', this.archon.uniqueID, 'just died');
+	var minimumCalorieBudget = Rob.globals.minimumAdultMass * Rob.globals.adultFatCalorieDensity;
+	var causeOfDeath = null;
+
+	// If there's any cost remaining, see if it can come out
+	// of his adult calorie budget
+	if(cost > 0 && this.adultCalorieBudget < minimumCalorieBudget) {
+		causeOfDeath = 'malnourishment';
+	} else if(this.frameCount > this.expirationDate) {
+		causeOfDeath = 'old age';
+	}
+
+	if(causeOfDeath !== null) {
+		console.log('Archon', this.archon.uniqueID, 'just died of', causeOfDeath);
 		this.archon.sprite.kill();
 		this.archon.sensor.kill();
 		this.archon.button.kill();
@@ -102,4 +116,4 @@ Rob.Lizer.prototype.metabolize = function() {
 Rob.Lizer.prototype.update = function() {
 	this.frameCount++;
 	this.metabolize();
-}
+};

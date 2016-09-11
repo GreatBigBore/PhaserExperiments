@@ -51,6 +51,7 @@ Rob.Spreader.prototype.create = function() {
   this.motionVector = Rob.XY();
 
   this.sun = new Rob.Sun();
+  Rob.globals.theSun = this.sun;
 
   this.mannaGarden = new Rob.MannaGarden(300, 3, this.db);
 
@@ -165,6 +166,7 @@ Rob.Spreader.prototype.report = function(whichSprite) {
   console.log("Mass = " + a.lizer.getMass());
   console.log("Adult fat = " + a.lizer.adultCalorieBudget.toFixed() + ", embryo storage = " + a.lizer.embryoCalorieBudget.toFixed());
   console.log("DNA:");
+  console.log("Life remaining: " + a.lizer.expirationDate - a.lizer.frameCount + " ticks ");
   console.log("Temps: " + a.dna.optimalLoTemp + ", " + a.dna.optimalTemp + ", " + a.dna.optimalHiTemp);
 };
 

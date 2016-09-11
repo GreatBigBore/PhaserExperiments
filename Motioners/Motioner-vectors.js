@@ -41,7 +41,7 @@ Rob.Motioner.prototype.init = function(archon) {
   this.zapThreshold = 20;
 
   this.motionIndicator = Rob.XY();
-  this.previousStartingPoint = Rob.XY();;
+  this.previousStartingPoint = Rob.XY();
 };
 
 Rob.Motioner.prototype.ensoul = function() {
@@ -382,7 +382,6 @@ Rob.Motioner.prototype.update = function() {
         scratch.x = Rob.clamp(scratch.x, 0, game.width);
         scratch.y = Rob.clamp(scratch.y, 0, game.height);
 
-        var speed = Rob.globals.maxSpeed;
         if(this.archon.justBorn) {
           this.archon.justBorn = false;
           var nx = game.rnd.integerInRange(-this.sprite.width * 4, this.sprite.width * 4);
@@ -422,7 +421,7 @@ Rob.Motioner.prototype.update = function() {
   for(i in this.senseCounts) { this.senseCounts[i] = 0; }
 };
 
-Rob.Accel = function(sprite, maxSpeed) {
+Rob.Accel = function(sprite) {
   this.dna = sprite.archon.dna;
   this.frameCount = 0;
   this.maneuverStamp = 0;
