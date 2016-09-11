@@ -46,9 +46,6 @@ Rob.aboriginalDNA = {
 Rob.DNA = function() {
 };
 
-Rob.DNA.prototype.init = function(archon) {
-};
-
 Rob.DNA.prototype.launch = function(parent) {
   if(parent === undefined) {
     parent = {

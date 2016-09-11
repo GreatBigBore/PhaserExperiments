@@ -96,7 +96,6 @@ Rob.Archons.prototype.archonate = function(sprite) {
 	  a.motioner = new Rob.Motioner();
 		a.lizer = new Rob.Lizer();
 
-		a.dna.init(a);
 		a.mover.init(a);
 		a.motioner.init(a);
 		a.lizer.init(a);
