@@ -30,8 +30,26 @@ Rob.Archons.prototype.breed = function(parent, birthWeight) {
 
 	var a = this.archonate(p);	// Make sure this phaseron has an archon
 
+	var oldID = a.uniqueID;
+
 	a.justBorn = true;	// Tells motioner to aim them away from parent
 	a.uniqueID = this.archonUniqueID++;
+
+	var t = "Birth: archon " + a.uniqueID;
+
+	if(parent === undefined) {
+		t += " by miracle";
+	} else {
+	 	t += " sprung from archon " + parent.archon.uniqueID;
+
+		if(oldID === -1) {
+			t += "; first launch";
+		} else {
+			t += "; recycled from " + oldID;
+		}
+	}
+
+	console.log(t);
 
 	a.dna.launch(parent);
 	a.mover.launch(parent);
@@ -68,7 +86,7 @@ Rob.Archons.prototype.archonate = function(sprite) {
 	var a = sprite.archon;
 
 	if(a.uniqueID === undefined) {
-		a.uniqueID = 0;
+		a.uniqueID = -1;
 		a.launched = true;
 		a.god = this;
 		a.sprite = sprite;

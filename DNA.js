@@ -154,7 +154,6 @@ Rob.DNA.prototype.mutate = function(traitName, parentDNA) {
 			if(originalValue !== newValue) {
 				console.log(traitName, 'mutated to', newValue.toFixed(4), 'from', originalValue.toFixed(4));
 			}
-
 		}
 
 		break;

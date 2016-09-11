@@ -25,6 +25,9 @@ var Rob = (function() {
     darknessAlphaHi: 0.3,
     darknessAlphaLo: 0.0,
     embryoCalorieDensity: 5000,    // Very high density fat stored for making babies
+    lizerCostPerMass: 0.1,          // Mass of 10g costs 1 calorie per tick
+    lizerCostPerSpeed: 0.011 / 60,  // Speed of 100 costs 1 calorie per second
+    lizerCostPerTemp: 0.01 / 60,    // Diff by 100˚ costs 1 calorie per second
     maxAcceleration: 15,
     maxSpeed: 75,                   // pix/sec
     minimumAdultMass: 1,            // Below this, an adult will die

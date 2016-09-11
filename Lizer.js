@@ -68,9 +68,38 @@ Rob.Lizer.prototype.getMass = function() {
   );
 };
 
+Rob.Lizer.prototype.getTemperature = function() {
+	return Rob.getTemperature(this.sprite.x, this.sprite.y);
+};
+
+Rob.Lizer.prototype.getSpeed = function() {
+	return Rob.XY(this.body.velocity).getMagnitude();
+};
+
 Rob.Lizer.prototype.metabolize = function() {
-	var cost = this.accumulatedMetabolismCost;
-	this.accumulatedMetabolismCost = 0;
+	var cost = 0, c = 0, t = "Lizer: ";
+	var temp = this.getTemperature();
+	var speed = this.getSpeed();
+
+	// Costs for keeping the body warm, for moving, and
+	// for simply maintaining the body
+	c = Math.abs(temp - this.archon.dna.optimalTemp) * Rob.globals.lizerCostPerTemp;
+	t += "t = " + c.toFixed(4);
+	cost += c;
+
+	c = speed * Rob.globals.lizerCostPerSpeed;
+	t += ", s = " + c.toFixed(4);
+	cost += c;
+
+	c = this.getMass() * Rob.globals.lizerCostPerMass;
+	t += ", m = " + c.toFixed(4);
+	cost += c;
+
+	t += ", total = " + cost.toFixed(4);
+	//if(this.archon.uniqueID === 0 && this.frameCount % 60 === 0) { console.log(t); }
+
+	c = this.getMass();
+	t = "Before: " + c.toFixed(4);
 
 	if(this.babyCalorieBudget > 0) {
 		this.babyCalorieBudget -= cost;
@@ -101,7 +130,13 @@ Rob.Lizer.prototype.metabolize = function() {
 		causeOfDeath = 'malnourishment';
 	} else if(this.frameCount > this.expirationDate) {
 		causeOfDeath = 'old age';
+	} else {
+		this.adultCalorieBudget -= cost;
 	}
+
+	c = this.getMass();
+	t = "After: " + c.toFixed(4);
+	//if(this.archon.uniqueID === 0 && this.frameCount % 60 === 0) { console.log(t); }
 
 	if(causeOfDeath !== null) {
 		console.log('Archon', this.archon.uniqueID, 'just died of', causeOfDeath);

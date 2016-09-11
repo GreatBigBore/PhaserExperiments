@@ -393,16 +393,6 @@ Rob.Motioner.prototype.update = function() {
         }
       }
 
-      // Tell the lizer about the the energy we're spending to move around
-      if(this.previousStartingPoint.isEqualTo(0)) {
-        this.previousStartingPoint.set(this.sprite); // No cost for the first movement in life
-      }
-
-      var c = this.previousStartingPoint.getDistanceTo(this.sprite);
-      this.lizer.accumulatedMetabolismCost += c / 10;
-
-      this.previousStartingPoint.set(this.sprite);
-
       this.motionIndicator.set(this.vectors.motion);
       this.motionIndicator.normalize();
       this.motionIndicator.scalarMultiply(this.sensor.width / 2);
