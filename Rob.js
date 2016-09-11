@@ -41,6 +41,10 @@ var Rob = (function() {
     var c = Math.max(value, lo); c = Math.min(value, hi); return c;
   },
 
+  dumpGenePool: function() {
+    Rob.globals.archonia.archons.dumpGenePool();
+  },
+
   go: function(runWhichState) {
     Rob.preGameInit();
 

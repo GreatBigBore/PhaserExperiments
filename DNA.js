@@ -47,7 +47,6 @@ Rob.DNA = function() {
 };
 
 Rob.DNA.prototype.init = function(archon) {
-  this.sprite = archon.sprite;
 };
 
 Rob.DNA.prototype.launch = function(parent) {

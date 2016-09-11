@@ -105,6 +105,15 @@ Rob.Archons.prototype.archonate = function(sprite) {
 	return a;
 };
 
+Rob.Archons.prototype.dumpGenePool = function() {
+	var genePool = [];
+	this.phaseronPool.forEachAlive(function(p) {
+		genePool.push(p.archon.dna);
+	});
+
+	console.log(genePool);
+};
+
 Rob.Archons.prototype.initialize = function() {
 	this.setupSpritePools();
 	this.constructPhaserons();

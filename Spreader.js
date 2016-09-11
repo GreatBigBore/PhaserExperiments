@@ -109,7 +109,7 @@ Rob.Spreader.prototype.handleClick = function(pointer) {
     var clickedOnASprite = false;
     var whichSprite = null;
     this.archons.phaseronPool.forEachAlive(function(a) {
-      if(clickedOnASprite) { whichSprite = a; return; }
+      if(clickedOnASprite) { return; }
 
       var radius = a.width / 2;
       var rect = new Phaser.Rectangle(
@@ -118,6 +118,7 @@ Rob.Spreader.prototype.handleClick = function(pointer) {
 
       if(Phaser.Rectangle.containsPoint(rect, pointer)) {
         clickedOnASprite = true;
+        whichSprite = a;
       }
     }, this);
 
@@ -160,13 +161,22 @@ Rob.Spreader.prototype.render = function() {
 
 Rob.Spreader.prototype.report = function(whichSprite) {
   var a = whichSprite.archon;
+  console.log(a.dna);
 
-  console.log("Sprite " + a.uniqueID);
-  console.log("Mass = " + a.lizer.getMass());
-  console.log("Adult fat = " + a.lizer.adultCalorieBudget.toFixed() + ", embryo storage = " + a.lizer.embryoCalorieBudget.toFixed());
-  console.log("DNA:");
-  console.log("Life remaining: " + a.lizer.expirationDate - a.lizer.frameCount + " ticks ");
-  console.log("Temps: " + a.dna.optimalLoTemp + ", " + a.dna.optimalTemp + ", " + a.dna.optimalHiTemp);
+  console.log("\n\n\nArchon " + a.uniqueID);
+  console.log("Mass = " + a.lizer.getMass().toFixed(4));
+
+  console.log(
+    "Energy budget - baby fat: " + a.lizer.babyCalorieBudget.toFixed() +
+    ", reserves: " + a.lizer.adultCalorieBudget.toFixed() +
+    ", embryo storage: " + a.lizer.embryoCalorieBudget.toFixed()
+  );
+
+  var t = a.lizer.expirationDate - a.lizer.frameCount;
+  console.log("Life remaining: " + (t / 60).toFixed() + "s (" + t + " ticks)");
+
+  console.log("\nDNA:");
+  console.log("Temps: " + a.dna.optimalLoTemp.toFixed() + " <= " + a.dna.optimalTemp.toFixed() + " <= " + a.dna.optimalHiTemp.toFixed());
 };
 
 Rob.Spreader.prototype.smell = function(sprite, smellyParticle) {
