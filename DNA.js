@@ -108,6 +108,9 @@ Rob.DNA.prototype.scalarMutations = {
 	maxAcceleration: { probability: 10, range: 10 },
 	maxVelocity: { probability: 10, range: 10 },
   motionMultiplier: { probability: 10, range: 10 },
+	optimalTemp: { probability: 10, range: 10 },
+	optimalHiTemp: { probability: 10, range: 10 },
+	optimalLoTemp: { probability: 10, range: 10 },
 	optimalMass: { probability: 10, range: 10 },
 	sensorSize:  { probability: 10, range: 10 },
   smellFactor: { probability: 10, range: 10 },
@@ -130,7 +133,7 @@ Rob.DNA.prototype.mutate = function(traitName, parentDNA) {
 
 	switch(traitName) {
 		case 'color': this.mutateColor(parentDNA.color); break;
-		case 'optimalTemp': this.mutateTemperatureStuff(); break;
+		case 'optimalTemp': this.mutateTemperatureStuff(parentDNA); break;
     case 'tempRange': break;
 		case 'optimalHiTemp': break;	// We do this along with optimal temp
 		case 'optimalLoTemp': break;	// We do this along with optimal temp
@@ -208,12 +211,12 @@ Rob.DNA.prototype.mutateScalar_ = function(value, probability, range) {
 };
 
 Rob.DNA.prototype.mutateTemperatureStuff = function(parentDNA) {
-  this.mutateScalar_('optimalTemp', parentDNA);
-  this.mutateScalar_('optimalHiTemp', parentDNA);
-  this.mutateScalar_('optimalLoTemp', parentDNA);
+  this.mutateScalar('optimalTemp', parentDNA);
+  this.mutateScalar('optimalHiTemp', parentDNA);
+  this.mutateScalar('optimalLoTemp', parentDNA);
   this.clampTemp();
 
-  this.tempRange = this.optimalHiTemp = this.optimalLoTemp;
+  this.tempRange = this.optimalHiTemp - this.optimalLoTemp;
 };
 
 Rob.DNA.prototype.mutateYN = function(probability) {
