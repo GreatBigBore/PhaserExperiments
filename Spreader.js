@@ -43,24 +43,23 @@ Rob.Spreader.prototype.create = function() {
 
   Rob.setupBitmaps();
 
-  this.archons = new Rob.Archons();
-  for(var i = 0; i < Rob.globals.archonCount; i++) {
-    this.archons.breed();
-  }
-
-  this.motionVector = Rob.XY();
-
-  this.sun = new Rob.Sun();
-  Rob.globals.theSun = this.sun;
-
-  this.mannaGarden = new Rob.MannaGarden(300, 3, this.db);
-
   this.frameCount = 0;
+
+  Rob.globals.archonia.spreader = this;
+
+  Rob.globals.archonia.sun = new Rob.Sun();
+
+  Rob.globals.archonia.mannaGarden = new Rob.MannaGarden(300, 3, this.db);
+
+  Rob.globals.archonia.archons = new Rob.Archons();
+
+  this.sun = Rob.globals.archonia.sun;
+  this.mannaGarden = Rob.globals.archonia.mannaGarden;
+  this.archons = Rob.globals.archonia.archons;
 
   this.worldColorRange = this.getWorldColorRange();
 
   this.cursors = game.input.keyboard.createCursorKeys();
-
   game.input.onUp.add(this.onMouseUp, this);
   game.input.onDown.add(this.onMouseDown, this);
 };
@@ -109,7 +108,7 @@ Rob.Spreader.prototype.handleClick = function(pointer) {
     // don't start the world again
     var clickedOnASprite = false;
     var whichSprite = null;
-    this.archons.archonPool.forEachAlive(function(a) {
+    this.archons.phaseronPool.forEachAlive(function(a) {
       if(clickedOnASprite) { whichSprite = a; return; }
 
       var radius = a.width / 2;
@@ -135,7 +134,7 @@ Rob.Spreader.prototype.handleClick = function(pointer) {
   }
 
   if(changeState) {
-    this.archons.archonPool.forEachAlive(function(a) {
+    this.archons.phaseronPool.forEachAlive(function(a) {
       a.archon.stopped = this.stopped;
     }, this);
   }
@@ -190,9 +189,9 @@ Rob.Spreader.prototype.update = function() {
   // the sprite and the sensor
   game.physics.arcade.overlap(this.archons.sensorPool, this.mannaGarden.smellGroup, this.smell, null, this);
   game.physics.arcade.overlap(this.archons.sensorPool, this.mannaGarden.foodGroup, this.taste, null, this);
-  game.physics.arcade.overlap(this.archons.archonPool, this.mannaGarden.foodGroup, this.eat, null, this);
-  game.physics.arcade.overlap(this.archons.sensorPool, this.archons.archonPool, this.avoid, null, this);
-  //game.physics.arcade.collide(this.archons.archonPool, this.archons.wallsGroup);
+  game.physics.arcade.overlap(this.archons.phaseronPool, this.mannaGarden.foodGroup, this.eat, null, this);
+  game.physics.arcade.overlap(this.archons.sensorPool, this.archons.phaseronPool, this.avoid, null, this);
+  //game.physics.arcade.collide(this.archons.phaseronPool, this.archons.wallsGroup);
 
   this.frameCount++;
   this.mannaGarden.update(theSun.getStrength());

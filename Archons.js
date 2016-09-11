@@ -8,7 +8,7 @@
 Rob.Archons = function() {
 	this.archonUniqueID = 0;
 
-	this.archonPool = null;
+	this.phaseronPool = null;
 	this.buttonPool = null;
 	this.sensorPool = null;
 
@@ -16,31 +16,34 @@ Rob.Archons = function() {
 };
 
 Rob.Archons.prototype.breed = function(parent, birthWeight) {
-	var a = this.archonPool.getFirstDead();
-	if(a === null) {
-		throw "No more archons in pool";
-	}
+	if(birthWeight === undefined) { birthWeight = Rob.globals.standardBabyMass; }
+
+	var p = this.phaseronPool.getFirstDead();
+	if(p === null) { throw "No more phaserons in pool"; }
 
 	if(parent === undefined) {
-		// totally arbitrary, just staying within the bounds of the world
-		var center = game.width / 2;
-		var maxDFromCenter = game.width / 2 - 20;
-
-		a.x = Rob.integerInRange(center - maxDFromCenter, center + maxDFromCenter);
-		a.y = Rob.integerInRange(center - maxDFromCenter, center + maxDFromCenter);
+		p.x = Rob.integerInRange(20, game.width - 20);
+		p.y = Rob.integerInRange(20, game.height - 20);
 	} else {
-		a.x = parent.sprite.x; a.y = parent.sprite.y;
+		p.x = parent.sprite.x; p.y = parent.sprite.y;
 	}
 
-	if(birthWeight === undefined) { birthWeight = Rob.globals.standardBabyMass; }
-	this.ensoul(a, parent, birthWeight);
+	var a = this.archonate(p);	// Make sure this phaseron has an archon
 
-	a.revive(); a.archon.button.revive(); a.archon.sensor.revive();
+	a.justBorn = true;	// Tells motioner to aim them away from parent
+	a.uniqueID = this.archonUniqueID++;
 
-	return a.archon;
+	a.dna.launch(parent);
+	a.mover.launch(parent);
+	a.motioner.launch(parent);
+	a.lizer.launch(parent, birthWeight);
+
+	p.revive(); a.button.revive(); a.sensor.revive();
+
+	return a;
 };
 
-Rob.Archons.prototype.enablePhysicsBodies = function() {
+Rob.Archons.prototype.activatePhysicsBodies = function() {
 	var enable = function(c) {
 		game.physics.enable(c, Phaser.Physics.ARCADE);
 
@@ -48,7 +51,7 @@ Rob.Archons.prototype.enablePhysicsBodies = function() {
 		c.body.bounce.setTo(0, 0);
 	};
 
-	this.archonPool.forEach(function(a) {
+	this.phaseronPool.forEach(function(a) {
 
 		enable(a);
 		this.setSize(a, Rob.globals.standardBabyMass);
@@ -61,47 +64,43 @@ Rob.Archons.prototype.enablePhysicsBodies = function() {
 	}, this);
 };
 
-Rob.Archons.prototype.ensoul = function(sprite, parent, birthWeight) {
-	if(sprite.archon === undefined) { throw "How did we get a sprite with no archon?"; }
+Rob.Archons.prototype.archonate = function(sprite) {
+	var a = sprite.archon;
 
-	sprite.archon.justBorn = true;	// Allows motioner to launch them away from parent
+	if(a.uniqueID === undefined) {
+		a.uniqueID = 0;
+		a.launched = true;
+		a.god = this;
+		a.sprite = sprite;
 
-	if(!sprite.archon.ensouled) {
-		sprite.archon.uniqueID = this.archonUniqueID++;
-		sprite.archon.ensouled = true;
-		sprite.archon.god = this;
-		sprite.archon.sprite = sprite;
+		a.dna = new Rob.DNA();
+		a.mover = new Rob.Mover();
+	  a.motioner = new Rob.Motioner();
+		a.lizer = new Rob.Lizer();
 
-		// This is how we get access to our stuff when resurrecting
-		// a sprite. The archon object on the sprite points to
-		// all of our other objects.
-		sprite.archon.dna = new Rob.DNA();
-		sprite.archon.mover = new Rob.Mover();
-	  sprite.archon.motioner = new Rob.Motioner();
-		sprite.archon.lizer = new Rob.Lizer();
-
-		sprite.archon.dna.init(sprite.archon);
-		sprite.archon.mover.init(sprite.archon);
-		sprite.archon.motioner.init(sprite.archon);
-		sprite.archon.lizer.init(sprite.archon);
+		a.dna.init(a);
+		a.mover.init(a);
+		a.motioner.init(a);
+		a.lizer.init(a);
 	}
 
-	sprite.archon.dna.ensoul(parent);
-	sprite.archon.mover.ensoul(parent);
-	sprite.archon.motioner.ensoul(parent);
-	sprite.archon.lizer.ensoul(parent, birthWeight);
+	return a;
 };
 
 Rob.Archons.prototype.initialize = function() {
 	this.setupSpritePools();
-	this.prepSpritesForLife();
-	this.enablePhysicsBodies();
+	this.constructPhaserons();
+	this.activatePhysicsBodies();
 	//this.setupWalls();
+
+	for(var i = 0; i < Rob.globals.archonCount; i++) {
+    this.breed();
+  }
 };
 
-Rob.Archons.prototype.prepSpritesForLife = function() {
-	this.archonPool.forEach(function(a) {
-		var ix = this.archonPool.getIndex(a);
+Rob.Archons.prototype.constructPhaserons = function() {
+	this.phaseronPool.forEach(function(a) {
+		var ix = this.phaseronPool.getIndex(a);
 		var s = this.sensorPool.getChildAt(ix);
 
 		game.physics.enable(a, Phaser.Physics.ARCADE);
@@ -114,11 +113,7 @@ Rob.Archons.prototype.prepSpritesForLife = function() {
 
 		// This is how we retain the soul of the sprite, not
 		// allowing it to run off into limbo
-		a.archon = {
-			ensouled: false,
-			button: b,
-			sensor: s
-		};
+		a.archon = { sprite: a, button: b, sensor: s};
 
 		s.archon = a.archon;	// So we can hook back from sensors too
 
@@ -138,7 +133,7 @@ Rob.Archons.prototype.render = function() {
 	var showDebugOutlines = false;
 
 	if(showDebugOutlines) {
-		this.archonPool.forEachAlive(function(a) {
+		this.phaseronPool.forEachAlive(function(a) {
 	  	game.debug.body(a, 'yellow', false);
 		//	game.debug.body(a.archon.sensor, 'blue', false);
 
@@ -165,7 +160,7 @@ Rob.Archons.prototype.setupSpritePools = function() {
 	  game.physics.enable(t[whichPool], Phaser.Physics.ARCADE);
 	};
 
-	setupPool(this, 'archonPool');
+	setupPool(this, 'phaseronPool');
 	setupPool(this, 'buttonPool');
 	setupPool(this, 'sensorPool');
 };
@@ -216,7 +211,7 @@ Rob.Archons.prototype.setupWalls = function() {
 };
 
 Rob.Archons.prototype.update = function() {
-	this.archonPool.forEachAlive(function(a) {
+	this.phaseronPool.forEachAlive(function(a) {
 		a.archon.mover.update();
 		a.archon.lizer.update();
 	});

@@ -21,7 +21,7 @@ Rob.Mover.prototype.avoid = function(him) {
   this.motioner.avoid(him);
 };
 
-Rob.Mover.prototype.ensoul = function() {
+Rob.Mover.prototype.launch = function() {
   this.dna = this.archon.dna;
   this.frameCount = 0;
 

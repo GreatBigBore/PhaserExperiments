@@ -44,7 +44,7 @@ Rob.Motioner.prototype.init = function(archon) {
   this.previousStartingPoint = Rob.XY();
 };
 
-Rob.Motioner.prototype.ensoul = function() {
+Rob.Motioner.prototype.launch = function() {
   this.accel = new Rob.Accel(this.sprite);
   this.zeroToOneRange = Rob.globals.zeroToOneRange;
 

@@ -50,7 +50,7 @@ Rob.DNA.prototype.init = function(archon) {
   this.sprite = archon.sprite;
 };
 
-Rob.DNA.prototype.ensoul = function(parent) {
+Rob.DNA.prototype.launch = function(parent) {
   if(parent === undefined) {
     parent = {
       dna: Object.assign({}, Rob.aboriginalDNA)

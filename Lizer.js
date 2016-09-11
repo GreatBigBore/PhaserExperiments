@@ -20,7 +20,7 @@ Rob.Lizer.prototype.init = function(archon) {
 };
 
 Rob.Lizer.prototype.eat = function() {
-	var sunStrength = Rob.globals.theSun.getStrength();
+	var sunStrength = Rob.globals.archonia.sun.getStrength();
 	var calories = this.mannaNutritionRange.convertPoint(sunStrength, Rob.globals.oneToZeroRange);
 
   if(this.adultCalorieBudget > this.dna.embryoThreshold) {
@@ -47,7 +47,7 @@ Rob.Lizer.prototype.eat = function() {
 	this.archon.god.setSize(this.sprite, this.getMass());
 };
 
-Rob.Lizer.prototype.ensoul = function(parent, birthWeight) {
+Rob.Lizer.prototype.launch = function(parent, birthWeight) {
 	this.expirationDate = this.dna.lifetime + this.frameCount;
 	this.adultCalorieBudget = 0;
 	this.babyCalorieBudget = 0;
