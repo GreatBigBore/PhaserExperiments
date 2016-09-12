@@ -1,5 +1,4 @@
 var Range = require('../Range.js').Range;
-var assert = require('assert');
 var data_driven = require('data-driven');
 var chai = require('chai');
 
@@ -128,21 +127,3 @@ describe('Range', function() {
     });
   });
 });
-
-/*for(var i = 0; i < tests.length; i++) {
-  var theTest = tests[i];
-  var theDestinationRange = theTest.dest;
-  var theSourceRange = theTest.source;
-
-  for(var j = 0; j < tests[i].testValues.length; j++) {
-    var theValuesForThisTest = theTest.testValues[j];
-    var theInput = theValuesForThisTest.in;
-    var theOutput = theValuesForThisTest.out;
-
-    describe('With', function() {
-      it(' input ' + theInput + ' should return ' + theOutput, function() {
-        assert.equal(theOutput, theDestinationRange.convertPoint(theInput, theSourceRange));
-      })
-    });
-  }
-}*/
