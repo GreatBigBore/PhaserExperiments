@@ -71,6 +71,11 @@ var Rob = (function() {
     owner.alien.inputEnabled = true;
     owner.alien.input.enableDrag();
   },
+  
+  pointInBounds: function(point) {
+    var border = 10;
+    return point.x > border && point.x < game.width - border && point.y > border && point.y < game.width - border;
+  },
 
   preGameInit: function() {
     // At this point, I don't expect them ever to weigh more than 10g.

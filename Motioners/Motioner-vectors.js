@@ -42,6 +42,8 @@ Rob.Motioner.prototype.init = function(archon) {
 
   this.motionIndicator = Rob.XY();
   this.previousStartingPoint = Rob.XY();
+  
+  this.temper = new Rob.Temper();
 };
 
 Rob.Motioner.prototype.launch = function() {
@@ -54,53 +56,13 @@ Rob.Motioner.prototype.launch = function() {
   this.hungerRange = Rob.Range(0, this.dna.embryoThreshold);
   this.speedRange = Rob.Range(-Rob.globals.maxSpeed, Rob.globals.maxSpeed);
   this.centeredZeroToOneRange = Rob.Range(-0.5, 0.5);
+  
+  this.temper.launch(this.archon);
 };
 
 Rob.Motioner.prototype.eat = function(foodParticle) {
   this.lizer.eat();
   foodParticle.kill();
-};
-
-Rob.Motioner.prototype.getTempVector = function() {
-  var testPoints = [];
-
-  var addCandidate = function(_this, where) {
-    if(where.y > 0 && where.y < game.height && where.x > 0 && where.x < game.width) {
-      var p = where;
-      var t = Rob.getTemperature.call(_this, where);
-      var d = t - _this.dna.optimalTemp;
-      var a = Math.abs(d);
-
-      testPoints.push({ p: p, t: t, d: d, a: a});
-    }
-  };
-
-  addCandidate(this, Rob.XY(this.sensor.x, this.sensor.y - this.sensor.width / 2));
-  addCandidate(this, Rob.XY(this.sensor));
-  addCandidate(this, Rob.XY(this.sensor.x, this.sensor.y + this.sensor.width / 2));
-
-  if(testPoints.length === 0) {
-    this.vectors.temp.set(0, 0);
-  } else {
-    var bestDelta = testPoints[0].a;
-    var bestIndex = 0;
-    for(var i = 0; i < testPoints.length; i++) {
-      if(testPoints[i].a < bestDelta) {
-        bestIndex = i;
-        bestDelta = testPoints[i].a;
-      }
-    }
-
-    var bestD = testPoints[bestIndex].d;
-
-    var myPointOnTheNormalScale = this.centeredZeroToOneRange.convertPoint(
-      bestD, Rob.globals.temperatureRange
-    );
-
-    var randomX = game.rnd.realInRange(-myPointOnTheNormalScale, myPointOnTheNormalScale);
-
-    this.vectors.temp.set(randomX, myPointOnTheNormalScale);
-  }
 };
 
 Rob.Motioner.prototype.getSenseVector = function(sense) {
@@ -266,7 +228,7 @@ Rob.Motioner.prototype.update = function() {
 
   this.accel.tick();
   if(this.accel.maneuverComplete) {
-    this.getTempVector();
+    this.vectors.temp = this.temper.getTempVector();
     this.getSmellVector();
     this.getTasteVector();
     this.getAvoidanceVector();
