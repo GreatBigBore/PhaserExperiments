@@ -156,7 +156,6 @@ Rob.Lizer.prototype.metabolize = function() {
 		console.log('Archon', this.archon.uniqueID, 'just died of', causeOfDeath);
 		this.archon.sprite.kill();
 		this.archon.sensor.kill();
-		this.archon.button.kill();
 	} else {
 		this.archon.god.setSize(this.sprite, this.getMass());
 	}

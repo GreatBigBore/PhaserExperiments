@@ -201,7 +201,6 @@ Rob.Spreader.prototype.update = function() {
   game.physics.arcade.overlap(this.archons.sensorPool, this.mannaGarden.foodGroup, this.taste, null, this);
   game.physics.arcade.overlap(this.archons.phaseronPool, this.mannaGarden.foodGroup, this.eat, null, this);
   game.physics.arcade.overlap(this.archons.sensorPool, this.archons.phaseronPool, this.avoid, null, this);
-  //game.physics.arcade.collide(this.archons.phaseronPool, this.archons.wallsGroup);
 
   this.frameCount++;
   this.mannaGarden.update(theSun.getStrength());

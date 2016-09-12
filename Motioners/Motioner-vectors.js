@@ -37,9 +37,6 @@ Rob.Motioner.prototype.init = function(archon) {
   this.dna = archon.dna;
   this.reach = this.sprite.width * 2;
 
-  this.currentFoodTargets = [];
-  this.zapThreshold = 20;
-
   this.motionIndicator = Rob.XY();
   this.previousStartingPoint = Rob.XY();
   
@@ -109,23 +106,6 @@ Rob.Motioner.prototype.getTasteVector = function() {
   this.getSenseVector('taste');
 };
 
-Rob.Motioner.prototype.purgeFoodTargets = function() {
-  var retain = [];
-
-  for(var i = 0; i < this.currentFoodTargets.length; i++) {
-    var e = this.currentFoodTargets[i];
-
-    // If frame count increases more than one tick
-    // past our current timestamp, then we have
-    // lost track of the candidate; forget about it
-    if(this.frameCount === e.timestamp + e.zapCount + 1) {
-      retain.push(e);
-    }
-  }
-
-  this.currentFoodTargets = retain.slice(); // A surprising way to clone an array
-};
-
 Rob.Motioner.prototype.sense = function(sense, sensee) {
   var radius = this.sensor.width / 2;
   var relativePosition = Rob.XY(sensee).minus(this.sensor);
@@ -133,36 +113,12 @@ Rob.Motioner.prototype.sense = function(sense, sensee) {
   var distance = relativePosition.getMagnitude();
   distance = Rob.clamp(distance, 0, radius);
 
-  var eaten = false;
-  if(sense === 'taste') {
-    if(distance <= this.reach) {
-      var senseeLocation = Rob.XY( Math.floor(sensee.x), Math.floor(sensee.y));
+  var value = radius - distance;
 
-      var f = this.currentFoodTargets.findIndex(function(testSensee) {
-        return testSensee.location.equals(senseeLocation);
-      }, this);
-
-      if(f === -1) {
-        this.currentFoodTargets.push({ location: senseeLocation, zapCount: 0, timestamp: this.frameCount });
-      } else {
-        this.currentFoodTargets[f].zapCount++;
-        if(this.currentFoodTargets[f].zapCount > this.zapThreshold) {
-          this.currentFoodTargets.splice(f, 1);
-          this.eat(sensee);
-          eaten = true;
-        }
-      }
-    }
-  }
-
-  if(!eaten) {
-    var value = radius - distance;
-
-    relativePosition.scalarMultiply(value);
-    this.vectors[sense].add(relativePosition);
-    this.senseCounts[sense]++;
-  }
-
+  relativePosition.scalarMultiply(value);
+  this.vectors[sense].add(relativePosition);
+  this.senseCounts[sense]++;
+  
   var drawDebugLines = false;
   if(drawDebugLines) {
     var color = null;
@@ -175,14 +131,6 @@ Rob.Motioner.prototype.sense = function(sense, sensee) {
     if(sense !== 'smell') {
       Rob.db.draw(this.sprite, sensee, color);
     }
-  }
-};
-
-Rob.Motioner.prototype.shootFoodTargets = function() {
-  for(var i = 0; i < this.currentFoodTargets.length; i++) {
-    var loc = this.currentFoodTargets[i].location;
-
-    Rob.db.draw(this.sprite, loc, 'Chartreuse');
   }
 };
 
@@ -222,9 +170,6 @@ Rob.Motioner.prototype.update = function() {
 
   var i = null;           // One of the few things I hate about javascript
   var scratch = Rob.XY();
-
-  this.purgeFoodTargets();  // Forget any food we can no longer reach
-  this.shootFoodTargets();  // Show the little guy reaching to those within range
 
   this.accel.tick();
   if(this.accel.maneuverComplete) {

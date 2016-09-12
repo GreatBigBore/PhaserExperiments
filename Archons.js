@@ -136,10 +136,10 @@ Rob.Archons.prototype.constructPhaserons = function() {
 		// removes this one from the pool
 		var b = this.buttonPool.getChildAt(0);
 		a.addChild(b);	// b is removed from its pool by this call
-
+    
 		// This is how we retain the soul of the sprite, not
 		// allowing it to run off into limbo
-		a.archon = { sprite: a, button: b, sensor: s};
+		a.archon = { sprite: a, button: b, sensor: s };
 
 		s.archon = a.archon;	// So we can hook back from sensors too
 
@@ -160,10 +160,10 @@ Rob.Archons.prototype.render = function() {
 
 	if(showDebugOutlines) {
 		this.phaseronPool.forEachAlive(function(a) {
-	  	game.debug.body(a, 'yellow', false);
+	  	//game.debug.body(a, 'yellow', false);
 		//	game.debug.body(a.archon.sensor, 'blue', false);
 
-			game.debug.spriteBounds(a, 'blue', false);
+			//game.debug.spriteBounds(a, 'blue', false);
 	  //  game.debug.spriteBounds(a.archon.sensor, 'magenta', false);
 		}, this);
 	}
@@ -186,9 +186,9 @@ Rob.Archons.prototype.setupSpritePools = function() {
 	  game.physics.enable(t[whichPool], Phaser.Physics.ARCADE);
 	};
 
+	setupPool(this, 'sensorPool');
 	setupPool(this, 'phaseronPool');
 	setupPool(this, 'buttonPool');
-	setupPool(this, 'sensorPool');
 };
 
 Rob.Archons.prototype.setupWalls = function() {
