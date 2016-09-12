@@ -43,6 +43,10 @@ ns.XY.prototype = {
   subtract: function(a1, a2) { var subtrahend = ns.XY(a1, a2); this.x -= subtrahend.x; this.y -= subtrahend.y; },
   
   timesScalar: function(scalar) { var scratch = ns.XY(this); scratch.scalarMultiply(scalar); return scratch; },
+  
+  X: function(places) { if(places === undefined) { places = 0; } return this.x.toFixed(places); },
+  
+  Y: function(places) { if(places === undefined) { places = 0; } return this.y.toFixed(places); },
 
   set: function(sourceOrMaybeX, maybeY) {
     if(sourceOrMaybeX === undefined) {
@@ -77,6 +81,12 @@ ns.XY.prototype = {
 
 ns.XY.fromPolar = function(r, theta) {
   return ns.XY(Math.cos(theta) * r, Math.sin(theta) * r);
+};
+
+ns.XY.set = function(target, a1, a2) {
+  var scratch = new ns.XY(a1, a2);
+  target.x = scratch.x;
+  target.y = scratch.y;
 };
 
 function getMagnitude(a1, a2) {

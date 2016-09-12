@@ -1,4 +1,3 @@
-//var data_driven = require('data-driven');
 var Rob = require('../XY.js');
 var chai = require('chai');
 
@@ -37,6 +36,24 @@ describe('XY', function() {
       
       chai.expect(p).to.have.property('x').that.is.within(lo, hi);
       chai.expect(p).to.have.property('y').that.is.within(lo, hi);
+    });
+  });
+
+  describe('Miscellany:', function() {
+    var p0 = Rob.XY(), p1 = Rob.XY(42, 3.14159);
+    
+    it('Should say equal', function() { chai.expect(p0.equals(0, 0)).to.equal(true); });
+    it('Should say not equal', function() { chai.expect(p0.equals(1, 0)).to.equal(false); });
+    it('Should return x with two decimal places', function() { chai.expect(p1.X(2).toString()).to.equal("42.00"); });
+    it('Should return y with three decimal places', function() { chai.expect(p1.Y(3).toString()).to.equal("3.142"); });
+    
+    it('Should set an object\'s x/y properties', function() {
+      var randomObject = { x: null, y: null, z: null };
+      Rob.XY.set(randomObject, Rob.XY(137, 42));
+      
+      chai.expect(randomObject).to.have.property('x').that.equals(137);
+      chai.expect(randomObject).to.have.property('y').that.equals(42);
+      chai.expect(randomObject).to.have.property('z').that.equals(null);
     });
   });
   
