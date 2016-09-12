@@ -33,6 +33,8 @@ ns.XY.prototype = {
   plus: function(a1, a2) { var scratch = ns.XY(this); scratch.add(a1, a2); return scratch; },
   
   minus: function(a1, a2) { var scratch = ns.XY(this); scratch.subtract(a1, a2); return scratch; },
+  
+  normalize: function() { var s = this.getMagnitude(); this.x /= s; this.y /= s; },
 
   reset: function() { this.set(0, 0); },
   

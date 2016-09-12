@@ -55,6 +55,13 @@ describe('XY', function() {
       chai.expect(randomObject).to.have.property('y').that.equals(42);
       chai.expect(randomObject).to.have.property('z').that.equals(null);
     });
+    
+    it('Should normalize', function() {
+      var p2 = Rob.XY(p1); p2.normalize();
+      chai.expect(Math.round(p2.getMagnitude())).to.equal(1);
+      chai.expect(p2.X(4)).to.equal('0.9972');
+      chai.expect(p2.Y(4)).to.equal('0.0746');
+    });
   });
   
   describe('Test add, subtract, scalar multiply, scalar divide:', function() {

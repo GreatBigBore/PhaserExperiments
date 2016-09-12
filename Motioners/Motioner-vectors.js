@@ -177,7 +177,7 @@ Rob.Motioner.prototype.sense = function(sense, sensee) {
       var senseeLocation = Rob.XY( Math.floor(sensee.x), Math.floor(sensee.y));
 
       var f = this.currentFoodTargets.findIndex(function(testSensee) {
-        return testSensee.location.isEqualTo(senseeLocation);
+        return testSensee.location.equals(senseeLocation);
       }, this);
 
       if(f === -1) {
@@ -370,10 +370,10 @@ Rob.Motioner.prototype.update = function() {
         this.vectors.temp.x = game.rnd.integerInRange(-y, y);
       }*/
 
-      this.vectors.motion.add(this.vectors.temp).dividedByScalar(a);
-      this.vectors.motion.add(this.vectors.smell).dividedByScalar(a);
-      this.vectors.motion.add(this.vectors.taste).dividedByScalar(a);
-      this.vectors.motion.add(this.vectors.avoidance).dividedByScalar(a);
+      this.vectors.motion.add(this.vectors.temp.dividedByScalar(a));
+      this.vectors.motion.add(this.vectors.smell.dividedByScalar(a));
+      this.vectors.motion.add(this.vectors.taste.dividedByScalar(a));
+      this.vectors.motion.add(this.vectors.avoidance.dividedByScalar(a));
 
       if(this.archon.stopped) {
         this.body.velocity.setTo(0, 0);
@@ -401,7 +401,7 @@ Rob.Motioner.prototype.update = function() {
   }
 
   var drawDebugLine = false;
-  if(drawDebugLine && !this.motionIndicator.isEqualTo(0, 0)) {
+  if(drawDebugLine && !this.motionIndicator.equals(0, 0)) {
     Rob.db.draw(this.sprite, this.motionIndicator, 'green', 1);
   }
 
