@@ -40,7 +40,7 @@ Rob.MannaGarden = function(mannaCount, smellPerMorsel, db) {
 
   this.setupSmellGenerator(smellConfig);
 
-  for(var i = 0; i < this.emitters.length; i++) {
+  for(var i = 0; i < 1/*this.emitters.length*/; i++) {
     this.emitters[i].start();
   }
 };
@@ -70,12 +70,12 @@ Rob.MannaGarden.prototype.setEfficiency = function(efficiency) {
   var mannaEmitter = this.emitters[0];
   var smellEmitter = this.emitters[1];
 
-  var lifetimeMap = [ 7.0, 3.0, 2.0, 1.5, 2.5, 3.5, 4.5, 5.0, 5.0 ];
+  var lifetimeMap = [ 3.0, 3.0, 2.0, 1.5, 1.0, 2.5, 3.5, 4.5, 5.0, 6.0 ];
   mannaEmitter.config.lifetime = lifetimeMap[efficiency] * 60;
 
-  var intervalMap = [ 5, 10, 15, 30, 10, 5, 3, 1, 1, 1, 1 ];
+  var intervalMap = [ 30, 30, 30, 30, 30, 30, 3, 1, 1, 1 ];
   smellEmitter.config.interval = intervalMap[efficiency];
-  mannaEmitter.config.interval = intervalMap[efficiency];
+  mannaEmitter.config.interval = intervalMap[efficiency] / 2;
 };
 
 Rob.MannaGarden.prototype.setPosition = function(sunStrength) {

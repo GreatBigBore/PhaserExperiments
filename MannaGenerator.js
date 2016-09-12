@@ -88,9 +88,12 @@ Rob.MannaGenerator.prototype.emit_ = function(parentParticle) {
 
 Rob.MannaGenerator.prototype.emit = function() {
   if(this.config.parent === null) {
-    // Manna emission can only be emitted at the intervals
-    if(this.frameCount >= this.previousEmit + this.config.interval) {
+    // Manna can only be emitted at the intervals
+    var elapsedSinceLastEmit = this.frameCount - this.previousEmit;
+    while(elapsedSinceLastEmit >= 0) {
       this.emit_();
+
+      elapsedSinceLastEmit -= this.config.interval;
     }
   } else {
     // Bubbles can come out of living manna at any time

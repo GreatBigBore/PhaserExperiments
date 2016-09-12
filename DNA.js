@@ -13,7 +13,7 @@ Rob.dnaConstants = {
   archonHeroSize: 100,
   archonMortalSizeScale: 0.0005,
   archonStandardOptimalTemp: 0,
-  archonStandardLifetime: 5 * 60 * 60,  // Five minutes
+  archonStandardLifetime: 5 * 60 * 60,
   archonStandardTempRange: 400,
   embryoThresholdMultiplier: 1.1,
   avoidanceFactor: -1,
