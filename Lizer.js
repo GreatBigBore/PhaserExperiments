@@ -47,6 +47,63 @@ Rob.Lizer.prototype.eat = function() {
 	this.archon.god.setSize(this.sprite, this.getMass());
 };
 
+Rob.Lizer.prototype.getMass = function() {
+	return (
+    this.babyCalorieBudget / Rob.globals.babyFatCalorieDensity +
+    this.embryoCalorieBudget / Rob.globals.embryoCalorieDensity +
+    this.adultCalorieBudget / Rob.globals.adultFatCalorieDensity
+  );
+};
+
+Rob.Lizer.prototype.getMotionCost = function() {
+  var motion = this.accel.getMotion();
+  var c = 0;
+  
+	c += motion.speed * Rob.globals.lizerCostPerSpeed;
+  c += motion.acceleration * Rob.globals.lizerCostPerAcceleration;
+
+  return c;
+};
+
+Rob.Lizer.prototype.getTemperature = function() {
+	return Rob.getTemperature(this.sprite.x, this.sprite.y);
+};
+
+Rob.Lizer.prototype.getTempCost = function(temp) {
+  var c = 0, d = 0, e = 0;
+  
+	// Costs for keeping the body warm, for moving, and
+	// for simply maintaining the body
+	c += Math.abs(temp - this.archon.dna.optimalTemp) *
+        Rob.globals.lizerCostPerTemp;
+        
+  if(temp > this.archon.dna.optimalHiTemp) {
+    d = temp - this.archon.dna.optimalHiTemp;
+  } else if(temp < this.archon.dna.optimalLoTemp) {
+    d = this.archon.dna.optimamLoTemp;
+  }
+  
+  if(d > 0) {
+    // Every degree of temp outside your range increases
+    // your base temp cost by a percent. By the time you're
+    // 100˚ outside your range, you've doubled your cost
+    var sw = this.sprite.width;
+    d = sw * 1000;
+    var bs1 = Rob.globals.archonSizeRange.lo;
+    var bs2 = bs1 * 1000;
+    var d = sw / bs2;
+    e = d - 1;
+    var f = Math.pow(d, 2);
+    var g = e / f;
+    var h = 1 + g;
+    var i = sw * h;
+    
+    c += i;
+  }
+  
+  return c;
+};
+
 Rob.Lizer.prototype.launch = function(parent, birthWeight) {
 	this.expirationDate = this.dna.lifetime + this.frameCount;
 	this.adultCalorieBudget = 0;
@@ -57,63 +114,20 @@ Rob.Lizer.prototype.launch = function(parent, birthWeight) {
 	this.costForHavingBabies = this.dna.massOfMyBabies * Rob.globals.embryoCalorieDensity;
 		
 	this.optimalTempRange = Rob.Range(this.dna.optimalLoTemp, this.dna.optimalHiTemp);
+  
+  this.accel = this.archon.motioner.accel;
 
 	this.archon.god.setSize(this.sprite, this.getMass());
-};
-
-Rob.Lizer.prototype.getMass = function() {
-	return (
-    this.babyCalorieBudget / Rob.globals.babyFatCalorieDensity +
-    this.embryoCalorieBudget / Rob.globals.embryoCalorieDensity +
-    this.adultCalorieBudget / Rob.globals.adultFatCalorieDensity
-  );
-};
-
-Rob.Lizer.prototype.getTemperature = function() {
-	return Rob.getTemperature(this.sprite.x, this.sprite.y);
-};
-
-Rob.Lizer.prototype.getSpeed = function() {
-	return Rob.XY(this.body.velocity).getMagnitude();
 };
 
 Rob.Lizer.prototype.metabolize = function() {
 	var cost = 0, c = 0, t = "Lizer: ";
 	var temp = this.getTemperature();
-	var speed = this.getSpeed();
-	
-	// While we're here, set the button color
-	var tempDelta = temp - this.dna.optimalTemp;
-	tempDelta = Rob.clamp(tempDelta, this.dna.optimalLoTemp, this.dna.optimalHiTemp);
-	
-	var hue = Rob.globals.buttonHueRange.convertPoint(tempDelta, this.optimalTempRange);
-	var hsl = 'hsl(' + Math.floor(hue) + ', 100%, 50%)';
-	var rgb = tinycolor(hsl).toHex();
-	var tint = parseInt(rgb, 16);
-
-	//if(this.archon.uniqueID === 0 && this.frameCount % 60 === 0) { console.log(tempDelta.toFixed(), hsl, rgb); }
-
-	this.archon.button.tint = tint;
-
-	// Costs for keeping the body warm, for moving, and
-	// for simply maintaining the body
-	c = Math.abs(temp - this.archon.dna.optimalTemp) * Rob.globals.lizerCostPerTemp;
-	t += "t = " + c.toFixed(4);
-	cost += c;
-
-	c = speed * Rob.globals.lizerCostPerSpeed;
-	t += ", s = " + c.toFixed(4);
-	cost += c;
-
-	c = this.getMass() * Rob.globals.lizerCostPerMass;
-	t += ", m = " + c.toFixed(4);
-	cost += c;
-
-	t += ", total = " + cost.toFixed(4);
-	//if(this.archon.uniqueID === 0 && this.frameCount % 60 === 0) { console.log(t); }
-
-	c = this.getMass();
-	t = "Before: " + c.toFixed(4);
+  
+  this.setButtonColor(temp);
+  
+  cost += this.getTempCost(temp);
+  cost += this.getMotionCost();
 
 	if(this.babyCalorieBudget > 0) {
 		this.babyCalorieBudget -= cost;
@@ -159,6 +173,18 @@ Rob.Lizer.prototype.metabolize = function() {
 	} else {
 		this.archon.god.setSize(this.sprite, this.getMass());
 	}
+};
+
+Rob.Lizer.prototype.setButtonColor = function(temp) {
+	var tempDelta = temp - this.dna.optimalTemp;
+	tempDelta = Rob.clamp(tempDelta, this.dna.optimalLoTemp, this.dna.optimalHiTemp);
+	
+	var hue = Rob.globals.buttonHueRange.convertPoint(tempDelta, this.optimalTempRange);
+	var hsl = 'hsl(' + Math.floor(hue) + ', 100%, 50%)';
+	var rgb = tinycolor(hsl).toHex();
+	var tint = parseInt(rgb, 16);
+
+	this.archon.button.tint = tint;
 };
 
 Rob.Lizer.prototype.update = function() {

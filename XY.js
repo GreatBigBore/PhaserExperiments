@@ -42,6 +42,8 @@ ns.XY.prototype = {
   
   scalarMultiply: function(scalar) { this.x *= scalar; this.y *= scalar; },
   
+  setByMagnitude: function(magnitude) { var a = magnitude / Math.sqrt(2); this.x = a; this.y = a; },
+  
   subtract: function(a1, a2) { var subtrahend = ns.XY(a1, a2); this.x -= subtrahend.x; this.y -= subtrahend.y; },
   
   timesScalar: function(scalar) { var scratch = ns.XY(this); scratch.scalarMultiply(scalar); return scratch; },
@@ -85,8 +87,13 @@ ns.XY.fromPolar = function(r, theta) {
   return ns.XY(Math.cos(theta) * r, Math.sin(theta) * r);
 };
 
+ns.XY.fromMagnitude = function(magnitude) {
+  return ns.XY(magnitude / Math.sqrt(2));
+};
+
 ns.XY.set = function(target, a1, a2) {
-  var scratch = new ns.XY(a1, a2);
+  var scratch = ns.XY(a1, a2);
+
   target.x = scratch.x;
   target.y = scratch.y;
 };
