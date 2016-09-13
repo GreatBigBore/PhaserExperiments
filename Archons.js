@@ -160,7 +160,7 @@ Rob.Archons.prototype.render = function() {
 
 	if(showDebugOutlines) {
 		this.phaseronPool.forEachAlive(function(a) {
-	  	//game.debug.body(a, 'yellow', false);
+	    game.debug.body(a, 'yellow', false);
 		//	game.debug.body(a.archon.sensor, 'blue', false);
 
 			//game.debug.spriteBounds(a, 'blue', false);

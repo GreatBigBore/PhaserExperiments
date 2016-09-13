@@ -22,6 +22,10 @@ ns.XY.prototype = {
   
   equals: function(a1, a2) { var rhs = ns.XY(a1, a2); return this.x === rhs.x && this.y === rhs.y; },
   
+  floor: function() { this.x = Math.floor(this.x); this.y = Math.floor(this.y); },
+  
+  floored: function() { var scratch = ns.XY(this); scratch.floor(); return scratch; },
+  
   getAngleFrom: function(a1, a2) { var c = ns.XY(a1, a2); return Math.atan2(this.y - c.y, this.x - c.x); },
 
   getAngleTo: function(a1, a2) { var c = ns.XY(a1, a2); return c.getAngleFrom(this); },

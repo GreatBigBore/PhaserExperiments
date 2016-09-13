@@ -51,9 +51,7 @@ describe('XY', function() {
       var randomObject = { x: null, y: null, z: null };
       Rob.XY.set(randomObject, Rob.XY(137, 42));
       
-      chai.expect(randomObject).to.have.property('x').that.equals(137);
-      chai.expect(randomObject).to.have.property('y').that.equals(42);
-      chai.expect(randomObject).to.have.property('z').that.equals(null);
+      chai.expect(randomObject).to.include({ x: 137, y: 42, z: null });
     });
     
     it('Should normalize', function() {
@@ -64,21 +62,23 @@ describe('XY', function() {
     });
   });
   
-  describe('Test add, subtract, scalar multiply, scalar divide:', function() {
-    var p = Rob.XY();
+  describe('Test reflexive arithmetic:', function() {
+    var p1 = Rob.XY(); var p2 = Rob.XY(42, 3.14);
     
-    it('Should add', function() { p.reset(); p.add(137, Math.PI); chai.expect(p).to.include({ x: 137, y: Math.PI }); });
-    it('Should add implied vector', function() { p.reset(); p.add(42); chai.expect(p).to.include({ x: 42, y: 42 }); });
+    it('Should add', function() { p1.reset(); p1.add(137, Math.PI); chai.expect(p1).to.include({ x: 137, y: Math.PI }); });
+    it('Should add implied vector', function() { p1.reset(); p1.add(42); chai.expect(p1).to.include({ x: 42, y: 42 }); });
     
-    it('Should subtract', function() { p.reset(); p.subtract(137, Math.PI); chai.expect(p).to.include({ x: -137, y: -Math.PI }); });
-    it('Should subtract implied vector', function() { p.reset(); p.subtract(42); chai.expect(p).to.include({ x: -42, y: -42 }); });
+    it('Should subtract', function() { p1.reset(); p1.subtract(137, Math.PI); chai.expect(p1).to.include({ x: -137, y: -Math.PI }); });
+    it('Should subtract implied vector', function() { p1.reset(); p1.subtract(42); chai.expect(p1).to.include({ x: -42, y: -42 }); });
 
-    it('Should multiply', function() { p.set(5, 7); p.scalarMultiply(3); chai.expect(p).to.include({ x: 15, y: 21 }); });
-    it('Should divide', function() { p.set(37, 20); p.scalarDivide(2); chai.expect(p).to.include({ x: 18.5, y: 10 }); });
+    it('Should multiply', function() { p1.set(5, 7); p1.scalarMultiply(3); chai.expect(p1).to.include({ x: 15, y: 21 }); });
+    it('Should divide', function() { p1.set(37, 20); p1.scalarDivide(2); chai.expect(p1).to.include({ x: 18.5, y: 10 }); });
+
+    it('Should floor', function() { var p3 = Rob.XY(p2); p3.floor(); chai.expect(p3).to.include({ x: 42, y: 3 }); });
   });
   
-  describe('Test plus, minus, times scalar, divided by scalar:', function() {
-    var p1 = Rob.XY(-17, 19), p2 = Rob.XY(137, -46);
+  describe('Test active arithmetic:', function() {
+    var p1 = Rob.XY(-17, 19), p2 = Rob.XY(137, -46), p3 = Rob.XY(42, 3.14);
     
     it('Should plus', function() { chai.expect(p1.plus(p2)).to.include({ x: -17 + 137, y: 19 + -46 }); });
     it('Should plus implied vector', function() { chai.expect(p1.plus(3)).to.include({ x: -14, y: 22 }); });
@@ -88,6 +88,8 @@ describe('XY', function() {
 
     it('Should times scalar', function() { chai.expect(p1.timesScalar(2)).to.include({ x: -34, y: 38 }); });
     it('Should divided by scalar', function() { chai.expect(p2.dividedByScalar(2)).to.include({ x: 137 / 2, y: -23 }); });
+    
+    it('Should floor', function() { chai.expect(p3.floored()).to.include({ x: 42, y: 3 }); });
   });
   
   describe('Test geometry:', function() {
@@ -150,5 +152,35 @@ describe('XY', function() {
     it('Magnitude of zero vector', function() { chai.expect(p0.getMagnitude()).to.equal(0); });
     it('Magnitude of p1', function() { chai.expect(p1.getMagnitude()).to.equal(19); });
     it('Magnitude of p2', function() { chai.expect(p2.getMagnitude()).to.equal(32); });
+  });
+  
+  describe('Test chaining', function() {
+    var p0 = Rob.XY(42, 137), p1 = Rob.XY(-19, 69.127);
+    
+    it('Should tell me whether this thing in the code is what I think it is', function() {
+      var sprite = { x: 19.75, y: -18.47 };
+      var p2 = Rob.XY(19, -19);
+      
+      chai.expect(p2.equals(Rob.XY(sprite).floored())).to.be.true;
+    });
+    
+    it('Should plus.equal', function() { chai.expect(p0.plus(p1).equals(42 - 19, 137 + 69.127)).to.be.true; });
+    it('Should set.floor', function() {
+      var p3 = Rob.XY();
+      p3.set(p1).floor();
+
+      chai.expect(p3).to.include({ x: -19, y: 69 });
+    });
+    
+    it('Should set.floored', function() { var p3 = Rob.XY(p1).floored(); chai.expect(p3).to.include({ x: -19, y: 69 }); });
+    
+    it('Should chain multiple', function() {
+      chai.expect(p0.timesScalar(3).dividedByScalar(3).timesScalar(3).dividedByScalar(3).equals(42, 137)).to.be.true;
+    });
+    
+    it('Should order operations linearly, not attempting to obey normal order', function() {
+      chai.expect(p1.timesScalar(3).plus(1, 1).timesScalar(2).equals(-19 * 3 + 1 * 2, 69.127 * 3 + 1 * 2)).to.be.false;
+      chai.expect(p1.timesScalar(3).plus(1, 1).timesScalar(2).equals((-19 * 3 + 1) * 2, (69.127 * 3 + 1) * 2)).to.be.true;
+    });
   });
 });
