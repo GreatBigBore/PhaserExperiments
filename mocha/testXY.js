@@ -60,6 +60,8 @@ describe('XY', function() {
       chai.expect(p2.X(4)).to.equal('0.9972');
       chai.expect(p2.Y(4)).to.equal('0.0746');
     });
+    
+    it('Should be graceful about normalizing a zero vector', function() { chai.expect(Rob.XY(0, 0).normalized()).to.include({ x: 0, y: 0 }) });
   });
   
   describe('Test reflexive arithmetic:', function() {

@@ -82,11 +82,10 @@ Rob.Motioner.prototype.getSenseVector = function(sense) {
     var m = this.vectors[sense].getMagnitude();
     var c = this.centeredZeroToOneRange.convertPoint(m, this.senseRange);
 
-    if(m < c) {
+    if(m === 0 || m < c) {
       this.vectors[sense].set(0, 0);
     } else {
       this.vectors[sense].scalarMultiply(Math.abs(c / m));
-      //Rob.debugText += "sv2 (" + this.vectors.smell.x + ", " + this.vectors.smell.y + ")\n"
     }
 
     debugText += (
@@ -113,7 +112,7 @@ Rob.Motioner.prototype.sense = function(sense, sensee) {
   var distance = relativePosition.getMagnitude();
   distance = Rob.clamp(distance, 0, radius);
 
-  var value = radius - distance;
+  var value = 2 - (distance / radius);
 
   relativePosition.scalarMultiply(value);
   this.vectors[sense].add(relativePosition);

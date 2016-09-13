@@ -20,17 +20,13 @@ Rob.Lizer.prototype.init = function(archon) {
 };
 
 Rob.Lizer.prototype.doLog = function(id, interval) {
-  return this.archon.uniqueID === id && this.frameCount % interval == 0;
-}
+  return this.archon.uniqueID === id && this.frameCount % interval === 0;
+};
 
 Rob.Lizer.prototype.eat = function() {
 	var sunStrength = Rob.globals.archonia.sun.getStrength();
 	var calories = this.mannaNutritionRange.convertPoint(sunStrength, Rob.globals.oneToZeroRange);
   
-  if(isNaN(sunStrength) || isNaN(calories)) {
-    debugger;
-  }
-
   if(this.adultCalorieBudget > this.dna.embryoThreshold) {
     // Store up for breeding if we have enough reserves already
     this.embryoCalorieBudget += calories;
@@ -38,9 +34,6 @@ Rob.Lizer.prototype.eat = function() {
 		if(this.embryoCalorieBudget >= this.costForHavingBabies) {
 			this.archon.god.breed(this, this.dna.massOfMyBabies);
 			this.embryoCalorieBudget -= this.costForHavingBabies;
-      if(isNaN(this.embryoCalorieBudget) || isNaN(this.costForHavingBabies)) {
-        debugger;
-      }
 
 			var costToAdultCalorieBudget =
 				this.costForHavingBabies - this.embryoCalorieBudget;
@@ -62,14 +55,6 @@ Rob.Lizer.prototype.getMass = function() {
   var b = this.babyCalorieBudget / Rob.globals.babyFatCalorieDensity;
   var e = this.embryoCalorieBudget / Rob.globals.embryoCalorieDensity;
   var a = this.adultCalorieBudget / Rob.globals.adultFatCalorieDensity;
-  
-  /*if(this.doLog(0, 60)) {
-    console.log(b.toFixed(4), e.toFixed(4), a.toFixed(4));
-  }*/
-  
-  if(isNaN(b) || isNaN(e) || isNaN(a)) {
-    debugger;
-  }
   
 	return b + e + a;
 };
@@ -122,7 +107,6 @@ Rob.Lizer.prototype.launch = function(parent, birthWeight) {
 	this.expirationDate = this.dna.lifetime + this.frameCount;
 	this.adultCalorieBudget = 0;
 	this.babyCalorieBudget = 0;
-  if(isNaN(birthWeight)) { debugger; }
 	this.embryoCalorieBudget = birthWeight * Rob.globals.embryoCalorieDensity;
 	this.accumulatedMetabolismCost = 0;
 
@@ -136,7 +120,7 @@ Rob.Lizer.prototype.launch = function(parent, birthWeight) {
 };
 
 Rob.Lizer.prototype.metabolize = function() {
-	var cost = 0, c = 0;
+	var cost = 0;
 	var temp = this.getTemperature();
   
   this.setButtonColor(temp);
@@ -156,7 +140,6 @@ Rob.Lizer.prototype.metabolize = function() {
 
 	if(this.embryoCalorieBudget > 0) {
 		this.embryoCalorieBudget -= cost;
-    if(isNaN(this.embryoCalorieBudget)) { debugger; }
 		if(this.embryoCalorieBudget < 0) {
 			cost = -this.embryoCalorieBudget;
 			this.embryoCalorieBudget = 0;

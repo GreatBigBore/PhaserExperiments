@@ -38,7 +38,9 @@ ns.XY.prototype = {
   
   minus: function(a1, a2) { var scratch = ns.XY(this); scratch.subtract(a1, a2); return scratch; },
   
-  normalize: function() { var s = this.getMagnitude(); this.x /= s; this.y /= s; },
+  normalize: function() { var s = this.getMagnitude(); if(s !== 0) { this.x /= s; this.y /= s; } },
+  
+  normalized: function(a1, a2) { var scratch = ns.XY(a1, a2); scratch.normalize(); return scratch; },
 
   reset: function() { this.set(0, 0); },
   
@@ -47,6 +49,8 @@ ns.XY.prototype = {
   scalarMultiply: function(scalar) { this.x *= scalar; this.y *= scalar; },
   
   setByMagnitude: function(magnitude) { var a = magnitude / Math.sqrt(2); this.x = a; this.y = a; },
+  
+  setX: function(x) { this.x = x; }, setY: function(y) { this.y = y; },
   
   subtract: function(a1, a2) { var subtrahend = ns.XY(a1, a2); this.x -= subtrahend.x; this.y -= subtrahend.y; },
   

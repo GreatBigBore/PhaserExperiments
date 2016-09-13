@@ -1,6 +1,8 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
+/* global game */
+
 "use strict";
 
 var Rob = Rob || {};
@@ -28,8 +30,16 @@ Rob.Temper.prototype.getTempVector = function() {
     
     e.where.set(this.sprite);
     e.where.add(0, j);
+    
+    // For checking whether we're in bounds, we don't care about the x,
+    // just the y; we want to ignore temps above us or below us if
+    // they're out of bounds. The x of a sprite can be technically out
+    // of bounds if the sprite is really small, but as long as it's
+    // within the world borders, which I think (?) it always will be,
+    // then temp checks should work (should!)
+    var boundsCheck = Rob.XY(e.where); boundsCheck.setX(game.width / 2);
 
-    if(Rob.pointInBounds(e.where)) {
+    if(Rob.pointInBounds(boundsCheck)) {
       var t = Rob.getTemperature(e.where);
       var r = null, d = null;
     
