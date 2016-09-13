@@ -1,7 +1,7 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global game, Phaser, Rob, roblog */
+/* global Phaser */
 
 "use strict";
 
@@ -22,33 +22,19 @@ Rob.Accel = function(sprite) {
   this.sprite = sprite;
   this.body = sprite.body;
 
-  this.maxSpeed = this.dna.maxVelocity;
-  this.maxAcceleration = this.dna.maxAcceleration;
-
-  this.currentSpeed = this.maxSpeed;
-
-  this.currentTargetX = this.sprite.x;
-  this.currentTargetY = this.sprite.y;
-
   this.stuckCount = 0;
   this.previousX = sprite.x;
   this.previousY = sprite.y;
+  
+  this.currentMVelocity = 0;
+  this.currentMAcceleration = 0;
 };
 
 Rob.Accel.prototype = {
   
-  getMotion: function() {
-    return {
-    };
-  },
+  getMotion: function() { return { mVelocity: this.currentMVelocity, mAcceleration: this.currentMAcceleration }; },
 
   setTarget: function(hisX, hisY) {
-    var speed = this.maxSpeed;
-    var acceleration = this.maxAcceleration;
-
-    this.currentSpeed = speed;
-    this.currentAcceleration = acceleration;
-
     this.hisX = hisX;
     this.hisY = hisY;
 
@@ -78,8 +64,8 @@ Rob.Accel.prototype = {
     var deltaD = Math.sqrt(Math.pow(vX + relX, 2) + Math.pow(vY + relY, 2));
     var thetaToTarget = Math.atan2(vY + relY, vX + relX);
 
-    this.needUpdate = (deltaD > this.currentSpeed);
-    deltaD = Math.min(deltaD, this.currentSpeed);
+    this.needUpdate = (deltaD > this.dna.maxVelocity);
+    deltaD = Math.min(deltaD, this.dna.maxVelocity);
 
     var vCurtailedX = Math.cos(thetaToTarget) * deltaD;
     var vCurtailedY = Math.sin(thetaToTarget) * deltaD;
@@ -96,18 +82,6 @@ Rob.Accel.prototype = {
     var aCurtailedX = vCurtailedX;
     var aCurtailedY = vCurtailedY;
 
-    /*if(
-      (Math.sign(relX) !== Math.sign(aCurtailedX)) ||
-      (Math.sign(relY) !== Math.sign(aCurtailedY))
-    ) {
-      if(this.sprite.archon.uniqueID === 0) {
-        console.log(
-          "Rel (" + relX.toFixed(4) + " , " + relY.toFixed(4) + "), " +
-          "new (" + aCurtailedX.toFixed(4) + ", " + aCurtailedY.toFixed(4) + ")"
-        );
-      }
-    }*/
-
     if(deltaV > this.dna.maxAcceleration) {
       this.needUpdate = true;
 
@@ -116,10 +90,16 @@ Rob.Accel.prototype = {
 
       aCurtailedX = bestDeltaX + this.body.velocity.x;
       aCurtailedY = bestDeltaY + this.body.velocity.y;
+      
+      this.currentMAcceleration = this.dna.maxAcceleration;
+    } else {
+      this.currentMAcceleration = deltaV;
     }
 
     var finalX = bestDeltaX + this.body.velocity.x;
     var finalY = bestDeltaY + this.body.velocity.y;
+    
+    this.currentMVelocity = Math.sqrt(Math.pow(finalX, 2) + Math.pow(finalY, 2));
 
     this.body.velocity.setTo(finalX, finalY);
   },
