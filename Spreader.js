@@ -19,10 +19,6 @@ Rob.Spreader = function() {
   Rob.getTemperature = function(x, y) { return _this.getTemperature.call(_this, x, y); };
 };
 
-Rob.Spreader.prototype.avoid = function(me, him) {
-  me.archon.mover.avoid(him);
-};
-
 Rob.Spreader.prototype.getWorldColorRange = function() {
   var rgb = {};
 
@@ -179,12 +175,9 @@ Rob.Spreader.prototype.report = function(whichSprite) {
   console.log("Temps: " + a.dna.optimalLoTemp.toFixed() + " <= " + a.dna.optimalTemp.toFixed() + " <= " + a.dna.optimalHiTemp.toFixed());
 };
 
-Rob.Spreader.prototype.smell = function(sprite, smellyParticle) {
-  sprite.archon.mover.smell(smellyParticle);
-};
 
 Rob.Spreader.prototype.taste = function(sprite, tastyParticle) {
-  sprite.archon.mover.taste(tastyParticle);
+  sprite.archon.mover.motioner.locator.taste(tastyParticle);
 };
 
 Rob.Spreader.prototype.update = function() {
@@ -197,10 +190,8 @@ Rob.Spreader.prototype.update = function() {
 
   // Pass him the sensor for now; eventually, the mover will own
   // the sprite and the sensor
-  game.physics.arcade.overlap(this.archons.sensorPool, this.mannaGarden.smellGroup, this.smell, null, this);
   game.physics.arcade.overlap(this.archons.sensorPool, this.mannaGarden.foodGroup, this.taste, null, this);
   game.physics.arcade.overlap(this.archons.phaseronPool, this.mannaGarden.foodGroup, this.eat, null, this);
-  game.physics.arcade.overlap(this.archons.sensorPool, this.archons.phaseronPool, this.avoid, null, this);
 
   this.frameCount++;
   this.mannaGarden.update(theSun.getStrength());
