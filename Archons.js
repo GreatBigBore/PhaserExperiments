@@ -33,13 +33,13 @@ Rob.Archons.prototype.breed = function(parent, birthWeight) {
 		p.x = parent.archon.position.x; p.y = parent.archon.position.y;
 	}
 
-	var oldID = (parent === undefined) ? null : parent.archon.uniqueID;
+	var oldID = p.archon.uniqueID;
 
 	var a = p.archon.fetch(this.archonUniqueID++);
 
 	var t = "Birth: archon " + a.uniqueID;
 
-	if(parent === undefined) {
+	if(oldID === -1) {
 		t += " by miracle";
 	} else {
 	 	t += " sprung from archon " + parent.archon.uniqueID;
@@ -53,7 +53,8 @@ Rob.Archons.prototype.breed = function(parent, birthWeight) {
 
 	console.log(t);
   
-  a.launch(birthWeight);
+  var parentArchon = (parent === undefined) ? parent : parent.archon;
+  a.launch(parentArchon, birthWeight);
 };
 
 Rob.Archons.prototype.dumpGenePool = function() {

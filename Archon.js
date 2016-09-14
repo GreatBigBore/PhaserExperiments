@@ -103,6 +103,8 @@ Rob.Archon.prototype.fetch = function(newUniqueID) {
       this.organs[i].ready(this);
     }
 	}
+  
+  this.sprite.tint = this.organs.dna.getTint();
 
 	this.justBorn = true;	// Tells motioner to aim me away from parent (don't think this really works)
 
@@ -123,9 +125,13 @@ Rob.Archon.prototype.getVelocity = function() {
   return this.velocity;
 };
 
-Rob.Archon.prototype.launch = function(birthWeight) {
+Rob.Archon.prototype.launch = function(parent, birthWeight) {
   this.frameCount = 0;
   this.birthWeight = birthWeight;
+  
+  if(parent !== undefined) {
+    this.parentDNA = parent.organs.dna; // For the dna object to do mutations & stuff
+  }
   
   for(var i in this.organs) {
     this.organs[i].launch();

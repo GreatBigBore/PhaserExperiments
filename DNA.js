@@ -57,12 +57,17 @@ Rob.DNA.prototype.tick = function(frameCount) {
   this.frameCount = frameCount;
 };
 
-Rob.DNA.prototype.launch = function(parent) {
-  if(parent !== undefined) {
-    this.color = Object.assign({}, parent.dna.color);
+Rob.DNA.prototype.launch = function() {
+  var parentDNA = this.archon.parentDNA;
+  if(parentDNA === undefined) {
+    for(var i in this) {
+      this.mutate(i, this);
+    }
+  } else {
+    this.color = Object.assign({}, parentDNA.color);
 
-    for(var i in parent.dna) {
-      this.mutate(i, parent.dna);
+    for(var i in parentDNA) {
+      this.mutate(i, parentDNA);
     }
   }
 };
@@ -96,7 +101,6 @@ Rob.DNA.prototype.getTint = function() {
 	);
 };
 
-// Not using this yet; too lazy so far
 // probability = how likely it is for a mutation to occur
 // range: percentage of change allowable; from 1 - (range / 100) to 1 + (range / 100)
 Rob.DNA.prototype.scalarMutations = {
@@ -136,8 +140,12 @@ Rob.DNA.prototype.mutate = function(traitName, parentDNA) {
     case 'tempRange': break;
 		case 'optimalHiTemp': break;	// We do this along with optimal temp
 		case 'optimalLoTemp': break;	// We do this along with optimal temp
-		case 'scalarMutations': break;	// Not a mutatable kind of thing!
-    case 'sprite': break;           // Again, not mutatable kind of thing
+		case 'scalarMutations': break;	// I might make this mutatable at some point
+
+    // Some objects that show up as properties that aren't mutation things
+    case 'archon': break;
+    case 'organs': break;
+    case 'frameCount': break;
 		default: {
 
       // Just for showing the cool message about mutation
