@@ -14,6 +14,10 @@ if(typeof window === "undefined") {
 Rob.Locator = function(archon) {
   this.archon = archon;
   
+  // See value calculation in sense(); the highest
+  // value food is that closest to us
+  this.foodDistanceRange = Rob.Range(archon.sensor.width / 2, 1);
+  
   this.trackers = {
     taste: { vector: Rob.XY(), hitCount: 0 }
   };
@@ -48,6 +52,7 @@ Rob.Locator.prototype = {
     var distance = relativePosition.getMagnitude();
     var value = 2 - (distance / radius);
 
+    relativePosition.normalize();
     relativePosition.scalarMultiply(value);
     
     t.vector.add(relativePosition);

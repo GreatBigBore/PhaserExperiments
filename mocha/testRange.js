@@ -5,6 +5,7 @@ var chai = require('chai');
 var zeroToOne = new Range(0, 1);
 var centeredZeroToOne = new Range(-0.5, 0.5);
 var temperatureRange = new Range(-1000, 1000);
+var foodDistanceRange = new Range(50, 0);
 var speedRange = new Range(-30, 30);
 var e10 = new Range(0, 10);
 var h10 = new Range(10, 0);
@@ -67,6 +68,24 @@ var tests = [
       { in: -5, out: 15 }, { in: -1, out: 11 }, { in: 0, out: 10 },
       { in: 1, out: 9 }, { in: 2.5, out: 7.5}, { in: 5, out: 5 },
       { in: -19, out: 29 }
+    ]
+  },
+
+  {
+    dest: { range: h10, name: 'h10' },
+    source: { range: centeredZeroToOne, name: 'centeredZeroToOne' },
+    testValues: [
+      { in: 0, out: 5 }, { in: -0.5, out: 10 }, { in: 0.5, out: 0 },
+      { in: 0.25, out: 2.5 }, { in: -0.25, out: 7.5 }
+    ]
+  },
+
+  {
+    dest: { range: foodDistanceRange, name: 'foodDistanceRange' },
+    source: { range: temperatureRange, name: 'temperatureRange' },
+    testValues: [
+      { in: -1000, out: 50 }, { in: 0, out: 25 }, { in: 1000, out: 0 },
+      { in: -500, out: 37.5 }, { in: 500, out: 12.5 }
     ]
   }
 ];

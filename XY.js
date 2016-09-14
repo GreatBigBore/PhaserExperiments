@@ -40,7 +40,7 @@ ns.XY.prototype = {
   
   normalize: function() { var s = this.getMagnitude(); if(s !== 0) { this.x /= s; this.y /= s; } },
   
-  normalized: function(a1, a2) { var scratch = ns.XY(a1, a2); scratch.normalize(); return scratch; },
+  normalized: function() { var scratch = ns.XY(this); scratch.normalize(); return scratch; },
 
   reset: function() { this.set(0, 0); },
   

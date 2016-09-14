@@ -58,41 +58,39 @@ Rob.Motioner.prototype.update = function() {
     var tempVector = this.temper.getTempVector();
     var tasteVector = this.locator.getSenseVector('taste');
 
-    var debugVectors = false;
-
     if(this.frameCount % 10 === 0) {
       this.motionVector.reset();
 
-      var m = null; var a = 0;
+      var m = null, n = null, vScale = null, tempScaled = Rob.XY(), tasteScaled = Rob.XY();
 
       m = tempVector.getMagnitude();
       if(m > 0) {
-        tempVector.normalize();
-        tempVector.scalarMultiply(this.sensor.width / 2);
 
-        a++;
-        tempVector.scalarMultiply(this.dna.tempFactor);
-
-        scratch.add(tempVector);
+        vScale = this.centeredZeroToOneRange.convertPoint(m, Rob.globals.temperatureRange);
+      
+        tempScaled.set(tempVector.timesScalar(vScale / m));
+        tempVector.set(tempScaled.timesScalar(this.dna.tempFactor));
       }
-
+      
       m = tasteVector.getMagnitude();
       if(m > 0) {
-        tasteVector.normalize();
-        tasteVector.scalarMultiply(this.sensor.width / 2);
-
-        a++;
-        tasteVector.scalarMultiply(this.dna.tasteFactor);
-
-        scratch.add(tasteVector);
-
-        if(this.archon.uniqueID === 0 && debugVectors) {
-          console.log("taste vector (" + tasteVector.X(2) + ", " + tasteVector.Y(2) + ")");
-        }
+        vScale = this.centeredZeroToOneRange.convertPoint(m, this.locator.foodDistanceRange);
+      
+        tasteScaled.set(tasteVector.timesScalar(vScale / m));
+        tasteVector.set(tasteScaled.timesScalar(this.dna.tasteFactor));
       }
-
-      this.motionVector.add(tempVector.dividedByScalar(a));
-      this.motionVector.add(tasteVector.dividedByScalar(a));
+      
+      // Now both vectors have been put on the -0.5, 0.5 scale, and
+      // we've multiplied each by their genetically predetermined
+      // importance factor. Now we just go with the one with the
+      // greatest magnitude
+      m = tempVector.getMagnitude();
+      n = tasteVector.getMagnitude();
+      if(m > n) {
+        this.motionVector.set(tempScaled.normalized().timesScalar(this.sensor.width));
+      } else {
+        this.motionVector.set(tasteScaled.normalized().timesScalar(this.sensor.width));
+      }
 
       if(this.archon.stopped) {
         this.body.velocity.setTo(0, 0);

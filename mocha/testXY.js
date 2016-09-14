@@ -174,6 +174,8 @@ describe('XY', function() {
       chai.expect(p3).to.include({ x: -19, y: 69 });
     });
     
+    it('Should normalized.times', function() { chai.expect(p0.normalized().timesScalar(5).getMagnitude()).to.equal(5); });
+    
     it('Should set.floored', function() { var p3 = Rob.XY(p1).floored(); chai.expect(p3).to.include({ x: -19, y: 69 }); });
     
     it('Should chain multiple', function() {

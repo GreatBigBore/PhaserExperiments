@@ -17,10 +17,10 @@ Rob.dnaConstants = {
   archonStandardTempRange: 400,
   embryoThresholdMultiplier: 1.1,
   avoidanceFactor: -1,
-  smellFactor: 2,
+  smellFactor: 1,
   tempFactor: 1,
   velocityFactor: 1,
-  tasteFactor: 3
+  tasteFactor: 4
 };
 
 Rob.aboriginalDNA = {
