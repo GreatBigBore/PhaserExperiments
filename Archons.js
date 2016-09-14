@@ -30,7 +30,7 @@ Rob.Archons.prototype.breed = function(parent, birthWeight) {
 		p.x = Rob.integerInRange(20, game.width - 20);
 		p.y = Rob.integerInRange(20, game.height - 20);
 	} else {
-		p.x = parent.sprite.x; p.y = parent.sprite.y;
+		p.x = parent.archon.position.x; p.y = parent.archon.position.y;
 	}
 
 	var oldID = (parent === undefined) ? null : parent.archon.uniqueID;
@@ -44,7 +44,7 @@ Rob.Archons.prototype.breed = function(parent, birthWeight) {
 	} else {
 	 	t += " sprung from archon " + parent.archon.uniqueID;
 
-		if(oldID === -1) {
+		if(oldID === null) {
 			t += "; first launch";
 		} else {
 			t += "; recycled from " + oldID;
@@ -53,7 +53,7 @@ Rob.Archons.prototype.breed = function(parent, birthWeight) {
 
 	console.log(t);
   
-  a.launch();
+  a.launch(birthWeight);
 };
 
 Rob.Archons.prototype.dumpGenePool = function() {
@@ -85,7 +85,7 @@ Rob.Archons.prototype.constructPhaserons = function() {
 };
 
 Rob.Archons.prototype.render = function() {
-	var showDebugOutlines = true;
+	var showDebugOutlines = false;
 
 	if(showDebugOutlines) {
 		this.phaseronPool.forEachAlive(function(a) {

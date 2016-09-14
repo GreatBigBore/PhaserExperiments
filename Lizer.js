@@ -23,7 +23,6 @@ Rob.Lizer.prototype.doLog = function(id, interval) {
 };
 
 Rob.Lizer.prototype.eat = function() {
-  console.log('eat');
 	var sunStrength = Rob.globals.archonia.sun.getStrength();
 	var calories = this.mannaNutritionRange.convertPoint(sunStrength, Rob.globals.oneToZeroRange);
   
@@ -70,7 +69,7 @@ Rob.Lizer.prototype.getMotionCost = function() {
 };
 
 Rob.Lizer.prototype.getTemperature = function() {
-	return Rob.getTemperature(this.archon);
+	return Rob.getTemperature(this.archon.position.x, this.archon.position.y);
 };
 
 Rob.Lizer.prototype.getTempCost = function(temp) {

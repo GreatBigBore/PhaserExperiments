@@ -15,32 +15,20 @@ if(typeof window === "undefined") {
 
 // Have to delay creation of the prototype because it needs XY,
 // which doesn't exist until later, when XY.js gets loaded
-var generateArchonoidPrototype = function() {
-  Rob.Archonoid = function(archonite) {
-    this.archonite = archonite;
-    
-    Rob.XY.call(this);
-  };
+var generateArchonoidPrototype = function() { 
+  Rob.Archonoid = function(archonite) { this.archonite = archonite; Rob.XY.call(this); };
 
   Rob.Archonoid.prototype = Object.create(Rob.XY.prototype);
   Rob.Archonoid.prototype.constructor = Rob.Archonoid;
 
   Object.defineProperty(Rob.Archonoid.prototype, 'x', {
-    get: function x() {
-      return this.archonite.x;
-    },
-    set: function x(x) {
-      this.archonite.x = x;
-    }
+    get: function x() { return this.archonite.x; },
+    set: function x(x) { this.archonite.x = x; }
   });
 
   Object.defineProperty(Rob.Archonoid.prototype, 'y', {
-    get: function y() {
-      return this.archonite.y;
-    },
-    set: function y(y) {
-      this.archonite.y = y
-     }
+    get: function y() { return this.archonite.y; },
+    set: function y(y) { this.archonite.y = y; }
   });
 };
 
@@ -135,8 +123,9 @@ Rob.Archon.prototype.getVelocity = function() {
   return this.velocity;
 };
 
-Rob.Archon.prototype.launch = function() {
+Rob.Archon.prototype.launch = function(birthWeight) {
   this.frameCount = 0;
+  this.birthWeight = birthWeight;
   
   for(var i in this.organs) {
     this.organs[i].launch();
@@ -155,13 +144,7 @@ Rob.Archon.prototype.setVelocity = function(a1, a2) {
 
 Rob.Archon.prototype.setSize = function(mass) {
 	var p = Rob.globals.archonSizeRange.convertPoint(mass, Rob.globals.archonMassRange);
-  
-  console.log('mass', mass.toFixed(4), 'scale', p.toFixed(4));
-  this.sprite.scale.setTo(1,1);
-  this.sprite.alpha= 1;
-  return;
-  
-  
+
 	this.sprite.scale.setTo(p, p);
 
 	var w = this.sprite.width;	// Have to tell the body to keep up with the sprite
