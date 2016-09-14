@@ -11,13 +11,7 @@ if(typeof window === "undefined") {
 
 (function(Rob) {
 
-Rob.Locator = function(archon) {
-  this.archon = archon;
-  
-  // See value calculation in sense(); the highest
-  // value food is that closest to us
-  this.foodDistanceRange = Rob.Range(archon.sensor.width / 2, 1);
-  
+Rob.Locator = function() {
   this.trackers = {
     taste: { vector: Rob.XY(), hitCount: 0 }
   };
@@ -33,6 +27,21 @@ Rob.Locator.prototype = {
     }
     
     return t.vector;
+  },
+  
+  init: function() {},
+  
+  launch: function() {},
+  
+  tick: function(/*frameCount*/) {},
+  
+  ready: function(archon) {
+    this.archon = archon;
+    this.organs = Object.assign({}, archon.organs);
+
+    // See value calculation in sense(); the highest
+    // value food is that closest to us
+    this.foodDistanceRange = Rob.Range(archon.sensor.width / 2, 1);
   },
   
   reset: function() {

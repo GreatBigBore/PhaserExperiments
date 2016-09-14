@@ -133,7 +133,7 @@ Rob.MannaGenerator.prototype.stop = function() {
   }, this);
 };
 
-Rob.MannaGenerator.prototype.update = function() {
+Rob.MannaGenerator.prototype.tick = function() {
   this.frameCount++;
 
   if(this.on) {

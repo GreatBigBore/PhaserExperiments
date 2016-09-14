@@ -143,10 +143,10 @@ Rob.MannaGarden.prototype.setupSmellGenerator = function(smellConfig) {
   this.emitters.push(this.smellGenerator);
 };
 
-Rob.MannaGarden.prototype.update = function(sunStrength) {
+Rob.MannaGarden.prototype.tick = function(sunStrength) {
   this.setSunStrength(sunStrength);
 
   for(var i = 0; i < this.emitters.length; i++) {
-    this.emitters[i].update();
+    this.emitters[i].tick();
   }
 };

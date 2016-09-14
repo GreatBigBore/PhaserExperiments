@@ -9,9 +9,7 @@ var Rob = Rob || {};
 
 (function(Rob) {
 
-Rob.Accel = function(sprite) {
-  this.dna = sprite.archon.dna;
-  this.frameCount = 0;
+Rob.Accel = function() {
   this.maneuverStamp = 0;
   this.maneuverComplete = true;
   this.needUpdate = false;
@@ -19,13 +17,10 @@ Rob.Accel = function(sprite) {
   this.cancelAfter = 30; // Cancel maneuvers that take too long
   this.expiresAt = 0;
 
-  this.sprite = sprite;
-  this.body = sprite.body;
-
   this.stuckCount = 0;
-  this.previousX = sprite.x;
-  this.previousY = sprite.y;
-  
+  this.previousX = null;
+  this.previousY = null;
+
   this.currentMVelocity = 0;
   this.currentMAcceleration = 0;
 };
@@ -33,6 +28,19 @@ Rob.Accel = function(sprite) {
 Rob.Accel.prototype = {
   
   getMotion: function() { return { mVelocity: this.currentMVelocity, mAcceleration: this.currentMAcceleration }; },
+  
+  init: function() {
+  },
+  
+  launch: function() {},
+  
+  ready: function(archon) {
+    this.archon = archon;
+    this.organs = Object.assign({}, archon.organs);
+
+    this.position = archon.position;
+    this.velocity = archon.velocity;
+  },
 
   setTarget: function(hisX, hisY) {
     this.hisX = hisX;
@@ -52,11 +60,11 @@ Rob.Accel.prototype = {
     this.maneuverStamp = this.frameCount;
 
     // Get his into the same frame of reference as the velocity vector
-    var relX = this.hisX - this.sprite.x;
-    var relY = this.hisY - this.sprite.y;
+    var relX = this.hisX - this.position.x;
+    var relY = this.hisY - this.position.y;
 
-    var vX = this.body.velocity.x;
-    var vY = this.body.velocity.y;
+    var vX = this.velocity.x;
+    var vY = this.velocity.y;
 
     // Get the angle between my velocity vector and
     // the distance vector from me to him.
@@ -64,8 +72,8 @@ Rob.Accel.prototype = {
     var deltaD = Math.sqrt(Math.pow(vX + relX, 2) + Math.pow(vY + relY, 2));
     var thetaToTarget = Math.atan2(vY + relY, vX + relX);
 
-    this.needUpdate = (deltaD > this.dna.maxVelocity);
-    deltaD = Math.min(deltaD, this.dna.maxVelocity);
+    this.needUpdate = (deltaD > this.organs.dna.maxVelocity);
+    deltaD = Math.min(deltaD, this.organs.dna.maxVelocity);
 
     var vCurtailedX = Math.cos(thetaToTarget) * deltaD;
     var vCurtailedY = Math.sin(thetaToTarget) * deltaD;
@@ -82,26 +90,26 @@ Rob.Accel.prototype = {
     var aCurtailedX = vCurtailedX;
     var aCurtailedY = vCurtailedY;
 
-    if(deltaV > this.dna.maxAcceleration) {
+    if(deltaV > this.organs.dna.maxAcceleration) {
       this.needUpdate = true;
 
-      bestDeltaX *= this.dna.maxAcceleration / deltaV;
-      bestDeltaY *= this.dna.maxAcceleration / deltaV;
+      bestDeltaX *= this.organs.dna.maxAcceleration / deltaV;
+      bestDeltaY *= this.organs.dna.maxAcceleration / deltaV;
 
-      aCurtailedX = bestDeltaX + this.body.velocity.x;
-      aCurtailedY = bestDeltaY + this.body.velocity.y;
+      aCurtailedX = bestDeltaX + this.velocity.x;
+      aCurtailedY = bestDeltaY + this.velocity.y;
       
-      this.currentMAcceleration = this.dna.maxAcceleration;
+      this.currentMAcceleration = this.organs.dna.maxAcceleration;
     } else {
       this.currentMAcceleration = deltaV;
     }
 
-    var finalX = bestDeltaX + this.body.velocity.x;
-    var finalY = bestDeltaY + this.body.velocity.y;
+    var finalX = bestDeltaX + this.velocity.x;
+    var finalY = bestDeltaY + this.velocity.y;
     
     this.currentMVelocity = Math.sqrt(Math.pow(finalX, 2) + Math.pow(finalY, 2));
 
-    this.body.velocity.setTo(finalX, finalY);
+    this.velocity.set(finalX, finalY);
   },
 
   tick: function() {
@@ -114,19 +122,19 @@ Rob.Accel.prototype = {
     }
 
     if(this.maneuverComplete) {
-      this.body.velocity.x *= 0.9; this.body.velocity.y *= 0.9;
+      this.velocity.scalarMultiply(0.9);
     } else {
-      if(this.previousX === Math.floor(this.sprite.x) &&
-        this.previousY === Math.floor(this.sprite.y)) {
+      if(this.previousX === Math.floor(this.archon.getPosition().x) &&
+        this.previousY === Math.floor(this.archon.getPosition().y)) {
         this.stuckCount++;
       }
 
-      var me = new Phaser.Point(this.hisX, this.hisY);
-      me.floor();
+      var me = Rob.XY(this.hisX, this.hixY).floored();
+      var p = this.archon.getPosition().floored();
 
-      this.previousX = Math.floor(this.sprite.x); this.previousY = Math.floor(this.sprite.y);
+      this.previousX = p.x; this.previousY = p.y;
 
-      if(Phaser.Point.distance(me, this.sprite) < 20 || this.stuckCount > 30) {
+      if(p.getDistanceTo(me) < 20 || this.stuckCount > 30) {
         this.maneuverComplete = true;
         this.stuckCount = 0;
       }

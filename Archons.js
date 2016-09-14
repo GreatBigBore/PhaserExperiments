@@ -12,7 +12,12 @@ Rob.Archons = function() {
 	this.buttonPool = null;
 	this.sensorPool = null;
 
-	this.initialize();
+	this.setupSpritePools();
+	this.constructPhaserons();
+
+	for(var i = 0; i < Rob.globals.archonCount; i++) {
+    this.breed();
+  }
 };
 
 Rob.Archons.prototype.breed = function(parent, birthWeight) {
@@ -28,12 +33,9 @@ Rob.Archons.prototype.breed = function(parent, birthWeight) {
 		p.x = parent.sprite.x; p.y = parent.sprite.y;
 	}
 
-	var a = this.archonate(p);	// Make sure this phaseron has an archon
+	var oldID = (parent === undefined) ? null : parent.archon.uniqueID;
 
-	var oldID = a.uniqueID;
-
-	a.justBorn = true;	// Tells motioner to aim them away from parent
-	a.uniqueID = this.archonUniqueID++;
+	var a = p.archon.fetch(this.archonUniqueID++);
 
 	var t = "Birth: archon " + a.uniqueID;
 
@@ -50,78 +52,17 @@ Rob.Archons.prototype.breed = function(parent, birthWeight) {
 	}
 
 	console.log(t);
-
-	a.dna.launch(parent);
-	a.mover.launch(parent);
-	a.motioner.launch(parent);
-	a.lizer.launch(parent, birthWeight);
-
-	p.revive(); a.button.revive(); a.sensor.revive();
-
-	return a;
-};
-
-Rob.Archons.prototype.activatePhysicsBodies = function() {
-	var enable = function(c) {
-		game.physics.enable(c, Phaser.Physics.ARCADE);
-
-		c.body.syncBounds = true;
-		c.body.bounce.setTo(0, 0);
-	};
-
-	this.phaseronPool.forEach(function(a) {
-
-		enable(a);
-		this.setSize(a, Rob.globals.standardBabyMass);
-
-		enable(a.archon.sensor);
-
-		var radius = a.archon.sensor.width / 2;
-		a.archon.sensor.body.setSize(radius, radius);
-		a.archon.sensor.body.setCircle(radius);
-	}, this);
-};
-
-Rob.Archons.prototype.archonate = function(sprite) {
-	var a = sprite.archon;
-
-	if(a.uniqueID === undefined) {
-		a.uniqueID = -1;
-		a.launched = true;
-		a.god = this;
-		a.sprite = sprite;
-
-		a.dna = new Rob.DNA();
-		a.mover = new Rob.Mover();
-	  a.motioner = new Rob.Motioner();
-		a.lizer = new Rob.Lizer();
-
-		a.mover.init(a);
-		a.motioner.init(a);
-		a.lizer.init(a);
-	}
-
-	return a;
+  
+  a.launch();
 };
 
 Rob.Archons.prototype.dumpGenePool = function() {
 	var genePool = [];
 	this.phaseronPool.forEachAlive(function(p) {
-		genePool.push(p.archon.dna);
+		genePool.push(p.archon.organs.dna);
 	});
 
 	console.log(genePool);
-};
-
-Rob.Archons.prototype.initialize = function() {
-	this.setupSpritePools();
-	this.constructPhaserons();
-	this.activatePhysicsBodies();
-	//this.setupWalls();
-
-	for(var i = 0; i < Rob.globals.archonCount; i++) {
-    this.breed();
-  }
 };
 
 Rob.Archons.prototype.constructPhaserons = function() {
@@ -139,43 +80,22 @@ Rob.Archons.prototype.constructPhaserons = function() {
     
 		// This is how we retain the soul of the sprite, not
 		// allowing it to run off into limbo
-		a.archon = { sprite: a, button: b, sensor: s };
-
-		s.archon = a.archon;	// So we can hook back from sensors too
-
-		a.anchor.setTo(0.5, 0.5); a.alpha = 1.0; a.tint = 0x00FF00; a.scale.setTo(0.07, 0.07);
-		b.anchor.setTo(0.5, 0.5);	b.alpha = 1.0; b.tint = 0; b.scale.setTo(0.25, 0.25);
-		s.anchor.setTo(0.5, 0.5); s.alpha = 0; s.tint = 0x0000FF; s.scale.setTo(1, 1);
-
-		a.body.collideWorldBounds = true;
-		a.inputEnabled = true;
-		a.input.enableDrag();
-
-		a.archon.stopped = false;
+		a.archon = new Rob.Archon(a, b, s, this);
 	}, this);
 };
 
 Rob.Archons.prototype.render = function() {
-	var showDebugOutlines = false;
+	var showDebugOutlines = true;
 
 	if(showDebugOutlines) {
 		this.phaseronPool.forEachAlive(function(a) {
 	    game.debug.body(a, 'yellow', false);
-		//	game.debug.body(a.archon.sensor, 'blue', false);
+		  game.debug.body(a.archon.sensor, 'blue', false);
 
-			//game.debug.spriteBounds(a, 'blue', false);
-	  //  game.debug.spriteBounds(a.archon.sensor, 'magenta', false);
+			game.debug.spriteBounds(a, 'blue', false);
+	    game.debug.spriteBounds(a.archon.sensor, 'magenta', false);
 		}, this);
 	}
-};
-
-Rob.Archons.prototype.setSize = function(sprite, mass) {
-	var p = Rob.globals.archonSizeRange.convertPoint(mass, Rob.globals.archonMassRange);
-	sprite.scale.setTo(p, p);
-
-	var w = sprite.width;	// Have to tell the body to keep up with the sprite
-	sprite.body.setSize(w, w);
-	sprite.body.setCircle(w / 2);
 };
 
 Rob.Archons.prototype.setupSpritePools = function() {
@@ -191,54 +111,8 @@ Rob.Archons.prototype.setupSpritePools = function() {
 	setupPool(this, 'buttonPool');
 };
 
-Rob.Archons.prototype.setupWalls = function() {
-	this.cursors = game.input.keyboard.createCursorKeys();
-
-	this.wallsGroup = game.add.group();
-	this.wallsGroup.enableBody = true;
-
-	var b = Rob.globals.worldBorder;
-	var h = b / 2;
-
-	game.world.setBounds(-h, -h, game.width + b, game.height + b);
-	game.camera.x = -h;
-	game.camera.y = -h;
-	var wallsConfig = [
-		{ position: { x: -b, y: -b }, scale: { x: game.width + b, y: b }, anchor: { x: 0, y: 0 } },
-
-		{ position: { x: game.width - b, y: -h }, scale: { x: b, y: game.height + b }, anchor: { x: 0, y: 0 } },
-
-		{ position: { x: -b, y: game.height - b }, scale: { x: game.width + b, y: b }, anchor: { x: 0, y: 0 } },
-
-		{ position: { x: -b, y: -h }, scale: { x: b, y: game.height + b }, anchor: { x: 0, y: 0 } }
-	];
-
-	for(var i = 0; i < wallsConfig.length; i++) {
-		var s = game.add.sprite(
-			wallsConfig[i].position.x, wallsConfig[i].position.y,
-			game.cache.getBitmapData('wallsGoo')
-		);
-
-		this.wallsGroup.add(s);
-
-    s.tint = 0;
-    s.inputEnabled = true;
-    s.input.enableDrag();
-
-		s.anchor.setTo(wallsConfig[i].anchor.x, wallsConfig[i].anchor.y);
-    s.scale.setTo(wallsConfig[i].scale.x, wallsConfig[i].scale.y);
-
-		s.body.collideWorldBounds = true;
-    s.body.bounce.setTo(1, 1);
-    s.body.immovable = true;
-	}
-
-	game.world.bringToTop(this.wallsGroup);
-};
-
-Rob.Archons.prototype.update = function() {
+Rob.Archons.prototype.tick = function() {
 	this.phaseronPool.forEachAlive(function(a) {
-		a.archon.mover.update();
-		a.archon.lizer.update();
+    a.archon.tick();
 	});
 };

@@ -65,8 +65,8 @@ Rob.Spreader.prototype.debugText = function(text) {
 };
 
 Rob.Spreader.prototype.eat = function(sprite, foodParticle) {
-  sprite.archon.mover.eat(foodParticle);
-  sprite.archon.lizer.eat(Rob.globals.caloriesPerMannaMorsel);
+  sprite.archon.organs.mover.eat(foodParticle);
+  sprite.archon.organs.lizer.eat(Rob.globals.caloriesPerMannaMorsel);
 };
 
 Rob.Spreader.prototype.getTemperature = function(x, y) {
@@ -177,7 +177,7 @@ Rob.Spreader.prototype.report = function(whichSprite) {
 
 
 Rob.Spreader.prototype.taste = function(sprite, tastyParticle) {
-  sprite.archon.mover.motioner.locator.taste(tastyParticle);
+  sprite.archon.organs.locator.taste(tastyParticle);
 };
 
 Rob.Spreader.prototype.update = function() {
@@ -194,6 +194,6 @@ Rob.Spreader.prototype.update = function() {
   game.physics.arcade.overlap(this.archons.phaseronPool, this.mannaGarden.foodGroup, this.eat, null, this);
 
   this.frameCount++;
-  this.mannaGarden.update(theSun.getStrength());
-  this.archons.update();
+  this.mannaGarden.tick(theSun.getStrength());
+  this.archons.tick();
 };

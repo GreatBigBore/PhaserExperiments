@@ -50,8 +50,6 @@ ns.XY.prototype = {
   
   setByMagnitude: function(magnitude) { var a = magnitude / Math.sqrt(2); this.x = a; this.y = a; },
   
-  setX: function(x) { this.x = x; }, setY: function(y) { this.y = y; },
-  
   subtract: function(a1, a2) { var subtrahend = ns.XY(a1, a2); this.x -= subtrahend.x; this.y -= subtrahend.y; },
   
   timesScalar: function(scalar) { var scratch = ns.XY(this); scratch.scalarMultiply(scalar); return scratch; },

@@ -28,7 +28,7 @@ Rob.Temper.prototype.getTempVector = function() {
   for(var i = 0, j = -this.senseLimit; i < this.testPoints.length; i++, j += this.senseLimit) {
     e = this.testPoints[i];
     
-    e.where.set(this.sprite);
+    e.where.set(this.archon.position);
     e.where.add(0, j);
     
     // For checking whether we're in bounds, we don't care about the x,
@@ -37,7 +37,7 @@ Rob.Temper.prototype.getTempVector = function() {
     // of bounds if the sprite is really small, but as long as it's
     // within the world borders, which I think (?) it always will be,
     // then temp checks should work (should!)
-    var boundsCheck = Rob.XY(e.where); boundsCheck.setX(game.width / 2);
+    var boundsCheck = Rob.XY(e.where); boundsCheck.x = game.width / 2;
 
     if(Rob.pointInBounds(boundsCheck)) {
       var t = Rob.getTemperature(e.where);
@@ -84,11 +84,24 @@ Rob.Temper.prototype.getTempVector = function() {
   return this.tempVector;
 };
 
-Rob.Temper.prototype.launch = function(archon) {
-  this.sprite = archon.sprite;
-  this.optimalLoTemp = archon.dna.optimalLoTemp;
-  this.optimalTemp = archon.dna.optimalTemp;
-  this.optimalHiTemp = archon.dna.optimalHiTemp;
+Rob.Temper.prototype.init = function() {
+  
+};
+
+Rob.Temper.prototype.launch = function() {
+};
+
+Rob.Temper.prototype.tick = function(/*frameCount*/) {
+};
+
+Rob.Temper.prototype.ready = function(archon) {
+  this.archon = archon;
+  
+  this.organs = Object.assign({}, archon.organs);
+
+  this.optimalLoTemp = archon.organs.dna.optimalLoTemp;
+  this.optimalTemp = archon.organs.dna.optimalTemp;
+  this.optimalHiTemp = archon.organs.dna.optimalHiTemp;
   this.senseLimit = archon.sensor.width / 2;
 };
 

@@ -36,9 +36,9 @@ describe('Temper', function() {
       Rob.whichTest = 0;
       var x = -6, y = 7, s = archon.sensor.width / 2;
 
-      var pu = { x: x, y: y - s, t: 108, e: 108 - archon.dna.optimalTemp };
+      var pu = { x: x, y: y - s, t: 108, e: 108 - archon.organs.dna.optimalTemp };
       var pc = { x: x, y: y, t: -42, e: 0 };
-      var pd = { x: x, y: y + 2, t: -192, e: archon.dna.optimalTemp - (-192) };
+      var pd = { x: x, y: y + 2, t: -192, e: archon.organs.dna.optimalTemp - (-192) };
 
       archon.sprite.set(pc);
 
@@ -52,9 +52,9 @@ describe('Temper', function() {
       Rob.whichTest = 1;
       var x = -6, y = 7, s = archon.sensor.width / 2;
 
-      var pu = { x: x, y: y - s, t: 108, e: 108 - archon.dna.optimalTemp };
+      var pu = { x: x, y: y - s, t: 108, e: 108 - archon.organs.dna.optimalTemp };
       var pc = { x: x, y: y, t: -42, e: 0 };
-      var pd = { x: x, y: y + 2, t: -192, e: archon.dna.optimalTemp - (-192) };
+      var pd = { x: x, y: y + 2, t: -192, e: archon.organs.dna.optimalTemp - (-192) };
 
       archon.sprite.set(pc.x, -40);
 
@@ -70,15 +70,15 @@ describe('Temper', function() {
       Rob.whichTest = 2;
       var x = -6, y = 7, s = archon.sensor.width / 2;
 
-      var pu = { x: x, y: y - s, t: 1000, e: -(108 - archon.dna.optimalTemp) };
+      var pu = { x: x, y: y - s, t: 1000, e: -(108 - archon.organs.dna.optimalTemp) };
       var pc = { x: x, y: y, t: 500, e: 0 };
 
       // Spreading this out because as usual, it's making me nuts
       // The basic idea is to make the numbers larger than a simple
       // delta when we're outside our goldilocks zone. This is supposed
       // to be Δt to center + ((50 * Δt to center) / (low end of range Δt to center))
-      var d = -192 - archon.dna.optimalTemp;
-      var r = archon.dna.optimalTemp - archon.dna.optimalLoTemp;
+      var d = -192 - archon.organs.dna.optimalTemp;
+      var r = archon.organs.dna.optimalTemp - archon.organs.dna.optimalLoTemp;
       var e = d + ((50 * d) / r);        // Should be around -341
 
       var pd = { x: x, y: y + s, t: -192, e: e };

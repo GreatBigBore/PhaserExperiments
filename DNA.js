@@ -23,49 +23,48 @@ Rob.dnaConstants = {
   tasteFactor: 1
 };
 
-Rob.aboriginalDNA = {
-  avoidanceFactor: Rob.dnaConstants.avoidanceFactor,
-  massOfMyBabies: Rob.globals.standardBabyMass,
-  embryoThreshold: 0,
-  tasteFactor: Rob.dnaConstants.tasteFactor,
-  lifetime: Rob.dnaConstants.archonStandardLifetime,
-  maxAcceleration: Rob.globals.maxAcceleration,
-  maxVelocity: Rob.globals.maxSpeed,
-  motionMultiplier: 30,
-  optimalMass: 5,
-  optimalTemp: Rob.dnaConstants.archonStandardOptimalTemp,
-  sensorSize: 1,
-  smellFactor: Rob.dnaConstants.smellFactor,
-  tempFactor: Rob.dnaConstants.tempFactor,
-  tempRange: Rob.dnaConstants.archonStandardTempRange,
-  velocityFactor: Rob.dnaConstants.velocityFactor,
+Rob.DNA = function() {
+  this.avoidanceFactor = Rob.dnaConstants.avoidanceFactor;
+  this.massOfMyBabies = Rob.globals.standardBabyMass;
+  this.embryoThreshold = 0;
+  this.tasteFactor = Rob.dnaConstants.tasteFactor;
+  this.lifetime = Rob.dnaConstants.archonStandardLifetime;
+  this.maxAcceleration = Rob.globals.maxAcceleration;
+  this.maxVelocity = Rob.globals.maxSpeed;
+  this.motionMultiplier = 30;
+  this.optimalMass = 5;
+  this.optimalTemp = Rob.dnaConstants.archonStandardOptimalTemp;
+  this.sensorSize = 1;
+  this.smellFactor = Rob.dnaConstants.smellFactor;
+  this.tempFactor = Rob.dnaConstants.tempFactor;
+  this.tempRange = Rob.dnaConstants.archonStandardTempRange;
+  this.velocityFactor = Rob.dnaConstants.velocityFactor;
 
-  color: { r: 0x88, g: 0x88, b: 0x88 }
+  this.color = { r: 0x88, g: 0x88, b: 0x88 };
+
+  this.finalSetup(this);
 };
 
-Rob.DNA = function() {
+Rob.DNA.prototype.init = function() {
+};
+
+Rob.DNA.prototype.ready = function(archon) {
+  this.archon = archon;
+  this.organs = Object.assign({}, archon.organs);
+};
+
+Rob.DNA.prototype.tick = function(frameCount) {
+  this.frameCount = frameCount;
 };
 
 Rob.DNA.prototype.launch = function(parent) {
-  if(parent === undefined) {
-    parent = {
-      dna: Object.assign({}, Rob.aboriginalDNA)
-    };
-
-    // Just copy from the aboriginal, don't mutate
-    for(var j in parent.dna) {
-      this[j] = parent.dna[j];
-    }
-
-  } else {
+  if(parent !== undefined) {
     this.color = Object.assign({}, parent.dna.color);
 
     for(var i in parent.dna) {
       this.mutate(i, parent.dna);
     }
   }
-
-  this.finalSetup(parent.dna);
 };
 
 Rob.DNA.prototype.finalSetup = function(dnaSource) {

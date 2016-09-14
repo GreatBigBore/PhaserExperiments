@@ -8,41 +8,34 @@
 Rob.Mover = function() {
 };
 
-Rob.Mover.prototype.init = function(archon) {
-  this.archon = archon;
-  this.sprite = archon.sprite;
-  this.body = archon.sprite.body;
-  this.sensor = archon.sensor;
-  this.dna = archon.dna;
-  this.motioner = archon.motioner;
-};
-
 Rob.Mover.prototype.avoid = function(him) {
   this.motioner.avoid(him);
 };
 
 Rob.Mover.prototype.launch = function() {
-  this.dna = this.archon.dna;
   this.frameCount = 0;
 
-  this.sprite.tint = this.dna.getTint();
   this.tasteCount = 0;
   this.smellCount = 0;
 };
 
 Rob.Mover.prototype.eat = function(foodParticle) {
-  this.motioner.eat(foodParticle);
+  this.archon.organs.motioner.eat(foodParticle);
+};
+
+Rob.Mover.prototype.ready = function(archon) {
+  this.archon = archon;
+  this.organs = Object.assign({}, archon.organs);
 };
 
 Rob.Mover.prototype.smell = function(smellyParticle) {
-  this.motioner.smell(smellyParticle);
+  this.archon.organs.motioner.smell(smellyParticle);
 };
 
 Rob.Mover.prototype.taste = function(tastyParticle) {
-  this.motioner.taste(tastyParticle);
+  this.archon.organs.motioner.taste(tastyParticle);
 };
 
-Rob.Mover.prototype.update = function() {
-  this.frameCount++;
-  this.motioner.update();
+Rob.Mover.prototype.tick = function(frameCount) {
+  this.frameCount = frameCount;
 };

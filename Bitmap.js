@@ -129,7 +129,7 @@ Rob.Bitmap.prototype.text = function(x, y, text) {
   this.tx.setText(text);
 };
 
-Rob.Bitmap.prototype.update = function() {
+Rob.Bitmap.prototype.tick = function() {
   this.clear();
 };
 
