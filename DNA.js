@@ -18,9 +18,9 @@ Rob.dnaConstants = {
   embryoThresholdMultiplier: 1.1,
   avoidanceFactor: -1,
   smellFactor: 1,
-  tempFactor: 1,
+  tempFactor: 1.5,
   velocityFactor: 1,
-  tasteFactor: 4
+  tasteFactor: 1
 };
 
 Rob.aboriginalDNA = {
