@@ -1,7 +1,7 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global game, Rob */
+/* global game, Rob, tinycolor */
 
 "use strict";
 
@@ -59,14 +59,16 @@ Rob.DNA.prototype.tick = function(frameCount) {
 
 Rob.DNA.prototype.launch = function() {
   var parentDNA = this.archon.parentDNA;
+  var i = null;
+
   if(parentDNA === undefined) {
-    for(var i in this) {
+    for(i in this) {
       this.mutate(i, this);
     }
   } else {
     this.color = Object.assign({}, parentDNA.color);
 
-    for(var i in parentDNA) {
+    for(i in parentDNA) {
       this.mutate(i, parentDNA);
     }
   }
@@ -104,7 +106,7 @@ Rob.DNA.prototype.getTint = function() {
 // probability = how likely it is for a mutation to occur
 // range: percentage of change allowable; from 1 - (range / 100) to 1 + (range / 100)
 Rob.DNA.prototype.scalarMutations = {
-  color: { probability: 10, range: 10 },
+  color: { probability: 50, range: 50 },
 	embryoThreshold: { probability: 10, range: 10 },
   lifetime: { probability: 10, range: 10 },
   massOfMyBabies: { probability: 10, range: 10 },
@@ -176,6 +178,8 @@ Rob.DNA.prototype.mutateColor = function(parentColors) {
       this.scalarMutations.color.probability,
       this.scalarMutations.color.range
     ));
+    
+    this.color[c] %= 255; this.color[c] *= Math.sign(this.color[c]);
 
     // Just so I can show the cool message about color mutation
 		if(this.color[c].toString(16) !== parentColors[c].toString(16)) { mutated = true; }
@@ -201,6 +205,11 @@ Rob.DNA.prototype.mutateScalar = function(traitName, parentDNA) {
 
 Rob.DNA.prototype.mutateScalar_ = function(value, probability, range) {
   var scratchRange = 0;
+  
+  if(Rob.globals.creation) {
+    probability *= 2;
+    range *= 2;
+  }
 
   // Just to make it interesting, every once in a while, a big change
   for(var i = 0; i < 3; i++) {
@@ -240,11 +249,10 @@ Rob.DNA.prototype.getRandomTint = function() {
 
 // We dont need the exact luma value; an approximation will do
 Rob.DNA.prototype.getTempFromColor = function(color) {
-	var temp = (2 * color.r + color.g + 3 * color.b) / 6;
-
-  return Rob.globals.standardArchonTolerableTempRange.convertPoint(
-    temp, Rob.globals.archonColorRange
-  );
+  var tiny = tinycolor(color);
+  var hsl = tiny.toHsl();
+  
+  return Rob.globals.standardArchonTolerableTempRange.convertPoint(hsl.l, Rob.globals.zeroToOneRange);
 };
 
 Rob.DNA.prototype.setColor = function() {
