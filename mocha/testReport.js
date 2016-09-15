@@ -41,44 +41,6 @@ var genePool_ = [
    }
 ]
 
-
-var acc = [{}, {}, {}];
-
-var setupTestOutput = function(pool, whichAccumulator) {
-  for(var i = 0; i < pool.length; i++) {
-    var dna = pool[i];
-    for(var j in dna) {
-      var gene = dna[j];
-    
-      if(typeof gene !== 'function') {
-        if(acc[whichAccumulator][j] === undefined) {
-          acc[whichAccumulator][j] = [];
-        }
-    
-        acc[whichAccumulator][j].push(gene);
-      }
-    }
-  }
-
-  for(var j in acc[whichAccumulator]) {
-    var geneSummary = acc[whichAccumulator][j];
-    
-    geneSummary.sort();
-  
-    var i = null;
-    var median = null;
-    if(geneSummary.length % 2 === 1) {
-      // Odd number of entries
-      i = Math.floor(geneSummary.length / 2);
-      median = geneSummary[i];
-    } else {
-      i = geneSummary.length / 2;
-    
-      median = (geneSummary[i - 1] + geneSummary[i]) / 2;
-    }
-  }
-}
-
 function floatify(value, name) {
   if(isNaN(value)) {
     console.log(value, name);
@@ -86,26 +48,35 @@ function floatify(value, name) {
   return parseFloat(value.toFixed(4));
 }
 
-//JSON.parse(fs.readFileSync('genePool.js'));
-
 genePool.genePool_ = genePool_.slice(0);
 var report = null;
 
-setupTestOutput(genePool.genePool_, 0);
 report = new Rob.Report(genePool);
 var reportAsJson = report.reportAsJson();
 
 genePool.genePool_ = genePool_.slice(-1);
-setupTestOutput(genePool.genePool_, 1);
 report = new Rob.Report(genePool);
 var oneReport = report.reportAsJson();
 
 genePool.genePool_ = genePool_.slice(-2);
-setupTestOutput(genePool.genePool_, 2);
 report = new Rob.Report(genePool);
 var twoReport = report.reportAsJson();
 
 describe('Report', function() {
+  it('Should show how many genes have values within 10% of the average', function() {
+    chai.expect(reportAsJson.lifetime.nearAverage).equal(3);
+    chai.expect(reportAsJson.embryoThreshold.nearAverage).equal(3);
+    chai.expect(reportAsJson.maxVelocity.nearAverage).equal(2);
+    chai.expect(reportAsJson.optimalMass.nearAverage).equal(1);
+  });
+
+  it('Should show how many genes have values within 10% of the median', function() {
+    chai.expect(reportAsJson.lifetime.nearMedian).equal(2);
+    chai.expect(reportAsJson.embryoThreshold.nearMedian).equal(3);
+    chai.expect(reportAsJson.maxVelocity.nearMedian).equal(2);
+    chai.expect(reportAsJson.optimalMass.nearMedian).equal(2);
+  });
+  
   it('Treat color differently', function() {
     chai.expect(reportAsJson.color).to.not.have.property('average');
   });
