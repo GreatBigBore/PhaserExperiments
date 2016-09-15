@@ -15,9 +15,11 @@ Rob.Archons = function() {
 	this.setupSpritePools();
 	this.constructPhaserons();
 
+  Rob.globals.creation = true;
 	for(var i = 0; i < Rob.globals.archonCount; i++) {
     this.breed();
   }
+  Rob.globals.creation = false;
 };
 
 Rob.Archons.prototype.breed = function(parent, birthWeight) {
@@ -39,12 +41,12 @@ Rob.Archons.prototype.breed = function(parent, birthWeight) {
 
 	var t = "Birth: archon " + a.uniqueID;
 
-	if(oldID === -1) {
+	if(parent === undefined) {
 		t += " by miracle";
 	} else {
 	 	t += " sprung from archon " + parent.archon.uniqueID;
 
-		if(oldID === null) {
+		if(oldID === -1) {
 			t += "; first launch";
 		} else {
 			t += "; recycled from " + oldID;

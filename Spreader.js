@@ -157,22 +157,24 @@ Rob.Spreader.prototype.render = function() {
 
 Rob.Spreader.prototype.report = function(whichSprite) {
   var a = whichSprite.archon;
-  console.log(a.dna);
+  console.log(a.organs.dna);
 
   console.log("\n\n\nArchon " + a.uniqueID);
-  console.log("Mass = " + a.lizer.getMass().toFixed(4));
+  console.log("Mass = " + a.organs.lizer.getMass().toFixed(4));
 
   console.log(
-    "Energy budget - baby fat: " + a.lizer.babyCalorieBudget.toFixed() +
-    ", reserves: " + a.lizer.adultCalorieBudget.toFixed() +
-    ", embryo storage: " + a.lizer.embryoCalorieBudget.toFixed()
+    "Energy budget - baby fat: " + a.organs.lizer.babyCalorieBudget.toFixed() +
+    ", reserves: " + a.lizer.organs.adultCalorieBudget.toFixed() +
+    ", embryo storage: " + a.organs.lizer.embryoCalorieBudget.toFixed()
   );
 
-  var t = a.lizer.expirationDate - a.lizer.frameCount;
+  var t = a.lizer.organs.expirationDate - a.frameCount;
   console.log("Life remaining: " + (t / 60).toFixed() + "s (" + t + " ticks)");
 
   console.log("\nDNA:");
-  console.log("Temps: " + a.dna.optimalLoTemp.toFixed() + " <= " + a.dna.optimalTemp.toFixed() + " <= " + a.dna.optimalHiTemp.toFixed());
+  console.log("Temps: " + a.organs.dna.optimalLoTemp.toFixed() +
+              " <= " + a.organs.dna.optimalTemp.toFixed() + " <= " +
+              a.organs.dna.optimalHiTemp.toFixed());
 };
 
 
