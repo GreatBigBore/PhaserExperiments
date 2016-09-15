@@ -134,6 +134,7 @@ describe('XY', function() {
     var angleFromP2ToP1 = oppositeAngle(angleFromP1ToP2), p2p1lo = angleFromP2ToP1 * (1 - 1e-5), p2p1hi = angleFromP2ToP1 * (1 + 1e-5);
     
     var p0 = Rob.XY(), p1 = Rob.XY.fromPolar(p1Radius, angleFromP0ToP1), p2 = Rob.XY.fromPolar(p2Radius, angleFromP0ToP2);
+    console.log(p0, p1, p2);
     
     it('Angle from origin to p1', function() { chai.expect(p1.getAngleFrom(p0)).to.equal(angleFromP0ToP1); });
     it('Angle to origin from p2', function() { chai.expect(p2.getAngleTo(p0)).to.be.within(p2p0lo, p2p0hi); });
@@ -154,6 +155,13 @@ describe('XY', function() {
     it('Magnitude of zero vector', function() { chai.expect(p0.getMagnitude()).to.equal(0); });
     it('Magnitude of p1', function() { chai.expect(p1.getMagnitude()).to.equal(19); });
     it('Magnitude of p2', function() { chai.expect(p2.getMagnitude()).to.equal(32); });
+    
+    it('Signed magnitude of zero', function() { chai.expect(p0.getSignedMagnitude()).equal(0); });
+    it('Signed magnitude of positive', function() { chai.expect(p1.getSignedMagnitude()).gt(0); });
+    it('Signed magnitude of mixed +/-', function() { chai.expect(p2.getSignedMagnitude()).lt(0); });
+    it('Signed magnitude of both negative', function() { chai.expect(Rob.XY(-1, -1).getSignedMagnitude()).gt(0); });
+    it('Signed magnitude of >0 and zero', function() { chai.expect(Rob.XY(0, 1).getSignedMagnitude()).gt(0); });
+    it('Signed magnitude of <0 and zero', function() { chai.expect(Rob.XY(-1, 0).getSignedMagnitude()).lt(0); });
   });
   
   describe('Test chaining', function() {

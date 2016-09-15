@@ -34,6 +34,10 @@ ns.XY.prototype = {
   
   getMagnitude: function() { return getMagnitude(this); },
   
+  getSign: function() { return getSign(this.x, this.y); },
+
+  getSignedMagnitude: function() { return this.getMagnitude() * this.getSign(); },
+  
   plus: function(a1, a2) { var scratch = ns.XY(this); scratch.add(a1, a2); return scratch; },
   
   minus: function(a1, a2) { var scratch = ns.XY(this); scratch.subtract(a1, a2); return scratch; },
@@ -108,6 +112,14 @@ function getMagnitude(a1, a2) {
   var xy = ns.XY(a1, a2);
   
   return Math.sqrt(Math.pow(xy.x, 2) + Math.pow(xy.y, 2));
+}
+
+function getSign(a1, a2) {
+  var xy = ns.XY(a1, a2);
+
+  if(xy.x === 0) { return Math.sign(xy.y); }
+  else if(xy.y === 0) { return Math.sign(xy.x); }
+  else { return Math.sign(xy.x) * Math.sign(xy.y); }
 }
 
 })(Rob);
