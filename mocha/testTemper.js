@@ -7,8 +7,8 @@ Rob.integerInRange = function(lo, hi) {
 };
 
 var archon = {
-  sprite: Rob.XY(),
-  dna: { optimalLoTemp: -47, optimalTemp: 62, optimalHiTemp: 137 },
+  position: Rob.XY(),
+  organs: { dna: { optimalLoTemp: -47, optimalTemp: 62, optimalHiTemp: 137 } },
   sensor: { width: 50 }
 };
 
@@ -40,10 +40,10 @@ describe('Temper', function() {
       var pc = { x: x, y: y, t: -42, e: 0 };
       var pd = { x: x, y: y + 2, t: -192, e: archon.organs.dna.optimalTemp - (-192) };
 
-      archon.sprite.set(pc);
+      archon.position.set(pc);
 
       var temper = new Rob.Temper();
-      temper.launch(archon);
+      temper.ready(archon);
 
       chai.expect(temper.getTempVector()).to.have.property('y').equal(pu.e);
     });
@@ -56,10 +56,10 @@ describe('Temper', function() {
       var pc = { x: x, y: y, t: -42, e: 0 };
       var pd = { x: x, y: y + 2, t: -192, e: archon.organs.dna.optimalTemp - (-192) };
 
-      archon.sprite.set(pc.x, -40);
+      archon.position.set(pc.x, -40);
 
       var temper = new Rob.Temper();
-      temper.launch(archon);
+      temper.ready(archon);
 
       // With our winner out of bounds, we should get back the second choice, which
       // is the center, at -42˚, so we should get a zero
@@ -83,10 +83,10 @@ describe('Temper', function() {
 
       var pd = { x: x, y: y + s, t: -192, e: e };
 
-      archon.sprite.set(pc);
+      archon.position.set(pc);
 
       var temper = new Rob.Temper();
-      temper.launch(archon);
+      temper.ready(archon);
       
       chai.expect(temper.getTempVector()).to.have.property('y').within(-370.52, -370.51);
     });

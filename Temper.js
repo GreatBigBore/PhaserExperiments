@@ -1,17 +1,18 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global game */
-
 "use strict";
 
 var Rob = Rob || {};
+var game = game || {};
 
 if(typeof window === "undefined") {
   Rob = require('./XY.js');
+  
+  game = { width: 50 }; // For the test harness
 }
 
-(function(Rob) {
+(function(Rob, game) {
 
 Rob.Temper = function() {
   this.tempVector = Rob.XY();
@@ -37,12 +38,13 @@ Rob.Temper.prototype.getTempVector = function() {
     // of bounds if the sprite is really small, but as long as it's
     // within the world borders, which I think (?) it always will be,
     // then temp checks should work (should!)
-    var boundsCheck = Rob.XY(e.where); boundsCheck.x = game.width / 2;
+    var boundsCheck = Rob.XY(e.where); 
+    boundsCheck.x = game.width / 2;
 
     if(Rob.pointInBounds(boundsCheck)) {
       var t = Rob.getTemperature(e.where);
       var r = null, d = null;
-    
+      
       // If we're outside our comfortable range, make a number that's larger
       // than just the delta between current temp and optimal, to indicate
       // the urgency of the matter
@@ -105,7 +107,7 @@ Rob.Temper.prototype.ready = function(archon) {
   this.senseLimit = archon.sensor.width / 2;
 };
 
-})(Rob);
+})(Rob, game);
 
 if(typeof window === "undefined") {
   module.exports = Rob;
