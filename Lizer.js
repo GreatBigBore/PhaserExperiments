@@ -160,7 +160,7 @@ Rob.Lizer.prototype.metabolize = function() {
 	}
 
 	if(causeOfDeath !== null) {
-		console.log('Archon', this.archon.uniqueID, 'just died of', causeOfDeath);
+		//console.log('Archon', this.archon.uniqueID, 'just died of', causeOfDeath);
 		this.archon.sprite.kill();
 		this.archon.button.kill();
 		this.archon.sensor.kill();
