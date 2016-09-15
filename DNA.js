@@ -179,7 +179,7 @@ Rob.DNA.prototype.mutateColor = function(parentColors) {
       this.scalarMutations.color.range
     ));
     
-    this.color[c] %= 255; this.color[c] *= Math.sign(this.color[c]);
+    this.color[c] = (this.color[c] + 255) % 256;
 
     // Just so I can show the cool message about color mutation
 		if(this.color[c].toString(16) !== parentColors[c].toString(16)) { mutated = true; }
