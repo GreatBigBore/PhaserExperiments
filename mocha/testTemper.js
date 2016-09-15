@@ -42,7 +42,8 @@ describe('Temper', function() {
 
       archon.position.set(pc);
 
-      var temper = new Rob.Temper();
+      // The 50 is a dummy game width; temper needs to know where the center is
+      var temper = new Rob.Temper(50);
       temper.ready(archon);
 
       chai.expect(temper.getTempVector()).to.have.property('y').equal(pu.e);
@@ -58,7 +59,7 @@ describe('Temper', function() {
 
       archon.position.set(pc.x, -40);
 
-      var temper = new Rob.Temper();
+      var temper = new Rob.Temper(50);
       temper.ready(archon);
 
       // With our winner out of bounds, we should get back the second choice, which
@@ -85,7 +86,7 @@ describe('Temper', function() {
 
       archon.position.set(pc);
 
-      var temper = new Rob.Temper();
+      var temper = new Rob.Temper(50);
       temper.ready(archon);
       
       chai.expect(temper.getTempVector()).to.have.property('y').within(-370.52, -370.51);

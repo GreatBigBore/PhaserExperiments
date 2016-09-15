@@ -4,18 +4,23 @@
 "use strict";
 
 var Rob = Rob || {};
-var game = game || {};
 
 if(typeof window === "undefined") {
   Rob = require('./XY.js');
-  
-  game = { width: 50 }; // For the test harness
 }
 
-(function(Rob, game) {
+(function(Rob) {
 
-Rob.Temper = function() {
+Rob.Temper = function(gameCenter) {
   this.tempVector = Rob.XY();
+  
+  // This is so we can function properly in both
+  // the live and test harness environments. If
+  // we don't do this, we have to declare a global
+  // game variable for the benefit of the test
+  // harness, but then we don't run properly. This
+  // works better
+  this.gameCenter = gameCenter;
   
   this.testPoints = [];
   for(var i = 0; i < 3; i++) {
@@ -39,8 +44,9 @@ Rob.Temper.prototype.getTempVector = function() {
     // within the world borders, which I think (?) it always will be,
     // then temp checks should work (should!)
     var boundsCheck = Rob.XY(e.where); 
-    boundsCheck.x = game.width / 2;
+    boundsCheck.x = this.gameCenter;
 
+  
     if(Rob.pointInBounds(boundsCheck)) {
       var t = Rob.getTemperature(e.where);
       var r = null, d = null;
@@ -104,10 +110,10 @@ Rob.Temper.prototype.ready = function(archon) {
   this.optimalLoTemp = archon.organs.dna.optimalLoTemp;
   this.optimalTemp = archon.organs.dna.optimalTemp;
   this.optimalHiTemp = archon.organs.dna.optimalHiTemp;
-  this.senseLimit = archon.sensor.width / 2;
+  this.senseLimit = archon.sensorRadius;
 };
 
-})(Rob, game);
+})(Rob);
 
 if(typeof window === "undefined") {
   module.exports = Rob;

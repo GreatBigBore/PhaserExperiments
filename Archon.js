@@ -96,7 +96,7 @@ Rob.Archon.prototype.fetch = function(newUniqueID) {
       mover: new Rob.Mover(),
       motioner: new Rob.Motioner(),
       parasite: new Rob.Parasite(),
-      temper: new Rob.Temper()
+      temper: new Rob.Temper(game.width / 2)
     };
     
     for(var i in this.organs) {
@@ -109,6 +109,9 @@ Rob.Archon.prototype.fetch = function(newUniqueID) {
 	this.justBorn = true;	// Tells motioner to aim me away from parent (don't think this really works)
 
 	this.uniqueID = newUniqueID;
+  if(this.uniqueID === 0) {
+    this.sprite.tint = 0x00FFFF;
+  }
   
   return this;
 };
@@ -156,6 +159,12 @@ Rob.Archon.prototype.setSize = function(mass) {
 	var w = this.sprite.width;	// Have to tell the body to keep up with the sprite
 	this.sprite.body.setSize(w, w);
 	this.sprite.body.setCircle(w / 2);
+};
+
+Rob.Archon.prototype.throttle = function(id, interval, callback, context) {
+  if(this.uniqueID === id && this.frameCount % interval === 0) {
+    callback.call(context);
+  }
 };
 
 Rob.Archon.prototype.tick = function() {

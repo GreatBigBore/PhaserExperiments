@@ -106,7 +106,7 @@ Rob.Accel.prototype = {
     var finalY = bestDeltaY + this.velocity.y;
     
     this.currentMVelocity = Math.sqrt(Math.pow(finalX, 2) + Math.pow(finalY, 2));
-
+    
     this.velocity.set(finalX, finalY);
   },
 
