@@ -151,17 +151,17 @@ Rob.DNA.prototype.mutate = function(traitName, parentDNA) {
 		default: {
 
       // Just for showing the cool message about mutation
-			var originalValue = parentDNA[traitName];
+			//var originalValue = parentDNA[traitName];
 
       // This is the part that matters
 			this.mutateScalar(traitName, parentDNA);
 
       // Just for showing the cool message about mutation
-			var newValue = this[traitName];
+/*			var newValue = this[traitName];
 
 			if(originalValue !== newValue) {
 				console.log(traitName, 'mutated to', newValue.toFixed(4), 'from', originalValue.toFixed(4));
-			}
+			}*/
 		}
 
 		break;
@@ -185,14 +185,14 @@ Rob.DNA.prototype.mutateColor = function(parentColors) {
 		if(this.color[c].toString(16) !== parentColors[c].toString(16)) { mutated = true; }
 	}
 
-	if(mutated) {
+/*	if(mutated) {
 		console.log(
 			'Color mutated to',
 			this.color.r.toString(16) + this.color.g.toString(16) + this.color.b.toString(16),
 			'from',
 			parentColors.r.toString(16) + parentColors.g.toString(16) + parentColors.b.toString(16)
 		);
-	}
+	}*/
 };
 
 Rob.DNA.prototype.mutateScalar = function(traitName, parentDNA) {
@@ -257,7 +257,6 @@ Rob.DNA.prototype.getTempFromColor = function(color) {
 
 Rob.DNA.prototype.setColor = function() {
 	this.color = this.getRandomTint();
-  console.log('color set to', this.color);
 };
 
 if(typeof window === "undefined") {

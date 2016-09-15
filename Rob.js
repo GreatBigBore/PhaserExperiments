@@ -2,15 +2,11 @@
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
 /* global Phaser */
-/* exported theSpreader, theAngles, theSun */
 
 "use strict";
 
 var game = null;
 var runWhichState = 'Spreader';
-var theSpreader = null;
-var theAngles = null;
-var theSun = null;
 
 var Rob = (function() {
   var thing = {

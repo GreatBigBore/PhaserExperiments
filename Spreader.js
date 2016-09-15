@@ -1,12 +1,11 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global game, Phaser, Rob, theSun */
+/* global game, Phaser, Rob */
 
 "use strict";
 
 Rob.Spreader = function() {
-  theSpreader = this; // jshint ignore: line
   this.yAxisRange = Rob.Range(game.height, 0);
   this.darknessRange = Rob.globals.darknessRange;
   this.stopped = false;
@@ -82,7 +81,7 @@ Rob.Spreader.prototype.getTemperature = function(x, y) {
 
   var lumaComponent = Rob.globals.temperatureRange.convertPoint(rgb.l, this.worldColorRange);
 
-  var darkness = theSun.darkness.alpha;
+  var darkness = Rob.globals.archonia.theSun.darkness.alpha;
   var darknessComponent = Rob.globals.temperatureRange.convertPoint(darkness, this.darknessRange);
 
   var yAxisComponent = Rob.globals.temperatureRange.convertPoint(y, this.yAxisRange);
@@ -196,6 +195,6 @@ Rob.Spreader.prototype.update = function() {
   game.physics.arcade.overlap(this.archons.phaseronPool, this.mannaGarden.foodGroup, this.eat, null, this);
 
   this.frameCount++;
-  this.mannaGarden.tick(theSun.getStrength());
+  this.mannaGarden.tick(Rob.globals.archonia.theSun.getStrength());
   this.archons.tick();
 };

@@ -6,7 +6,7 @@
 "use strict";
 
 Rob.Sun = function() {
-  theSun = this;  // jshint ignore: line
+  Rob.globals.archonia.theSun = this;
 
   this.sunChariotAlphaHi = 1.0;
   this.sunChariotAlphaLo = 0.0;
@@ -41,9 +41,15 @@ Rob.Sun.prototype.letThereBeDark = function() {
   this.darkness.alpha = Rob.globals.darknessAlphaHi;       // Note: black sprite, so high alpha means dark world
   this.darkness.tint = 0x9900;
 
-  game.add.tween(this.darkness).to(
+  this.darknessTween = game.add.tween(this.darkness).to(
     {alpha: Rob.globals.darknessAlphaLo}, this.dayLength, this.easingFunction, true, 0, -1, true
   );
+  
+  this.dayNumber = 1;
+  
+  this.darknessTween.onLoop.add(function() {
+    Rob.globals.archonia.archons.dailyReport(this.dayNumber++);
+  }, this);
 
   //this.darkness.visible = false;  // So I can see the debug lines while debugging
 };

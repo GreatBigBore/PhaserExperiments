@@ -6,6 +6,7 @@
 "use strict";
 
 Rob.Archons = function() {
+  Rob.globals.archonia.archons = this;
 	this.archonUniqueID = 0;
 
 	this.phaseronPool = null;
@@ -14,12 +15,18 @@ Rob.Archons = function() {
 
 	this.setupSpritePools();
 	this.constructPhaserons();
+  
+  this.report = new Rob.Report(this.phaseronPool);
 
   Rob.globals.creation = true;
 	for(var i = 0; i < Rob.globals.archonCount; i++) {
     this.breed();
   }
   Rob.globals.creation = false;
+};
+
+Rob.Archons.prototype.dailyReport = function(dayNumber) {
+  this.report.reportAsText(dayNumber);
 };
 
 Rob.Archons.prototype.breed = function(parent, birthWeight) {
@@ -35,11 +42,11 @@ Rob.Archons.prototype.breed = function(parent, birthWeight) {
 		p.x = parent.archon.position.x; p.y = parent.archon.position.y;
 	}
 
-	var oldID = p.archon.uniqueID;
+//	var oldID = p.archon.uniqueID;
 
 	var a = p.archon.fetch(this.archonUniqueID++);
 
-	var t = "Birth: archon " + a.uniqueID;
+	/*var t = "Birth: archon " + a.uniqueID;
 
 	if(parent === undefined) {
 		t += " by miracle";
@@ -53,7 +60,7 @@ Rob.Archons.prototype.breed = function(parent, birthWeight) {
 		}
 	}
 
-	console.log(t);
+	console.log(t);*/
   
   var parentArchon = (parent === undefined) ? parent : parent.archon;
   a.launch(parentArchon, birthWeight);

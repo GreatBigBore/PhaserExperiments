@@ -9,9 +9,6 @@ var Rob = Rob || {};
 
 Rob.Report = function(genePool) {
   this.genePool = genePool;
-  
-  this.accumulator = {};
-  this.archonCount = 0;
 };
 
 Rob.Report.prototype = {
@@ -22,7 +19,7 @@ Rob.Report.prototype = {
     var closeEnough = Math.abs(valueToCheck) / 10;
     
     this.genePool.forEachAlive(function(p) {
-      if(Math.abs(valueToCheck - p.color[colorName]) <= closeEnough) {
+      if(Math.abs(valueToCheck - p.archon.organs.dna.color[colorName]) <= closeEnough) {
         count++;
       }
     });
@@ -36,7 +33,7 @@ Rob.Report.prototype = {
     var closeEnough = Math.abs(valueToCheck / 10);
     
     this.genePool.forEachAlive(function(p) {
-      if(Math.abs(valueToCheck - p[propertyName]) <= closeEnough) {
+      if(Math.abs(valueToCheck - p.archon.organs.dna[propertyName]) <= closeEnough) {
         count++;
       }
     });
@@ -45,17 +42,20 @@ Rob.Report.prototype = {
   },
   
   isReportable: function(item) {
-    return typeof item !== "function";
+    return typeof item === 'number';
   },
 
   getJson: function() {
+    this.accumulator = {};
+    this.archonCount = 0;
+
     var i = null;
     
     this.genePool.forEachAlive(function(p) {
-      for(i in p) {
-        var value = p[i];
+      for(i in p.archon.organs.dna) {
+        var value = p.archon.organs.dna[i];
         
-        if(this.isReportable(value)) {
+        if(this.isReportable(value) || i === 'color') {
           if(this.accumulator[i] === undefined) {
             if(i === 'color') {
               this.accumulator[i] = {
@@ -114,6 +114,8 @@ Rob.Report.prototype = {
       }
     }
     
+    this.accumulator.population = this.archonCount;
+    
     return this.accumulator;
   },
   
@@ -123,20 +125,50 @@ Rob.Report.prototype = {
   
   reportAsText: function(dayNumber) {
     var j = this.getJson();
-    var keys = Object.keys().sort();
+    var keys = Object.keys(j).sort();
     
-    console.log("Report for day " + dayNumber + ":");
-    console.log("Population: " + keys.length);
+    console.log("\n\n\nReport for day " + dayNumber + " -- Population " + j.population + "\n");
     
     for(var k in keys) {
-      var entry = j[k];
+      var propertyName = keys[k];
+      var entry = j[propertyName];
       
-      console.log(k + ": average " + entry.average.toFixed(4) + ", median " + entry.median.toFixed(4));
-      console.log("\t\tArchons w/in 10% of average " + entry.nearAverage + ", of median " + entry.nearMedian);
+      if(propertyName !== 'color' && propertyName !== 'population') {
+        console.log(rPad(propertyName, 20) + " -- average: " + lPad(entry.average.toFixed(4), 10) + ' / ' + lPad(entry.nearAverage, 2) +
+                    ", median: " + lPad(entry.median.toFixed(4), 10) + ' / ' + lPad(entry.nearMedian, 2));
+      }
     }
+    
+    console.log('\nAverage color: 0x' + hexPad(Math.floor(j.color.r.average)) + hexPad(Math.floor(j.color.g.average)) + hexPad(Math.floor(j.color.b.average)));
   }
 
 };
+
+function rPad(value, length) {
+  for(var i = value.length; i < length; i++) {
+    value += ' ';
+  }
+  
+  return value;
+}
+
+function lPad(value, length) {
+  for(var i = (value).toString().length; i < length; i++) {
+    value = ' ' + value;
+  }
+  
+  return value;
+}
+
+function hexPad(value) {
+  var h = value.toString(16);
+  
+  if(h.length === 1) {
+    h = '0' + h;
+  }
+  
+  return h;
+}
 
 function getMedian(values) {
   values.sort(function(lhs, rhs) {
