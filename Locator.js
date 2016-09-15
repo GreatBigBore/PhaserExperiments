@@ -6,7 +6,10 @@
 var Rob = Rob || {};
 
 if(typeof window === "undefined") {
-  Rob = require('./XY.js');
+  var range = require('./Range.js');
+  var xy = require('./XY.js');
+  
+  Rob = Object.assign(Rob, range, xy);
 }
 
 (function(Rob) {
@@ -39,8 +42,8 @@ Rob.Locator.prototype = {
     this.archon = archon;
     this.organs = Object.assign({}, archon.organs);
 
-    // See value calculation in sense(); the highest
-    // value food is that closest to us
+    // We don't use this; the motioner does, after it
+    // gets our vector. The highest value food is that closest to us
     this.foodDistanceRange = Rob.Range(archon.sensor.width / 2, 1);
   },
   
@@ -59,7 +62,7 @@ Rob.Locator.prototype = {
     var radius = this.archon.sensor.width / 2;
     var relativePosition = Rob.XY(sensee).minus(this.archon.sensor);
     var distance = relativePosition.getMagnitude();
-    var value = 2 - (distance / radius);
+    var value = (2 - (distance / radius)) * relativePosition.getSign();
 
     relativePosition.normalize();
     relativePosition.scalarMultiply(value);
