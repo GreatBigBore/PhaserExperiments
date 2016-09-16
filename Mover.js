@@ -45,27 +45,51 @@ Rob.Mover.prototype = {
       
       var tempVector = this.getTempVector();
       var tasteVector = this.getTasteVector();
-      
+
       // Don't count taste if we haven't tasted anything
       m = tasteVector.getMagnitude();
+
+      if(this.archon.uniqueID === 0) {
+        roblog('target', 'taste raw', tasteVector.x, tasteVector.y);
+        roblog('target', 'temp raw', tempVector.x, tempVector.y);
+      }
+    
       if(m > 0) {
-        mTaste = Rob.globals.normalZeroCenterRange.convertPoint(m, this.archon.organs.locator.foodDistanceRange);
+        mTaste = Rob.globals.zeroToOneRange.convertPoint(m, this.archon.organs.locator.foodDistanceRange);
+        tasteVector.scaleTo(mTaste);
+        
+        // If there's any food, don't let my goofy random
+        // x-coordinate stuff influence the decision, adding
+        // fake magnitude to the temp vector
+        tempVector.x = 0;
       }
       
       m = tempVector.getMagnitude();
-      mTemp = Rob.globals.normalZeroCenterRange.convertPoint(m, this.archon.organs.temper.tempRange);
+      mTemp = Rob.globals.zeroToOneRange.convertPoint(m, this.archon.organs.temper.tempRange);
+      tempVector.scaleTo(mTemp);
     
+      if(this.archon.uniqueID === 0) {
+        roblog('target', 'taste 0-1', tasteVector.x, tasteVector.y);
+        roblog('target', 'temp 0-1', tempVector.x, tempVector.y);
+        roblog('target', 'position', this.archon.position.x, this.archon.position.y);
+      }
+
       if(Math.abs(mTemp * this.archon.organs.dna.tempFactor) > Math.abs(mTaste * this.archon.organs.dna.tasteFactor)) {
-        tempVector.normalize();
         tempVector.scalarMultiply(this.archon.sensorWidth);
         tempVector.add(this.archon.position);
+     
+        if(this.archon.uniqueID === 0) {
+          roblog('target', 'temp set', tempVector.x, tempVector.y);
+        }
         
         this.archon.organs.accel.setTarget(tempVector);
       } else {
-        tasteVector.normalize();
         tasteVector.scalarMultiply(this.archon.sensorWidth);
         tasteVector.add(this.archon.position);
         
+        if(this.archon.uniqueID === 0) {
+          roblog('target', 'taste set', tasteVector.x, tasteVector.y);
+        }
         this.archon.organs.accel.setTarget(tasteVector);
       }
       

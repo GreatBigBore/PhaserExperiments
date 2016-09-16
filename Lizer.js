@@ -23,6 +23,11 @@ Rob.Lizer.prototype.doLog = function(id, interval) {
 };
 
 Rob.Lizer.prototype.eat = function(sprite, foodParticle, caloriesPerMannaMorsel_which_we_are_not_using_why) {
+  // Once we've caught the food, tell the mover
+  // and the accel that we're ready to move again
+  this.archon.organs.mover.noNewTargetUntil = 0;
+  this.archon.organs.accel.maneuverComplete = true;
+  
   foodParticle.kill();
   
 	var sunStrength = Rob.globals.archonia.sun.getStrength();

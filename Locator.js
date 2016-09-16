@@ -44,7 +44,7 @@ Rob.Locator.prototype = {
 
     // We don't use this; the mover does, after it
     // gets our vector. The highest value food is that closest to us
-    this.foodDistanceRange = Rob.Range(archon.sensor.width / 2, 1);
+    this.foodDistanceRange = Rob.Range(1, 2);
   },
   
   reset: function() {
@@ -58,10 +58,10 @@ Rob.Locator.prototype = {
 
   sense: function(sense, sensee) {
     var t = this.trackers[sense];
-    var radius = this.archon.sensor.width / 2;
-    var relativePosition = Rob.XY(sensee).minus(this.archon.sensor);
+    var radius = this.archon.sensorRadius
+    var relativePosition = Rob.XY(sensee).minus(this.archon.position);
     var distance = relativePosition.getMagnitude();
-    var value = (2 - (distance / radius)) * relativePosition.getSign();
+    var value = 2 - (distance / radius);
 
     relativePosition.normalize();
     relativePosition.scalarMultiply(value);

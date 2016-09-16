@@ -9,6 +9,7 @@ var Rob = Rob || {};
 
 Rob.Report = function(genePool) {
   this.genePool = genePool;
+  this.accumulator = {};
 };
 
 Rob.Report.prototype = {
@@ -125,21 +126,26 @@ Rob.Report.prototype = {
   
   reportAsText: function(dayNumber) {
     var j = this.getJson();
-    var keys = Object.keys(j).sort();
     
-    console.log("\n\n\nReport for day " + dayNumber + " -- Population " + j.population + "\n");
+    if(this.archonCount === 0) {
+      console.log("They're all dead, you're a terrible person");
+    } else {
+        var keys = Object.keys(j).sort();
+  
+      console.log("\n\n\nReport for day " + dayNumber + " -- Population " + j.population + "\n");
+  
+      for(var k in keys) {
+        var propertyName = keys[k];
+        var entry = j[propertyName];
     
-    for(var k in keys) {
-      var propertyName = keys[k];
-      var entry = j[propertyName];
-      
-      if(propertyName !== 'color' && propertyName !== 'population') {
-        console.log(rPad(propertyName, 20) + " -- average: " + lPad(entry.average.toFixed(4), 10) + ' / ' + lPad(entry.nearAverage, 2) +
-                    ", median: " + lPad(entry.median.toFixed(4), 10) + ' / ' + lPad(entry.nearMedian, 2));
+        if(propertyName !== 'color' && propertyName !== 'population') {
+          console.log(rPad(propertyName, 20) + " -- average: " + lPad(entry.average.toFixed(4), 10) + ' / ' + lPad(entry.nearAverage, 2) +
+                      ", median: " + lPad(entry.median.toFixed(4), 10) + ' / ' + lPad(entry.nearMedian, 2));
+        }
       }
+  
+      console.log('\nAverage color: 0x' + hexPad(Math.floor(j.color.r.average)) + hexPad(Math.floor(j.color.g.average)) + hexPad(Math.floor(j.color.b.average)));
     }
-    
-    console.log('\nAverage color: 0x' + hexPad(Math.floor(j.color.r.average)) + hexPad(Math.floor(j.color.g.average)) + hexPad(Math.floor(j.color.b.average)));
   }
 
 };

@@ -24,7 +24,7 @@ Rob.Temper = function(gameCenter) {
   
   this.testPoints = [];
   for(var i = 0; i < 3; i++) {
-    this.testPoints.push({ where: Rob.XY(), delta: null });
+    this.testPoints.push({ where: Rob.XY(), delta: null, signedDelta: null });
   }
 };
 
@@ -50,23 +50,21 @@ Rob.Temper.prototype.getTempVector = function() {
     if(Rob.pointInBounds(boundsCheck)) {
       var t = Rob.getTemperature(e.where);
       var r = null, d = null;
+
+      var signedDelta = t - this.optimalTemp; // So we can get a direction
+      var delta = Math.abs(signedDelta);      // So we can get a magnitude
       
-      // If we're outside our comfortable range, make a number that's larger
-      // than just the delta between current temp and optimal, to indicate
-      // the urgency of the matter
-      if(t > this.optimalHiTemp) {
-        r = this.optimalHiTemp - this.optimalTemp;
-        d = t - this.optimalTemp;
-        e.delta = d + (50 * d / r);
+      /*if(t > this.optimalHiTemp) {
+        delta += t - this.optimalHiTemp;
       } else if(t < this.optimalLoTemp) {
-        r = this.optimalTemp - this.optimalLoTemp;
-        d = t - this.optimalTemp;
-        e.delta = d + (50 * d / r);
-      } else {
-        e.delta = t - this.optimalTemp;
-      }
+        delta += this.optimalLoTemp = t;
+      }*/
+        
+      e.signedDelta = signedDelta;
+      e.delta = delta;
     } else {
       e.delta = null;
+      e.signedDelta = null;
     }
   }
   
@@ -82,10 +80,10 @@ Rob.Temper.prototype.getTempVector = function() {
       bestIndex = i;
     }
   }
-  
-  var x = Rob.integerInRange(-this.archon.sensorWidth, this.archon.sensorWidth);
-  
-  this.tempVector.set(x, bestDelta);
+
+  this.tempVector.set(0, 1);
+  this.tempVector.scalarMultiply(e.signedDelta)
+  this.tempVector.x = Rob.integerInRange(-this.archon.sensorWidth, this.archon.sensorWidth);
   
   return this.tempVector;
 };
@@ -110,7 +108,7 @@ Rob.Temper.prototype.ready = function(archon) {
   this.optimalHiTemp = archon.organs.dna.optimalHiTemp;
   this.senseLimit = archon.sensorRadius;
   
-  this.tempRange = Rob.Range(this.optimalLoTemp, this.optimalHiTemp);
+  this.tempRange = Rob.Range(0, 1000);
 };
 
 })(Rob);

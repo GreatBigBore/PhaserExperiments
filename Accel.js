@@ -35,9 +35,6 @@ Rob.Accel.prototype = {
   ready: function(archon) {
     this.archon = archon;
     this.organs = Object.assign({}, archon.organs);
-
-    this.position = archon.position;
-    this.velocity = archon.velocity;
   },
 
   setTarget: function(target) {
@@ -58,11 +55,11 @@ Rob.Accel.prototype = {
     this.maneuverAdjustStamp = this.frameCount;
 
     // Get his into the same frame of reference as the velocity vector
-    var currentVelocity = Rob.XY(this.velocity);
+    var currentVelocity = Rob.XY(this.archon.velocity);
 
     // Get the angle between my velocity vector and
     // the distance vector from me to him.
-    var optimalDeltaV = this.target.minus(this.sprite).plus(currentVelocity);
+    var optimalDeltaV = this.target.minus(this.archon.position).plus(currentVelocity);
     var optimalDeltaM = optimalDeltaV.getMagnitude();
     var thetaToTarget = optimalDeltaV.getAngleFrom(0);
 
@@ -83,9 +80,9 @@ Rob.Accel.prototype = {
       bestDeltaV.scalarMultiply(this.currentAcceleration / bestDeltaM);
     }
 
-    var newVelocity = bestDeltaV.plus(this.velocity);
+    var newVelocity = bestDeltaV.plus(this.archon.velocity);
 
-    this.velocity.set(newVelocity.x, newVelocity.y);
+    this.archon.velocity.set(newVelocity);
 
     this.currentAcceleration = bestDeltaM;
     this.currentSpeed = newVelocity.getMagnitude();
@@ -105,15 +102,15 @@ Rob.Accel.prototype = {
     }
 
     if(this.maneuverComplete) {
-      this.velocity.x *= 0.9; this.velocity.y *= 0.9;
-      if(Rob.XY(this.velocity).getMagnitude() < this.maxSpeed / 50) {
+      this.archon.velocity.scalarMultiply(0.9);
+      if(this.archon.velocity.getMagnitude() < this.maxSpeed / 50) {
         this.velocity.set(0, 0);
       }
     } else {
       // If we're close enough to the target, or we've slowed
       // down a lot due to the maneuver taking too long, consider
       // the maneuver done and just stop
-      if(this.target.getDistanceTo(this.sprite) < 20 || this.currentSpeed < this.maxSpeed / 50) {
+      if(this.target.getDistanceTo(this.archon.position) < 20 || this.currentSpeed < this.maxSpeed / 50) {
         this.maneuverComplete = true;
       }
     }

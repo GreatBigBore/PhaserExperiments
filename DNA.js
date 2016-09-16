@@ -18,10 +18,10 @@ Rob.dnaConstants = {
   embryoThresholdMultiplier: 1.1,
   avoidanceFactor: -1,
   smellFactor: 1,
-  targetChangeDelay: 10,
+  targetChangeDelay: 30,
   tempFactor: 1,
   velocityFactor: 1,
-  tasteFactor: 4
+  tasteFactor: 1
 };
 
 Rob.DNA = function() {

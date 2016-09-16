@@ -21,7 +21,7 @@ function roblog(/* arbitrary parameters */) {
   }
 
   if(
-    arguments[0] === 'senses'
+    arguments[0] === 'target'
   ) {
     theRobLogObject.log.apply(theRobLogObject, arguments);
   }
