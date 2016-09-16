@@ -60,13 +60,13 @@ Rob.Mover.prototype = {
         tempVector.scalarMultiply(this.archon.sensorWidth);
         tempVector.add(this.archon.position);
         
-        this.archon.organs.accel.setTarget(tempVector.x, tempVector.y);
+        this.archon.organs.accel.setTarget(tempVector);
       } else {
         tasteVector.normalize();
         tasteVector.scalarMultiply(this.archon.sensorWidth);
         tasteVector.add(this.archon.position);
         
-        this.archon.organs.accel.setTarget(tasteVector.x, tasteVector.y);
+        this.archon.organs.accel.setTarget(tasteVector);
       }
       
       this.noNewTargetUntil = frameCount + this.archon.organs.dna.targetChangeDelay;

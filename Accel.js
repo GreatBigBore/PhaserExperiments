@@ -9,23 +9,23 @@ var Rob = Rob || {};
 
 Rob.Accel = function() {
   this.maneuverStamp = 0;
+  this.maneuverAdjustStamp = 0;
   this.maneuverComplete = true;
   this.needUpdate = false;
   this.damper = 10;
-  this.cancelAfter = 30; // Cancel maneuvers that take too long
-  this.expiresAt = 0;
 
-  this.stuckCount = 0;
-  this.previousX = null;
-  this.previousY = null;
-
-  this.currentMVelocity = 0;
-  this.currentMAcceleration = 0;
+  this.maneuverTimeout = 2 * 60;
+  this.frameCount = 0;
+  
+  this.currentSpeed = 0;
+  this.currentAcceleration = 0;
+  
+  this.target = Rob.XY();
 };
 
 Rob.Accel.prototype = {
   
-  getMotion: function() { return { mVelocity: this.currentMVelocity, mAcceleration: this.currentMAcceleration }; },
+  getMotion: function() { return { mVelocity: this.currentSpeed, mAcceleration: this.currentAcceleration }; },
   
   init: function() {
   },
@@ -40,101 +40,81 @@ Rob.Accel.prototype = {
     this.velocity = archon.velocity;
   },
 
-  setTarget: function(hisX, hisY) {
-    this.hisX = hisX;
-    this.hisY = hisY;
+  setTarget: function(target) {
+    this.target.set(target);
+    this.maneuverStamp = this.frameCount;
+    this.currentSpeed = Rob.globals.maxSpeed;
+    
+    // We don't use this for anything at the moment,
+    // just setting it along with current speed for
+    // anal tidyness purposes
+    this.currentAcceleration = Rob.globals.maxAcceleration;
 
     this.maneuverComplete = false;
-    this.expiresAt = this.frameCount + this.cancelAfter;
     this.setNewVelocity();
   },
 
   setNewVelocity: function() {
-    if(this.frameCount > this.expiresAt) {
-      this.maneuverComplete = true;
-      return;
-    }
-
-    this.maneuverStamp = this.frameCount;
+    this.maneuverAdjustStamp = this.frameCount;
 
     // Get his into the same frame of reference as the velocity vector
-    var relX = this.hisX - this.position.x;
-    var relY = this.hisY - this.position.y;
-
-    var vX = this.velocity.x;
-    var vY = this.velocity.y;
+    var currentVelocity = Rob.XY(this.velocity);
 
     // Get the angle between my velocity vector and
     // the distance vector from me to him.
+    var optimalDeltaV = this.target.minus(this.sprite).plus(currentVelocity);
+    var optimalDeltaM = optimalDeltaV.getMagnitude();
+    var thetaToTarget = optimalDeltaV.getAngleFrom(0);
 
-    var deltaD = Math.sqrt(Math.pow(vX + relX, 2) + Math.pow(vY + relY, 2));
-    var thetaToTarget = Math.atan2(vY + relY, vX + relX);
-
-    this.needUpdate = (deltaD > this.organs.dna.maxVelocity);
-    deltaD = Math.min(deltaD, this.organs.dna.maxVelocity);
-
-    var vCurtailedX = Math.cos(thetaToTarget) * deltaD;
-    var vCurtailedY = Math.sin(thetaToTarget) * deltaD;
+    this.needUpdate = (optimalDeltaM > this.currentSpeed);
+  
+    var curtailedM = Math.min(optimalDeltaM, this.currentSpeed);
+    var curtailedV = Rob.XY.fromPolar(curtailedM, thetaToTarget);
 
     // Now we need to know how much change we intend to apply
     // to the current velocity vectors, so we can scale that
     // change back to limit the acceleration.
-    var bestDeltaX = vCurtailedX - vX;
-    var bestDeltaY = vCurtailedY - vY;
-
-    var deltaV = Math.sqrt(Math.pow(bestDeltaX, 2) + Math.pow(bestDeltaY, 2));
-
-    // These two are just so I can show debug info
-    var aCurtailedX = vCurtailedX;
-    var aCurtailedY = vCurtailedY;
-
-    if(deltaV > this.organs.dna.maxAcceleration) {
+    var bestDeltaV = curtailedV.minus(currentVelocity);
+    var bestDeltaM = bestDeltaV.getMagnitude();
+    
+    if(bestDeltaM > this.currentAcceleration) {
       this.needUpdate = true;
-
-      bestDeltaX *= this.organs.dna.maxAcceleration / deltaV;
-      bestDeltaY *= this.organs.dna.maxAcceleration / deltaV;
-
-      aCurtailedX = bestDeltaX + this.velocity.x;
-      aCurtailedY = bestDeltaY + this.velocity.y;
-      
-      this.currentMAcceleration = this.organs.dna.maxAcceleration;
-    } else {
-      this.currentMAcceleration = deltaV;
+    
+      bestDeltaV.scalarMultiply(this.currentAcceleration / bestDeltaM);
     }
 
-    var finalX = bestDeltaX + this.velocity.x;
-    var finalY = bestDeltaY + this.velocity.y;
-    
-    this.currentMVelocity = Math.sqrt(Math.pow(finalX, 2) + Math.pow(finalY, 2));
-    
-    this.velocity.set(finalX, finalY);
+    var newVelocity = bestDeltaV.plus(this.velocity);
+
+    this.velocity.set(newVelocity.x, newVelocity.y);
+
+    this.currentAcceleration = bestDeltaM;
+    this.currentSpeed = newVelocity.getMagnitude();
   },
 
-  tick: function() {
-    this.frameCount++;
+  tick: function(frameCount) {
+    this.frameCount = frameCount; // Need this for setting maneuver timestamps
+    
+    if(this.frameCount > (this.maneuverStamp + this.maneuverTimeout)) {
+      this.currentSpeed *= 0.99;
+    }
 
     if(
       !this.maneuverComplete && this.needUpdate &&
-      this.frameCount > this.maneuverStamp + this.damper) {
+      this.frameCount > this.maneuverAdjustStamp + this.damper) {
       this.setNewVelocity();
     }
 
     if(this.maneuverComplete) {
-      this.velocity.scalarMultiply(0.9);
-    } else {
-      if(this.previousX === Math.floor(this.archon.getPosition().x) &&
-        this.previousY === Math.floor(this.archon.getPosition().y)) {
-        this.stuckCount++;
+      this.velocity.x *= 0.9; this.velocity.y *= 0.9;
+      if(Rob.XY(this.velocity).getMagnitude() < this.maxSpeed / 50) {
+        this.velocity.set(0, 0);
       }
-
-      var me = Rob.XY(this.hisX, this.hixY).floored();
-      var p = this.archon.getPosition().floored();
-
-      this.previousX = p.x; this.previousY = p.y;
-
-      if(p.getDistanceTo(me) < 20 || this.stuckCount > 30) {
+    } else {
+      // If we're close enough to the target, or we've slowed
+      // down a lot due to the maneuver taking too long, consider
+      // the maneuver done and just stop
+      if(this.target.getDistanceTo(this.sprite) < 20 || this.currentSpeed < this.maxSpeed / 50) {
         this.maneuverComplete = true;
-        this.stuckCount = 0;
       }
     }
   }
