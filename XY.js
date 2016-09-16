@@ -52,6 +52,15 @@ ns.XY.prototype = {
   
   scalarMultiply: function(scalar) { this.x *= scalar; this.y *= scalar; },
   
+  scaleTo: function(a1, a2) {
+    var scratch = ns.XY(a1, a2);
+    var mS = scratch.getMagnitude();
+    var mThis = this.getMagnitude();
+    this.scalarMultiply(mS / mThis);
+  },
+  
+  scaledTo: function(a1, a2) { var scratch = ns.XY(this); scratch.scaleTo(a1, a2); return scratch; },
+  
   setByMagnitude: function(magnitude) { var a = magnitude / Math.sqrt(2); this.x = a; this.y = a; },
   
   subtract: function(a1, a2) { var subtrahend = ns.XY(a1, a2); this.x -= subtrahend.x; this.y -= subtrahend.y; },

@@ -196,4 +196,26 @@ describe('XY', function() {
       chai.expect(p1.timesScalar(3).plus(1, 1).timesScalar(2).equals((-19 * 3 + 1) * 2, (69.127 * 3 + 1) * 2)).to.be.true;
     });
   });
+  
+  describe('Test scaling', function() {
+    var u = Rob.XY(42, 137), v = Rob.XY(19, 69);
+    var uToV = u.scaledTo(v), vToU = v.scaledTo(u);
+    var uScaled = uToV.timesScalar(100).floored().dividedByScalar(100);
+    var vScaled = vToU.timesScalar(100).floored().dividedByScalar(100);
+    
+    it('Should active-scale from u to v', function() {
+      chai.expect(u.scaledTo(v).timesScalar(100).floored().dividedByScalar(100).equals(uScaled)).true;
+    });
+    
+    it('Should active-scale from v to u', function() {
+      chai.expect(v.scaledTo(u).timesScalar(100).floored().dividedByScalar(100).equals(vScaled)).true;
+    });
+    
+    uToV.scalarMultiply(100); vToU.scalarMultiply(100);
+    uToV.floor();             vToU.floor();
+    uToV.scalarDivide(100);   vToU.scalarDivide(100);
+    
+    it('Should reflexive-scale from u to v', function() { chai.expect(uToV.equals(uScaled)).true; })
+    it('Should reflexive-scale from v to u', function() { chai.expect(vToU.equals(vScaled)).true; })
+  });
 });
