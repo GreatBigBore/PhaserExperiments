@@ -87,6 +87,7 @@ var Rob = (function() {
     Rob.globals.oneToZeroRange = Rob.Range(1, 0);
     Rob.globals.temperatureRange = Rob.Range(Rob.globals.temperatureLo, Rob.globals.temperatureHi);
 		Rob.globals.buttonHueRange = Rob.Range(240, 0);	// Blue (240) is cold, Red (0) is hot
+    Rob.globals.normalZeroCenterRange =  Rob.Range(-0.5, 0.5);
   },
 
   realInRange: function(lo, hi) {

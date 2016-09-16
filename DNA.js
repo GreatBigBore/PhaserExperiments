@@ -18,6 +18,7 @@ Rob.dnaConstants = {
   embryoThresholdMultiplier: 1.1,
   avoidanceFactor: -1,
   smellFactor: 1,
+  targetChangeDelay: 10,
   tempFactor: 1.5,
   velocityFactor: 1,
   tasteFactor: 1
@@ -36,6 +37,7 @@ Rob.DNA = function() {
   this.optimalTemp = Rob.dnaConstants.archonStandardOptimalTemp;
   this.sensorSize = 1;
   this.smellFactor = Rob.dnaConstants.smellFactor;
+  this.targetChangeDelay = Rob.dnaConstants.targetChangeDelay;
   this.tempFactor = Rob.dnaConstants.tempFactor;
   this.tempRange = Rob.dnaConstants.archonStandardTempRange;
   this.velocityFactor = Rob.dnaConstants.velocityFactor;

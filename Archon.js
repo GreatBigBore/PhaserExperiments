@@ -94,7 +94,6 @@ Rob.Archon.prototype.fetch = function(newUniqueID) {
       lizer: new Rob.Lizer(),
       locator: new Rob.Locator(),
       mover: new Rob.Mover(),
-      motioner: new Rob.Motioner(),
       parasite: new Rob.Parasite(),
       temper: new Rob.Temper(game.width / 2)
     };
@@ -105,8 +104,6 @@ Rob.Archon.prototype.fetch = function(newUniqueID) {
 	}
   
   this.sprite.tint = this.organs.dna.getTint();
-
-	this.justBorn = true;	// Tells motioner to aim me away from parent (don't think this really works)
 
 	this.uniqueID = newUniqueID;
   if(this.uniqueID === 0) {

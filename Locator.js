@@ -42,7 +42,7 @@ Rob.Locator.prototype = {
     this.archon = archon;
     this.organs = Object.assign({}, archon.organs);
 
-    // We don't use this; the motioner does, after it
+    // We don't use this; the mover does, after it
     // gets our vector. The highest value food is that closest to us
     this.foodDistanceRange = Rob.Range(archon.sensor.width / 2, 1);
   },

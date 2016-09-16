@@ -1,41 +1,75 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global Rob */
-
 "use strict";
+
+var Rob = Rob || {};
+
+if(typeof window === "undefined") {
+  var xy = require('./XY.js');
+  var range = require('./Range.js');
+  
+  Rob = Object.assign(Rob, xy, range);
+}
+
+(function(Rob) {
 
 Rob.Mover = function() {
 };
 
-Rob.Mover.prototype.avoid = function(him) {
-  this.motioner.avoid(him);
+Rob.Mover.prototype = {
+  
+  getTempVector: function() {
+    return this.archon.organs.temper.getTempVector();
+  },
+  
+  getTasteVector: function() {
+    return this.archon.organs.locator.getSenseVector('taste');
+  },
+  
+  init: function() {
+  },
+  
+  launch: function() {
+    this.noNewTargetUntil = this.archon.organs.dna.targetChangeDelay;
+  },
+  
+  ready: function(archon) {
+    this.archon = archon;
+    this.organs = Object.assign({}, archon.organs);
+  },
+  
+  tick: function(frameCount) {
+    if(!this.archon.stopped && frameCount > this.noNewTargetUntil) {
+      var m = 0, mTemp = 0, mTaste = 0;
+      
+      var tempVector = this.getTempVector();
+      var tasteVector = this.getTasteVector();
+      
+      m = tempVector.getMagnitude();
+      mTemp = Rob.globals.normalZeroCenterRange.convertPoint(m, this.archon.organs.temper.tempRange);
+      
+      m = tasteVector.getMagnitude();
+      mTaste = Rob.globals.normalZeroCenterRange.convertPoint(m, this.archon.organs.locator.foodDistanceRange);
+    
+      if(Math.abs(mTemp * this.archon.organs.dna.tempFactor) > Math.abs(mTaste * this.archon.organs.dna.tasteFactor)) {
+        tempVector.x = this.archon.velocity.x;
+        tempVector.normalize();
+        tempVector.scalarMultiply(this.archon.sensorWidth);
+        tempVector.add(this.archon.position);
+        this.archon.organs.accel.setTarget(tempVector);
+      } else {
+        this.archon.organs.accel.setTarget(tasteVector.normalized().timesScalar(this.archon.sensorWidth));
+      }
+      
+      this.noNewTargetUntil = frameCount + this.archon.organs.dna.targetChangeDelay;
+    }
+  }
+  
 };
 
-Rob.Mover.prototype.launch = function() {
-  this.frameCount = 0;
+})(Rob);
 
-  this.tasteCount = 0;
-  this.smellCount = 0;
-};
-
-Rob.Mover.prototype.eat = function(foodParticle) {
-  this.archon.organs.motioner.eat(foodParticle);
-};
-
-Rob.Mover.prototype.ready = function(archon) {
-  this.archon = archon;
-  this.organs = Object.assign({}, archon.organs);
-};
-
-Rob.Mover.prototype.smell = function(smellyParticle) {
-  this.archon.organs.motioner.smell(smellyParticle);
-};
-
-Rob.Mover.prototype.taste = function(tastyParticle) {
-  this.archon.organs.motioner.taste(tastyParticle);
-};
-
-Rob.Mover.prototype.tick = function(frameCount) {
-  this.frameCount = frameCount;
-};
+if(typeof window === "undefined") {
+  module.exports = Rob;
+}
