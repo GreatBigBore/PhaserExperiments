@@ -21,7 +21,7 @@ function roblog(/* arbitrary parameters */) {
   }
 
   if(
-    arguments[0] === 'target'
+    arguments[0] === 'lism'
   ) {
     theRobLogObject.log.apply(theRobLogObject, arguments);
   }

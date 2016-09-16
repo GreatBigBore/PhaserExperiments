@@ -88,6 +88,10 @@ Rob.Temper.prototype.getTempVector = function() {
   return this.tempVector;
 };
 
+Rob.Temper.prototype.howUncomfortableAmI = function(baseValue) {
+  return Math.abs(baseValue * this.archon.organs.dna.tempFactor);
+};
+
 Rob.Temper.prototype.init = function() {
   
 };

@@ -14,7 +14,7 @@ var Rob = (function() {
 
   globals: {
     adultFatCalorieDensity: 250,    // Calories per gram of mass
-    archonCount: 10,
+    archonCount: 25,
     archonia: {},
     babyFatCalorieDensity: 1000,    // Calories per gram of mass
     caloriesPerMannaMorsel: 25,
@@ -80,7 +80,7 @@ var Rob = (function() {
     // by default, until mutations set in, the birth mass is 0.5g
     Rob.globals.archonMassRange = Rob.Range(0.25, 10);
     Rob.globals.archonSizeRange = Rob.Range(0.07, 0.125);
-    Rob.globals.standardArchonTolerableTempRange = Rob.Range(-200, 200);
+    Rob.globals.standardArchonTolerableTempRange = Rob.Range(-500, 500);
     Rob.globals.archonColorRange = Rob.Range(1, 255);
     Rob.globals.darknessRange = Rob.Range(Rob.globals.darknessAlphaHi, Rob.globals.darknessAlphaLo);
     Rob.globals.zeroToOneRange = Rob.Range(0, 1);

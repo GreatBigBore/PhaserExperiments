@@ -57,6 +57,14 @@ Rob.Lizer.prototype.eat = function(sprite, foodParticle, caloriesPerMannaMorsel_
 	this.archon.setSize(this.getMass());
 };
 
+Rob.Lizer.prototype.howHungryAmI = function(baseValue) {
+  var hunger = (
+    (this.archon.organs.dna.embryoThreshold - this.embryoCalorieBudget) * this.archon.organs.dna.hungerMultiplier
+  );
+  
+  return Math.abs(baseValue * this.archon.organs.dna.tasteFactor * hunger);
+};
+
 Rob.Lizer.prototype.getMass = function() {
   var b = this.babyCalorieBudget / Rob.globals.babyFatCalorieDensity;
   var e = this.embryoCalorieBudget / Rob.globals.embryoCalorieDensity;
@@ -129,8 +137,13 @@ Rob.Lizer.prototype.metabolize = function() {
   
   this.setButtonColor(temp);
   
+  cost += 0.01 * this.organs.dna.sensorScale;  // Sensors aren't free
+  if(this.archon.uniqueID === 0) roblog('lism', 'sensor', cost);
+  
   cost += this.getTempCost(temp);
+  if(this.archon.uniqueID === 0) roblog('lism', 'temp', cost);
   cost += this.getMotionCost();
+  if(this.archon.uniqueID === 0) roblog('lism', 'motion', cost);
 
 	if(this.babyCalorieBudget > 0) {
 		this.babyCalorieBudget -= cost;
@@ -161,7 +174,7 @@ Rob.Lizer.prototype.metabolize = function() {
 	if(cost > 0 && this.adultCalorieBudget < minimumCalorieBudget) {
 		causeOfDeath = 'malnourishment';
 	} else if(this.frameCount > this.expirationDate) {
-		causeOfDeath = 'old age';
+		causeOfDeath = null; //causeOfDeath = 'old age';
 	} else {
 		this.adultCalorieBudget -= cost;
 	}

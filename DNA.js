@@ -21,7 +21,9 @@ Rob.dnaConstants = {
   targetChangeDelay: 30,
   tempFactor: 1,
   velocityFactor: 1,
-  tasteFactor: 1
+  tasteFactor: 1,
+  hungerMultiplier: 1 / 2000,
+  sensorScale: 1
 };
 
 Rob.DNA = function() {
@@ -41,6 +43,8 @@ Rob.DNA = function() {
   this.tempFactor = Rob.dnaConstants.tempFactor;
   this.tempRange = Rob.dnaConstants.archonStandardTempRange;
   this.velocityFactor = Rob.dnaConstants.velocityFactor;
+  this.hungerMultiplier = Rob.dnaConstants.hungerMultiplier;
+  this.sensorScale = Rob.dnaConstants.sensorScale;
 
   this.color = { r: 0x88, g: 0x88, b: 0x88 };
 
@@ -83,16 +87,11 @@ Rob.DNA.prototype.finalSetup = function(dnaSource) {
     (dnaSource.optimalMass * Rob.globals.adultFatCalorieDensity))
   );
 
-  var colorAdjustment = this.getTempFromColor(dnaSource.color);
+  this.optimalTemp = this.getTempFromColor(dnaSource.color);
   var halfTempRange = dnaSource.tempRange / 2;
 
-  this.optimalTemp = dnaSource.optimalTemp;
   this.optimalHiTemp = dnaSource.optimalTemp + halfTempRange;
   this.optimalLoTemp = dnaSource.optimalTemp - halfTempRange;
-
-	this.optimalTemp += colorAdjustment;
-	this.optimalHiTemp += colorAdjustment;
-	this.optimalLoTemp += colorAdjustment;
 
   this.clampTemp();
 };
@@ -125,6 +124,8 @@ Rob.DNA.prototype.scalarMutations = {
   velocityFactor: { probability: 10, range: 10 },
   avoidanceFactor: { probability: 10, range: 10 },
   targetChangeDelay: { probability: 10, range: 10 },
+  hungerMultiplier: { probability: 10, range: 10 },
+  sensorScale: { probability: 10, range: 10 },
   tasteFactor: { probability: 10, range: 10 }
 
 };
@@ -255,7 +256,7 @@ Rob.DNA.prototype.getTempFromColor = function(color) {
   var tiny = tinycolor(color);
   var hsl = tiny.toHsl();
   
-  return Rob.globals.standardArchonTolerableTempRange.convertPoint(hsl.l, Rob.globals.zeroToOneRange);
+  return Rob.globals.standardArchonTolerableTempRange.convertPoint(hsl.l, Rob.globals.oneToZeroRange);
 };
 
 Rob.DNA.prototype.setColor = function() {

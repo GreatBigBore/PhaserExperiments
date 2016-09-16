@@ -43,7 +43,7 @@ Rob.Archon = function(sprite, button, sensor, god) {
 
 	sprite.anchor.setTo(0.5, 0.5); sprite.alpha = 1.0; sprite.tint = 0x00FF00; sprite.scale.setTo(0.07, 0.07);
 	button.anchor.setTo(0.5, 0.5);	button.alpha = 1.0; button.tint = 0; button.scale.setTo(0.25, 0.25);
-	sensor.anchor.setTo(0.5, 0.5); sensor.alpha = 0; sensor.tint = 0x0000FF; sensor.scale.setTo(1, 1);
+	sensor.anchor.setTo(0.5, 0.5); sensor.alpha = 0.0; sensor.tint = 0x0000FF;  // Sensor scale set in launch
 
 	sprite.body.collideWorldBounds = true;
 	sprite.inputEnabled = true;
@@ -127,7 +127,7 @@ Rob.Archon.prototype.getVelocity = function() {
 };
 
 Rob.Archon.prototype.launch = function(parent, birthWeight) {
-  this.frameCount = 0;
+  this.frameCount = Rob.integerInRange(0, 60);
   this.birthWeight = birthWeight;
   
   if(parent !== undefined) {
@@ -137,6 +137,8 @@ Rob.Archon.prototype.launch = function(parent, birthWeight) {
   for(var i in this.organs) {
     this.organs[i].launch();
   }
+  
+  this.sensor.scale.setTo(this.organs.dna.sensorScale, this.organs.dna.sensorScale);  
 
 	this.sprite.revive(); this.button.revive(); this.sensor.revive();
 };

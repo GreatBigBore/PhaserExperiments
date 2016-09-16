@@ -59,7 +59,7 @@ Rob.Mover.prototype = {
         tasteVector.scaleTo(mTaste);
         
         // If there's any food, don't let my goofy random
-        // x-coordinate stuff influence the decision, adding
+        // x-coordinate stuff influence the decision by adding
         // fake magnitude to the temp vector
         tempVector.x = 0;
       }
@@ -74,7 +74,7 @@ Rob.Mover.prototype = {
         roblog('target', 'position', this.archon.position.x, this.archon.position.y);
       }
 
-      if(Math.abs(mTemp * this.archon.organs.dna.tempFactor) > Math.abs(mTaste * this.archon.organs.dna.tasteFactor)) {
+      if(this.archon.organs.temper.howUncomfortableAmI(mTemp) > this.archon.organs.lizer.howHungryAmI(mTaste)) {
         tempVector.scalarMultiply(this.archon.sensorWidth);
         tempVector.add(this.archon.position);
      
