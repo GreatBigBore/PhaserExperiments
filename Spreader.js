@@ -64,7 +64,7 @@ Rob.Spreader.prototype.debugText = function(text) {
 };
 
 Rob.Spreader.prototype.eat = function(sprite, foodParticle) {
-  sprite.archon.organs.lizer.eat(Rob.globals.caloriesPerMannaMorsel);
+  sprite.archon.organs.lizer.eat(sprite, foodParticle, Rob.globals.caloriesPerMannaMorsel);
 };
 
 Rob.Spreader.prototype.getTemperature = function(x, y) {

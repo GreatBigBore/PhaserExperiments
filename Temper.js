@@ -83,9 +83,7 @@ Rob.Temper.prototype.getTempVector = function() {
     }
   }
   
-  // Rather than x === 0, because that makes us just go straight
-  // up and down, which is boring
-  var x = Rob.integerInRange(-this.senseLimit, this.senseLimit);
+  var x = Rob.integerInRange(-this.archon.sensorWidth, this.archon.sensorWidth);
   
   this.tempVector.set(x, bestDelta);
   
@@ -111,6 +109,8 @@ Rob.Temper.prototype.ready = function(archon) {
   this.optimalTemp = archon.organs.dna.optimalTemp;
   this.optimalHiTemp = archon.organs.dna.optimalHiTemp;
   this.senseLimit = archon.sensorRadius;
+  
+  this.tempRange = Rob.Range(this.optimalLoTemp, this.optimalHiTemp);
 };
 
 })(Rob);

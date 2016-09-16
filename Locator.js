@@ -24,7 +24,7 @@ Rob.Locator.prototype = {
 
   getSenseVector: function(sense) {
     var t = this.trackers[sense];
-    
+
     if(t.hitCount !== 0) {
       t.vector.scalarDivide(t.hitCount);
     }
@@ -58,7 +58,6 @@ Rob.Locator.prototype = {
 
   sense: function(sense, sensee) {
     var t = this.trackers[sense];
-    
     var radius = this.archon.sensor.width / 2;
     var relativePosition = Rob.XY(sensee).minus(this.archon.sensor);
     var distance = relativePosition.getMagnitude();

@@ -46,23 +46,32 @@ Rob.Mover.prototype = {
       var tempVector = this.getTempVector();
       var tasteVector = this.getTasteVector();
       
+      // Don't count taste if we haven't tasted anything
+      m = tasteVector.getMagnitude();
+      if(m > 0) {
+        mTaste = Rob.globals.normalZeroCenterRange.convertPoint(m, this.archon.organs.locator.foodDistanceRange);
+      }
+      
       m = tempVector.getMagnitude();
       mTemp = Rob.globals.normalZeroCenterRange.convertPoint(m, this.archon.organs.temper.tempRange);
-      
-      m = tasteVector.getMagnitude();
-      mTaste = Rob.globals.normalZeroCenterRange.convertPoint(m, this.archon.organs.locator.foodDistanceRange);
     
       if(Math.abs(mTemp * this.archon.organs.dna.tempFactor) > Math.abs(mTaste * this.archon.organs.dna.tasteFactor)) {
-        tempVector.x = this.archon.velocity.x;
         tempVector.normalize();
         tempVector.scalarMultiply(this.archon.sensorWidth);
         tempVector.add(this.archon.position);
-        this.archon.organs.accel.setTarget(tempVector);
+        
+        this.archon.organs.accel.setTarget(tempVector.x, tempVector.y);
       } else {
-        this.archon.organs.accel.setTarget(tasteVector.normalized().timesScalar(this.archon.sensorWidth));
+        tasteVector.normalize();
+        tasteVector.scalarMultiply(this.archon.sensorWidth);
+        tasteVector.add(this.archon.position);
+        
+        this.archon.organs.accel.setTarget(tasteVector.x, tasteVector.y);
       }
       
       this.noNewTargetUntil = frameCount + this.archon.organs.dna.targetChangeDelay;
+    
+      this.archon.organs.locator.reset();
     }
   }
   

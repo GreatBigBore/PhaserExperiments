@@ -19,9 +19,9 @@ Rob.dnaConstants = {
   avoidanceFactor: -1,
   smellFactor: 1,
   targetChangeDelay: 10,
-  tempFactor: 1.5,
+  tempFactor: 1,
   velocityFactor: 1,
-  tasteFactor: 1
+  tasteFactor: 4
 };
 
 Rob.DNA = function() {
@@ -124,6 +124,7 @@ Rob.DNA.prototype.scalarMutations = {
   tempFactor: { probability: 10, range: 10 },
   velocityFactor: { probability: 10, range: 10 },
   avoidanceFactor: { probability: 10, range: 10 },
+  targetChangeDelay: { probability: 10, range: 10 },
   tasteFactor: { probability: 10, range: 10 }
 
 };

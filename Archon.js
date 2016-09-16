@@ -72,6 +72,7 @@ Rob.Archon.prototype.activatePhysicsBodies = function() {
 
 	enable(this.sensor);
   
+  this.sensorWidth = this.sensor.width;
   this.sensorRadius = this.sensor.width / 2;
 
 	this.sensor.body.setSize(this.sensorRadius, this.sensorRadius);

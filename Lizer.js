@@ -22,7 +22,9 @@ Rob.Lizer.prototype.doLog = function(id, interval) {
   return this.archon.uniqueID === id && this.frameCount % interval === 0;
 };
 
-Rob.Lizer.prototype.eat = function() {
+Rob.Lizer.prototype.eat = function(sprite, foodParticle, caloriesPerMannaMorsel_which_we_are_not_using_why) {
+  foodParticle.kill();
+  
 	var sunStrength = Rob.globals.archonia.sun.getStrength();
 	var calories = this.mannaNutritionRange.convertPoint(sunStrength, Rob.globals.oneToZeroRange);
   
