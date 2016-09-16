@@ -162,6 +162,7 @@ describe('XY', function() {
     it('Signed magnitude of both negative', function() { chai.expect(Rob.XY(-1, -1).getSignedMagnitude()).gt(0); });
     it('Signed magnitude of >0 and zero', function() { chai.expect(Rob.XY(0, 1).getSignedMagnitude()).gt(0); });
     it('Signed magnitude of <0 and zero', function() { chai.expect(Rob.XY(-1, 0).getSignedMagnitude()).lt(0); });
+    it('Signed magnitude of 0 and <0', function() { chai.expect(Rob.XY(0, -1).getSignedMagnitude()).lt(0); });
   });
   
   describe('Test chaining', function() {
