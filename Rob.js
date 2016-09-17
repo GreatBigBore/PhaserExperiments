@@ -1,15 +1,26 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global Phaser */
+/* global game, Phaser */
 
 "use strict";
 
-var game = null;
+var game = game || {};
+var Rob = null;
 var runWhichState = 'Spreader';
 
-var Rob = (function() {
-  var thing = {
+if(typeof window === "undefined") {
+  game = {
+    rnd: { 
+      realInRange: function(lo, hi) { return Math.random() * (hi - lo) + lo; },
+      integerInRange: function(lo, hi) {  return Math.floor(game.rnd.realInRange(lo, hi)); }
+    }
+  };
+}
+
+(function() {
+  
+Rob = {
   debugText: "",
 
   globals: {
@@ -78,16 +89,16 @@ var Rob = (function() {
     // At this point, I don't expect them ever to weigh more than 10g.
     // For now I'll have them die when their mass gets down to 0.1g;
     // by default, until mutations set in, the birth mass is 0.5g
-    Rob.globals.archonMassRange = Rob.Range(0.25, 10);
-    Rob.globals.archonSizeRange = Rob.Range(0.07, 0.125);
-    Rob.globals.standardArchonTolerableTempRange = Rob.Range(-500, 500);
-    Rob.globals.archonColorRange = Rob.Range(1, 255);
-    Rob.globals.darknessRange = Rob.Range(Rob.globals.darknessAlphaHi, Rob.globals.darknessAlphaLo);
-    Rob.globals.zeroToOneRange = Rob.Range(0, 1);
-    Rob.globals.oneToZeroRange = Rob.Range(1, 0);
-    Rob.globals.temperatureRange = Rob.Range(Rob.globals.temperatureLo, Rob.globals.temperatureHi);
-		Rob.globals.buttonHueRange = Rob.Range(240, 0);	// Blue (240) is cold, Red (0) is hot
-    Rob.globals.normalZeroCenterRange = Rob.Range(-0.5, 0.5);
+    Rob.globals.archonMassRange = new Rob.Range(0.25, 10);
+    Rob.globals.archonSizeRange = new Rob.Range(0.07, 0.125);
+    Rob.globals.standardArchonTolerableTempRange = new Rob.Range(-500, 500);
+    Rob.globals.archonColorRange = new Rob.Range(1, 255);
+    Rob.globals.darknessRange = new Rob.Range(Rob.globals.darknessAlphaHi, Rob.globals.darknessAlphaLo);
+    Rob.globals.zeroToOneRange = new Rob.Range(0, 1);
+    Rob.globals.oneToZeroRange = new Rob.Range(1, 0);
+    Rob.globals.temperatureRange = new Rob.Range(Rob.globals.temperatureLo, Rob.globals.temperatureHi);
+		Rob.globals.buttonHueRange = new Rob.Range(240, 0);	// Blue (240) is cold, Red (0) is hot
+    Rob.globals.normalZeroCenterRange = new Rob.Range(-0.5, 0.5);
   },
 
   realInRange: function(lo, hi) {
@@ -102,11 +113,10 @@ var Rob = (function() {
   }
 };
 
-  return thing;
 })();
 
 if(typeof window === "undefined") {
-  exports.Rob = Rob;
+  module.exports = Rob;
 } else {
   window.onload = function() { Rob.go(runWhichState); };
 }
