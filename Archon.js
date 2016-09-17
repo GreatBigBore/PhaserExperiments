@@ -1,18 +1,28 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global game, Phaser */
-
 "use strict";
 
 var Rob = Rob || {};
+var game = game || {}, sprite = sprite || {}, Phaser = Phaser || {};
 
 if(typeof window === "undefined") {
-  Rob = require('./XY.js');
+  Rob = require('./Rob.js');
+
+  game = require('./PhaserMockups/game.js');
+  sprite = require('./PhaserMockups/sprite.js');
+
+  Phaser = require('./PhaserMockups/Phaser.js');
+  
+  Rob.Genomer = require('./Genomer.js');
+  Rob.XY = require('./XY.js');
+  Rob.Range = require('./Range.js');
+  
+  Rob.preGameInit();
 }
 
 (function(Rob) {
-
+  
 // Have to delay creation of the prototype because it needs XY,
 // which doesn't exist until later, when XY.js gets loaded
 var generateArchonoidPrototype = function() { 
@@ -56,6 +66,8 @@ Rob.Archon = function(sprite, button, sensor, god) {
   this.position = new Rob.Archonoid(this.sprite);
   this.velocity = new Rob.Archonoid(this.sprite.body.velocity);
 
+  this.organs = { genomer: new Rob.Genomer(this) };
+
 	this.stopped = false;
 };
 
@@ -83,28 +95,27 @@ Rob.Archon.prototype.breed = function(parent, offspringMass) {
   this.god.breed(parent, offspringMass);
 };
 
-Rob.Archon.prototype.fetch = function(newUniqueID) {
+Rob.Archon.prototype.fetch = function(parentGenome, newUniqueID) {
+  this.organs.genomer.genomifyChildArchon(this, parentGenome);
+  
 	if(this.uniqueID === -1) {
     // Final setup before we can launch into the
     // world for the first time
 		this.readyForLaunch = true;
-
-    this.organs = {
-      dna: new Rob.DNA(),           // Alpha order is good, but dna has to come first
-      accel: new Rob.Accel(),
-      lizer: new Rob.Lizer(),
-      locator: new Rob.Locator(),
-      mover: new Rob.Mover(),
-      parasite: new Rob.Parasite(),
-      temper: new Rob.Temper(game.width / 2)
-    };
+    
+    this.organs.accel = new Rob.Accel();
+    this.organs.lizer = new Rob.Lizer();
+    this.organs.locator = new Rob.Locator();
+    this.organs.mover = new Rob.Mover();
+    this.organs.parasite = new Rob.Parasite();
+    this.organs.temper = new Rob.Temper(game.width / 2);
     
     for(var i in this.organs) {
       this.organs[i].ready(this);
     }
 	}
   
-  this.sprite.tint = this.organs.dna.getTint();
+  this.sprite.tint = this.organs.genomer.color.get();
 
 	this.uniqueID = newUniqueID;
   if(this.uniqueID === 0) {

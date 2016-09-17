@@ -134,5 +134,5 @@ function getSign(a1, a2) {
 })(Rob);
 
 if(typeof window === "undefined") {
-  module.exports = Rob;
+  module.exports = Rob.XY;
 }

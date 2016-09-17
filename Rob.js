@@ -1,21 +1,16 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global game, Phaser */
-
 "use strict";
 
-var game = game || {};
 var Rob = null;
 var runWhichState = 'Spreader';
 
+var game = game || {}, Phaser = Phaser || {};
+
 if(typeof window === "undefined") {
-  game = {
-    rnd: { 
-      realInRange: function(lo, hi) { return Math.random() * (hi - lo) + lo; },
-      integerInRange: function(lo, hi) {  return Math.floor(game.rnd.realInRange(lo, hi)); }
-    }
-  };
+  game = require('./PhaserMockups/game.js');
+  Phaser = require('./PhaserMockups/Phaser.js');
 }
 
 (function() {

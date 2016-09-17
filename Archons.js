@@ -44,7 +44,7 @@ Rob.Archons.prototype.breed = function(parent, birthWeight) {
 
 //	var oldID = p.archon.uniqueID;
 
-	var a = p.archon.fetch(this.archonUniqueID++);
+	var a = p.archon.fetch(parent.archon.genome, this.archonUniqueID++);
 
 	/*var t = "Birth: archon " + a.uniqueID;
 

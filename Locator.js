@@ -58,7 +58,7 @@ Rob.Locator.prototype = {
 
   sense: function(sense, sensee) {
     var t = this.trackers[sense];
-    var radius = this.archon.sensorRadius
+    var radius = this.archon.sensorRadius;
     var relativePosition = Rob.XY(sensee).minus(this.archon.position);
     var distance = relativePosition.getMagnitude();
     var value = 2 - (distance / radius);

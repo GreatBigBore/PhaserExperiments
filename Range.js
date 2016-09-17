@@ -13,7 +13,7 @@ if(typeof window === "undefined") {
 
 Rob.Range = function(lo, hi) {
   this.lo = lo; this.hi = hi;
-}
+};
 
 Rob.Range.prototype = {
   // The reason for this class: scaling a point
@@ -60,5 +60,5 @@ Rob.Range.prototype = {
 })(Rob);
 
 if(typeof window === "undefined") {
-  module.exports = Rob;
+  module.exports = Rob.Range;
 }

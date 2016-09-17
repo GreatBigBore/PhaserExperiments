@@ -49,8 +49,6 @@ Rob.Temper.prototype.getTempVector = function() {
   
     if(Rob.pointInBounds(boundsCheck)) {
       var t = Rob.getTemperature(e.where);
-      var r = null, d = null;
-
       var signedDelta = t - this.optimalTemp; // So we can get a direction
       var delta = Math.abs(signedDelta);      // So we can get a magnitude
       
@@ -82,7 +80,7 @@ Rob.Temper.prototype.getTempVector = function() {
   }
 
   this.tempVector.set(0, 1);
-  this.tempVector.scalarMultiply(e.signedDelta)
+  this.tempVector.scalarMultiply(e.signedDelta);
   this.tempVector.x = Rob.integerInRange(-this.archon.sensorWidth, this.archon.sensorWidth);
   
   return this.tempVector;

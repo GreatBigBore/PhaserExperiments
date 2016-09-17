@@ -22,7 +22,7 @@ Rob.Lizer.prototype.doLog = function(id, interval) {
   return this.archon.uniqueID === id && this.frameCount % interval === 0;
 };
 
-Rob.Lizer.prototype.eat = function(sprite, foodParticle, caloriesPerMannaMorsel_which_we_are_not_using_why) {
+Rob.Lizer.prototype.eat = function(sprite, foodParticle/*, caloriesPerMannaMorsel_which_we_are_not_using_why*/) {
   // Once we've caught the food, tell the mover
   // and the accel that we're ready to move again
   this.archon.organs.mover.noNewTargetUntil = 0;
@@ -138,12 +138,9 @@ Rob.Lizer.prototype.metabolize = function() {
   this.setButtonColor(temp);
   
   cost += 0.01 * this.organs.dna.sensorScale;  // Sensors aren't free
-  if(this.archon.uniqueID === 0) roblog('lism', 'sensor', cost);
   
   cost += this.getTempCost(temp);
-  if(this.archon.uniqueID === 0) roblog('lism', 'temp', cost);
   cost += this.getMotionCost();
-  if(this.archon.uniqueID === 0) roblog('lism', 'motion', cost);
 
 	if(this.babyCalorieBudget > 0) {
 		this.babyCalorieBudget -= cost;

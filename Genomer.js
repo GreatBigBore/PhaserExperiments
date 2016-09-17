@@ -3,12 +3,16 @@
 
 "use strict";
 
-var Rob = Rob || {};
+var Rob = Rob || {}, game = game || {}, sprite = sprite || {}, Phaser = Phaser || {};
+
 
 if(typeof window === "undefined") {
   Rob = require('./Rob.js');
   require('./tinycolor.js');
-  require('./Range.js');
+
+  game = require('./PhaserMockups/game.js');
+  sprite = require('./PhaserMockups/sprite.js');
+  Phaser = require('./PhaserMockups/Phaser.js');
 }
 
 (function(Rob) {
@@ -20,6 +24,8 @@ Rob.Gene = function() {
 };
 
 Rob.Gene.prototype = {
+  get: function() { return this.value; },
+  
   inherit: function() { throw new TypeError("Gene base class doesn't inherit"); },
   
   mutateMutatability: function(parentGene) {
@@ -101,13 +107,24 @@ Rob.ColorGene.prototype.inherit = function(parentGene) {
 };
 
 Rob.ColorGene.prototype.getColorAsDecimal = function() { return parseInt(this.color.toHex(), 16); };
+Rob.ColorGene.prototype.get = function() { return this.getColorAsDecimal(); };
+
+Rob.Genome = function(parentGenome) {
+  for(var i in parentGenome) {
+    this[i] = parentGenome[i].newGene();
+  }
+};
+
+Rob.Genome.prototype = {
+  inherit: function(parentGenome) {
+    for(var i in parentGenome) {
+      this[i].inherit(parentGenome[i]);
+    }
+  }
+};
 
 Rob.Genomer = function(archon) {
   this.archon = archon;
-  
-  for(var i in this.primordialGenome) {
-    Object.defineProperty(this, i, { get: function() { return this.archon.genome[i].value; } });
-  }
 };
 
 Rob.Genomer.prototype = {
@@ -119,22 +136,18 @@ Rob.Genomer.prototype = {
   genomifyChildArchon: function(parentGenome) {
     if(parentGenome === undefined) { parentGenome = this.primordialGenome; } // For miraculous births at creation
 
-    var i = null;
     if(this.archon.genome === undefined) {
-      this.archon.genome = {};
-      for(i in parentGenome) {
-        this.archon.genome[i] = parentGenome[i].newGene();
-      }
+      this.archon.genome = new Rob.Genome(parentGenome);
     }
     
-    for(i in parentGenome) {
-      this.archon.genome[i].inherit(parentGenome[i]);
-    }
+    this.archon.genome.inherit(parentGenome);
   },
 
   getTint: function() { return (
     this.archon.genomer.color.r * Math.pow(2, 16) + this.archon.genomer.color.g * Math.pow(2, 8) + this.archon.genomer.color.b
   ); },
+  
+  init: function() {},
 
   launch: function() {},
 
@@ -167,5 +180,5 @@ Rob.Genomer.prototype = {
 })(Rob);
 
 if(typeof window === "undefined") {
-  module.exports = Rob;
+  module.exports = Rob.Genomer;
 }
