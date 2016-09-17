@@ -33,7 +33,7 @@ Rob.Mover.prototype = {
   },
   
   launch: function() {
-    this.noNewTargetUntil = this.archon.organs.dna.targetChangeDelay;
+    this.noNewTargetUntil = this.archon.targetChangeDelay;
   },
   
   ready: function(archon) {
@@ -95,7 +95,7 @@ Rob.Mover.prototype = {
         this.archon.organs.accel.setTarget(tasteVector);
       }
       
-      this.noNewTargetUntil = frameCount + this.archon.organs.dna.targetChangeDelay;
+      this.noNewTargetUntil = frameCount + this.archon.targetChangeDelay;
     
       this.archon.organs.locator.reset();
     }

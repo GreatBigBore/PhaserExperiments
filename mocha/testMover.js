@@ -2,7 +2,7 @@ var chai = require('chai');
 var Rob = require('../Mover.js');
 
 Rob.globals = {
-  normalZeroCenterRange: Rob.Range(-0.5, 0.5)
+  normalZeroCenterRange: new Rob.Range(-0.5, 0.5)
 };
 
 var sensorWidth = 50;
@@ -30,7 +30,7 @@ var archon = {
     
     locator: {
       senseVector: Rob.XY(),
-      foodDistanceRange: Rob.Range(sensorWidth / 2, 1),
+      foodDistanceRange: new Rob.Range(sensorWidth / 2, 1),
       
       getSenseVector: function(sense) {
         return this.senseVector;
@@ -38,7 +38,7 @@ var archon = {
     },
     
     temper: {
-      tempRange: Rob.Range(-400, -200),
+      tempRange: new Rob.Range(-400, -200),
       tempVector: Rob.XY(),
       
       getTempVector: function() {
@@ -58,10 +58,10 @@ describe('Mover', function() {
     archon.organs.locator.senseVector.set(-137, -42);
     
     it('Should set target for temp vector', function() {
-      archon.organs.dna.tempFactor = 2;
-      archon.organs.dna.tasteFactor = 1;
+      archon.tempFactor = 2;
+      archon.tasteFactor = 1;
       mover.launch();
-      mover.tick(archon.organs.dna.targetChangeDelay + 1);
+      mover.tick(archon.targetChangeDelay + 1);
 
       var v = Rob.XY(archon.organs.accel.fromMover);
 
@@ -74,10 +74,10 @@ describe('Mover', function() {
     });
     
     it('Should set target for taste vector', function() {
-      archon.organs.dna.tempFactor = 1;
-      archon.organs.dna.tasteFactor = 2;
+      archon.tempFactor = 1;
+      archon.tasteFactor = 2;
       mover.launch();
-      mover.tick(archon.organs.dna.targetChangeDelay + 1);
+      mover.tick(archon.targetChangeDelay + 1);
       
       chai.expect(
         archon.organs.accel.fromMover.equals(archon.organs.locator.senseVector.normalized().timesScalar(archon.sensorWidth))
@@ -85,12 +85,12 @@ describe('Mover', function() {
     });
     
     it('Should delay per dna instructions', function() {
-      archon.organs.dna.tempFactor = 1;
-      archon.organs.dna.tasteFactor = 2;
+      archon.tempFactor = 1;
+      archon.tasteFactor = 2;
       archon.organs.accel.fromMover.reset();
       mover.launch();
 
-      for(var i = 0; i < archon.organs.dna.targetChangeDelay; i++) {
+      for(var i = 0; i < archon.targetChangeDelay; i++) {
         mover.tick(i);
         chai.expect(
           archon.organs.accel.fromMover.equals(archon.organs.locator.senseVector.normalized().timesScalar(archon.sensorWidth))
@@ -99,7 +99,7 @@ describe('Mover', function() {
       
       var v = Rob.XY(archon.organs.locator.senseVector)
       
-      mover.tick(archon.organs.dna.targetChangeDelay + 1);
+      mover.tick(archon.targetChangeDelay + 1);
       chai.expect(
         archon.organs.accel.fromMover.equals(archon.organs.locator.senseVector.normalized().timesScalar(archon.sensorWidth))
       ).true;

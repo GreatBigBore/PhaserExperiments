@@ -20,7 +20,7 @@ Rob.Report.prototype = {
     var closeEnough = Math.abs(valueToCheck) / 10;
     
     this.genePool.forEachAlive(function(p) {
-      if(Math.abs(valueToCheck - p.archon.organs.dna.color[colorName]) <= closeEnough) {
+      if(Math.abs(valueToCheck - p.archon.color[colorName]) <= closeEnough) {
         count++;
       }
     });
@@ -34,7 +34,7 @@ Rob.Report.prototype = {
     var closeEnough = Math.abs(valueToCheck / 10);
     
     this.genePool.forEachAlive(function(p) {
-      if(Math.abs(valueToCheck - p.archon.organs.dna[propertyName]) <= closeEnough) {
+      if(Math.abs(valueToCheck - p.archon.propertyName) <= closeEnough) {
         count++;
       }
     });
@@ -53,8 +53,8 @@ Rob.Report.prototype = {
     var i = null;
     
     this.genePool.forEachAlive(function(p) {
-      for(i in p.archon.organs.dna) {
-        var value = p.archon.organs.dna[i];
+      for(i in p.archon.organs.genomer.primordialGenome) {
+        var value = p.archon[i];
         
         if(this.isReportable(value) || i === 'color') {
           if(this.accumulator[i] === undefined) {

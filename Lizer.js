@@ -7,7 +7,7 @@
 
 Rob.Lizer = function() {
   this.mannaNutritionRange =
-  	Rob.Range(Rob.globals.caloriesPerMannaMorsel, 3 * Rob.globals.caloriesPerMannaMorsel);
+  	new Rob.Range(Rob.globals.caloriesPerMannaMorsel, 3 * Rob.globals.caloriesPerMannaMorsel);
   };
 
 Rob.Lizer.prototype.init = function() {
@@ -33,12 +33,12 @@ Rob.Lizer.prototype.eat = function(sprite, foodParticle/*, caloriesPerMannaMorse
 	var sunStrength = Rob.globals.archonia.sun.getStrength();
 	var calories = this.mannaNutritionRange.convertPoint(sunStrength, Rob.globals.oneToZeroRange);
   
-  if(this.adultCalorieBudget > this.organs.dna.embryoThreshold) {
+  if(this.adultCalorieBudget > this.embryoThreshold) {
     // Store up for breeding if we have enough reserves already
     this.embryoCalorieBudget += calories;
 
 		if(this.embryoCalorieBudget >= this.costForHavingBabies) {
-			this.archon.breed(this, this.organs.dna.massOfMyBabies);
+			this.archon.breed(this, this.archon.offspringMass);
 			this.embryoCalorieBudget -= this.costForHavingBabies;
 
 			var costToAdultCalorieBudget =
@@ -59,10 +59,10 @@ Rob.Lizer.prototype.eat = function(sprite, foodParticle/*, caloriesPerMannaMorse
 
 Rob.Lizer.prototype.howHungryAmI = function(baseValue) {
   var hunger = (
-    (this.archon.organs.dna.embryoThreshold - this.embryoCalorieBudget) * this.archon.organs.dna.hungerMultiplier
+    (this.embryoThreshold - this.embryoCalorieBudget) * this.archon.hungerMultiplier
   );
   
-  return Math.abs(baseValue * this.archon.organs.dna.tasteFactor * hunger);
+  return Math.abs(baseValue * this.archon.tasteFactor * hunger);
 };
 
 Rob.Lizer.prototype.getMass = function() {
@@ -92,7 +92,7 @@ Rob.Lizer.prototype.getTempCost = function(temp) {
   
 	// Costs for keeping the body warm, for moving, and
 	// for simply maintaining the body
-	c += Math.abs(temp - this.archon.organs.dna.optimalTemp) *
+	c += Math.abs(temp - this.archon.optimalTemp) *
         Rob.globals.lizerCostPerTemp;
   
   // Being outside your preferred temp range costs
@@ -100,10 +100,10 @@ Rob.Lizer.prototype.getTempCost = function(temp) {
   // the cost of maintaining body temperature scales
   // up sort of logarithmically with body size
         
-  if(temp > this.archon.organs.dna.optimalHiTemp) {
-    d = temp - this.archon.organs.dna.optimalHiTemp;
-  } else if(temp < this.archon.organs.dna.optimalLoTemp) {
-    d = this.archon.organs.dna.optimalLoTemp - temp;
+  if(temp > this.archon.optimalHiTemp) {
+    d = temp - this.archon.optimalHiTemp;
+  } else if(temp < this.archon.optimalLoTemp) {
+    d = this.archon.optimalLoTemp - temp;
   }
 
   // Lazy! 100 is the size of the bitmap we use as sprite texture
@@ -118,15 +118,23 @@ Rob.Lizer.prototype.getTempCost = function(temp) {
 };
 
 Rob.Lizer.prototype.launch = function() {
-	this.expirationDate = this.organs.dna.lifetime + this.archon.frameCount;
+	this.expirationDate = this.lifetime + this.archon.frameCount;
 	this.adultCalorieBudget = 0;
 	this.babyCalorieBudget = 0;
-	this.embryoCalorieBudget = this.archon.birthWeight * Rob.globals.embryoCalorieDensity;
+	this.embryoCalorieBudget = this.archon.offspringMass * Rob.globals.embryoCalorieDensity;
 	this.accumulatedMetabolismCost = 0;
 
-	this.costForHavingBabies = this.organs.dna.massOfMyBabies * Rob.globals.embryoCalorieDensity;
+	this.costForHavingBabies = this.archon.offspringMass * Rob.globals.embryoCalorieDensity;
 		
-	this.optimalTempRange = new Rob.Range(this.organs.dna.optimalLoTemp, this.organs.dna.optimalHiTemp);
+	this.optimalTempRange = new Rob.Range(this.archon.optimalLoTemp, this.archon.optimalHiTemp);
+
+  this.embryoThreshold = (
+    this.archon.embryoThresholdMultiplier *
+    (
+      (this.archon.offspringMass * Rob.globals.embryoCalorieDensity) +
+      (this.archon.optimalMass * Rob.globals.adultFatCalorieDensity)
+    )
+  );
 
 	this.archon.setSize(this.getMass());
 };
@@ -137,7 +145,7 @@ Rob.Lizer.prototype.metabolize = function() {
   
   this.setButtonColor(temp);
   
-  cost += 0.01 * this.organs.dna.sensorScale;  // Sensors aren't free
+  cost += 0.01 * this.archon.sensorScale;  // Sensors aren't free
   
   cost += this.getTempCost(temp);
   cost += this.getMotionCost();
@@ -187,8 +195,8 @@ Rob.Lizer.prototype.metabolize = function() {
 };
 
 Rob.Lizer.prototype.setButtonColor = function(temp) {
-	var tempDelta = temp - this.organs.dna.optimalTemp;
-	tempDelta = Rob.clamp(tempDelta, this.organs.dna.optimalLoTemp, this.organs.dna.optimalHiTemp);
+	var tempDelta = temp - this.optimalTemp;
+	tempDelta = Rob.clamp(tempDelta, this.optimalLoTemp, this.optimalHiTemp);
 	
 	var hue = Rob.globals.buttonHueRange.convertPoint(tempDelta, this.optimalTempRange);
 	var hsl = 'hsl(' + Math.floor(hue) + ', 100%, 50%)';

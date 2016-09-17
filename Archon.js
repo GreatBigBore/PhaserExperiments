@@ -42,12 +42,11 @@ var generateArchonoidPrototype = function() {
   });
 };
 
-Rob.Archon = function(sprite, button, sensor, god) {
+Rob.Archon = function(sprite, button, sensor, parentArchon) {
   this.uniqueID = -1; // Remember we need to incorporate before being usable
   this.sprite = sprite;
   this.button = button;
   this.sensor = sensor;
-  this.god = god;
 
 	sensor.archon = this;	// So we can hook back from sensors too
 
@@ -67,7 +66,11 @@ Rob.Archon = function(sprite, button, sensor, god) {
   this.velocity = new Rob.Archonoid(this.sprite.body.velocity);
 
   this.organs = { genomer: new Rob.Genomer(this) };
+  
+  var parentArchonGenome = null;
+  if(parentArchon !== undefined) { if(parentArchon.genome !== undefined) { parentArchonGenome = parentArchon.genome; }}
 
+  this.organs.genomer.genomifyChildArchon(parentArchonGenome);
 	this.stopped = false;
 };
 
@@ -95,9 +98,7 @@ Rob.Archon.prototype.breed = function(parent, offspringMass) {
   this.god.breed(parent, offspringMass);
 };
 
-Rob.Archon.prototype.fetch = function(parentGenome, newUniqueID) {
-  this.organs.genomer.genomifyChildArchon(this, parentGenome);
-  
+Rob.Archon.prototype.fetch = function(parentPhaseron, newUniqueID) {
 	if(this.uniqueID === -1) {
     // Final setup before we can launch into the
     // world for the first time
@@ -115,7 +116,7 @@ Rob.Archon.prototype.fetch = function(parentGenome, newUniqueID) {
     }
 	}
   
-  this.sprite.tint = this.organs.genomer.color.get();
+  this.sprite.tint = this.color;
 
 	this.uniqueID = newUniqueID;
   if(this.uniqueID === 0) {
@@ -137,19 +138,14 @@ Rob.Archon.prototype.getVelocity = function() {
   return this.velocity;
 };
 
-Rob.Archon.prototype.launch = function(parent, birthWeight) {
+Rob.Archon.prototype.launch = function() {
   this.frameCount = Rob.integerInRange(0, 60);
-  this.birthWeight = birthWeight;
-  
-  if(parent !== undefined) {
-    this.parentDNA = parent.organs.dna; // For the dna object to do mutations & stuff
-  }
   
   for(var i in this.organs) {
     this.organs[i].launch();
   }
   
-  this.sensor.scale.setTo(this.organs.dna.sensorScale, this.organs.dna.sensorScale);  
+  this.sensor.scale.setTo(this.sensorScale, this.sensorScale);  
 
 	this.sprite.revive(); this.button.revive(); this.sensor.revive();
 };

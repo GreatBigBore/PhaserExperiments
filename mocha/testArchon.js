@@ -13,17 +13,20 @@ describe('Archon', function() {
         archon1 = new Rob.Archon(sprite, button, sensor)
       ).to.deep.include({ sprite: sprite, button: button, sensor: sensor });
 
+      archon1.organs = { genomer: new Rob.Genomer(archon1) };
+      archon1.organs.genomer.genomifyChildArchon();
+
       chai.expect(archon1).to.have.property('organs');
       chai.expect(archon1.organs).to.have.property('genomer');
     });
   });
   
   describe('Inheritance', function() {
-    var archon1 = new Rob.Archon(sprite, button, sensor)
-    archon1.organs = { genomer: new Rob.Genomer(archon1) };
-    archon1.organs.genomer.genomifyChildArchon();
-    
     it('Should have a recognizable genome', function() {
+      var archon1 = new Rob.Archon(sprite, button, sensor)
+      archon1.organs = { genomer: new Rob.Genomer(archon1) };
+      archon1.organs.genomer.genomifyChildArchon();
+
       chai.expect(archon1).to.have.property('genome');
 
       // Will have much more, but this sample should suffice to tell us it's working
@@ -32,9 +35,15 @@ describe('Archon', function() {
       chai.expect(archon1.genome).to.have.property('maxAcceleration');
       chai.expect(archon1.genome).to.have.property('maxVelocityMagnitude');
       chai.expect(archon1.genome).to.have.property('optimalMass');
+      
+      chai.expect(isNaN(archon1.genome.embryoThresholdMultiplier.value)).false;
     });
     
     it('Should return the right values', function() {
+      var archon1 = new Rob.Archon(sprite, button, sensor)
+      archon1.organs = { genomer: new Rob.Genomer(archon1) };
+      archon1.organs.genomer.genomifyChildArchon();
+
       var aRange = archon1.genome.maxAcceleration.changeRange + 30;
       var aRangeLo = archon1.organs.genomer.primordialGenome.maxAcceleration.value * (1 - aRange / 100);
       var aRangeHi = archon1.organs.genomer.primordialGenome.maxAcceleration.value * (1 + aRange / 100);

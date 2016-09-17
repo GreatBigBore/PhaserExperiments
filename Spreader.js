@@ -30,7 +30,7 @@ Rob.Spreader.prototype.getWorldColorRange = function() {
   var lumaBR = rgb.l;
 
   // Bottom right is the cold end, top left is the hot
-  return Rob.Range(lumaBR, lumaTL);
+  return new Rob.Range(lumaBR, lumaTL);
 };
 
 Rob.Spreader.prototype.create = function() {
@@ -155,7 +155,6 @@ Rob.Spreader.prototype.render = function() {
 
 Rob.Spreader.prototype.report = function(whichSprite) {
   var a = whichSprite.archon;
-  console.log(a.organs.dna);
 
   console.log("\n\n\nArchon " + a.uniqueID);
   console.log("Mass = " + a.organs.lizer.getMass().toFixed(4));
@@ -170,9 +169,9 @@ Rob.Spreader.prototype.report = function(whichSprite) {
   console.log("Life remaining: " + (t / 60).toFixed() + "s (" + t + " ticks)");
 
   console.log("\nDNA:");
-  console.log("Temps: " + a.organs.dna.optimalLoTemp.toFixed() +
-              " <= " + a.organs.dna.optimalTemp.toFixed() + " <= " +
-              a.organs.dna.optimalHiTemp.toFixed());
+  console.log("Temps: " + a.optimalLoTemp.toFixed() +
+              " <= " + a.optimalTemp.toFixed() + " <= " +
+              a.optimalHiTemp.toFixed());
 };
 
 

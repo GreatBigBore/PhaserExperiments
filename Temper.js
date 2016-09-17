@@ -49,15 +49,9 @@ Rob.Temper.prototype.getTempVector = function() {
   
     if(Rob.pointInBounds(boundsCheck)) {
       var t = Rob.getTemperature(e.where);
-      var signedDelta = t - this.optimalTemp; // So we can get a direction
-      var delta = Math.abs(signedDelta);      // So we can get a magnitude
+      var signedDelta = t - this.archon.optimalTemp; // So we can get a direction
+      var delta = Math.abs(signedDelta);             // So we can get a magnitude
       
-      /*if(t > this.optimalHiTemp) {
-        delta += t - this.optimalHiTemp;
-      } else if(t < this.optimalLoTemp) {
-        delta += this.optimalLoTemp = t;
-      }*/
-        
       e.signedDelta = signedDelta;
       e.delta = delta;
     } else {
@@ -87,7 +81,7 @@ Rob.Temper.prototype.getTempVector = function() {
 };
 
 Rob.Temper.prototype.howUncomfortableAmI = function(baseValue) {
-  return Math.abs(baseValue * this.archon.organs.dna.tempFactor);
+  return Math.abs(baseValue * this.archon.tempFactor);
 };
 
 Rob.Temper.prototype.init = function() {
@@ -105,9 +99,6 @@ Rob.Temper.prototype.ready = function(archon) {
   
   this.organs = Object.assign({}, archon.organs);
 
-  this.optimalLoTemp = archon.organs.dna.optimalLoTemp;
-  this.optimalTemp = archon.organs.dna.optimalTemp;
-  this.optimalHiTemp = archon.organs.dna.optimalHiTemp;
   this.senseLimit = archon.sensorRadius;
   
   this.tempRange = new Rob.Range(0, 1000);

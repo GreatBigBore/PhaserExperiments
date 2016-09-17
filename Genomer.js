@@ -24,8 +24,6 @@ Rob.Gene = function() {
 };
 
 Rob.Gene.prototype = {
-  get: function() { return this.value; },
-  
   inherit: function() { throw new TypeError("Gene base class doesn't inherit"); },
   
   mutateMutatability: function(parentGene) {
@@ -107,18 +105,32 @@ Rob.ColorGene.prototype.inherit = function(parentGene) {
 };
 
 Rob.ColorGene.prototype.getColorAsDecimal = function() { return parseInt(this.color.toHex(), 16); };
-Rob.ColorGene.prototype.get = function() { return this.getColorAsDecimal(); };
+Rob.ColorGene.prototype.getOptimalHiTemp = function() { return this.getOptimalTemp() + this.archon.tempRange / 2; };
+Rob.ColorGene.prototype.getOptimalLoTemp = function() { return this.getOptimalTemp() - this.archon.tempRange / 2; };
 
-Rob.Genome = function(parentGenome) {
+Rob.ColorGene.prototype.getOptimalTemp = function() {
+  var L = this.color.toHsl().l;
+  var t = Rob.globals.temperatureRange.convertPoint(L, Rob.globals.oneToZeroRange);
+  return t;
+};
+
+Rob.Genome = function(archon, parentGenome) {
+  this.archon = archon;
+  
   for(var i in parentGenome) {
-    this[i] = parentGenome[i].newGene();
+    if(parentGenome[i] === null) {
+      this[i] = null; // For dummy properties so our getters will work -- I hope!
+    } else {
+      this[i] = parentGenome[i].newGene();
+      this[i].archon = archon;
+    }
   }
 };
 
 Rob.Genome.prototype = {
   inherit: function(parentGenome) {
     for(var i in parentGenome) {
-      this[i].inherit(parentGenome[i]);
+      if(parentGenome[i] !== null) { this[i].inherit(parentGenome[i]); }
     }
   }
 };
@@ -134,18 +146,14 @@ Rob.Genomer.prototype = {
   // to do this after the first launch. On recycling, we just reset their
   // genomes by inheriting from the parent
   genomifyChildArchon: function(parentGenome) {
-    if(parentGenome === undefined) { parentGenome = this.primordialGenome; } // For miraculous births at creation
+    if(parentGenome === null) { parentGenome = this.primordialGenome; } // For miraculous births at creation
 
     if(this.archon.genome === undefined) {
-      this.archon.genome = new Rob.Genome(parentGenome);
+      this.archon.genome = new Rob.Genome(this.archon, parentGenome);
     }
     
     this.archon.genome.inherit(parentGenome);
   },
-
-  getTint: function() { return (
-    this.archon.genomer.color.r * Math.pow(2, 16) + this.archon.genomer.color.g * Math.pow(2, 8) + this.archon.genomer.color.b
-  ); },
   
   init: function() {},
 
@@ -172,7 +180,9 @@ Rob.Genomer.prototype = {
     tasteFactor: new Rob.ScalarGene(1),
     tempFactor: new Rob.ScalarGene(1),
     tempRange: new Rob.ScalarGene(400),
-    tempRangeBase: new Rob.ScalarGene(-200)
+    optimalTemp: null,
+    optimalHiTemp: null,
+    optimalLoTemp: null
   }
 
 };
