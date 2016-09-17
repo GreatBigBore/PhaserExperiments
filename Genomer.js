@@ -1,268 +1,171 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global game, Rob, tinycolor */
-
 "use strict";
 
+var Rob = Rob || {};
+
 if(typeof window === "undefined") {
-  exports.Rob = require('./Rob.js').Rob;
+  Rob = require('./Rob.js');
+  require('./tinycolor.js');
+  require('./Range.js');
 }
 
-Rob.dnaConstants = {
-  archonHeroSize: 100,
-  archonMortalSizeScale: 0.0005,
-  archonStandardOptimalTemp: 0,
-  archonStandardLifetime: 5 * 60 * 60,
-  archonStandardTempRange: 400,
-  embryoThresholdMultiplier: 1.1,
-  avoidanceFactor: -1,
-  smellFactor: 1,
-  targetChangeDelay: 30,
-  tempFactor: 1,
-  velocityFactor: 1,
-  tasteFactor: 1,
-  hungerMultiplier: 1 / 2000,
-  sensorScale: 1
+(function(Rob) {
+  
+Rob.Gene = function() {
+  // Archonia always begins with a 10% chance of a +/- 10% change
+  this.changeProbability = 10;
+  this.changeRange = 10;
 };
 
-Rob.DNA = function() {
-  this.avoidanceFactor = Rob.dnaConstants.avoidanceFactor;
-  this.massOfMyBabies = Rob.globals.standardBabyMass;
-  this.embryoThreshold = 0;
-  this.tasteFactor = Rob.dnaConstants.tasteFactor;
-  this.lifetime = Rob.dnaConstants.archonStandardLifetime;
-  this.maxAcceleration = Rob.globals.maxAcceleration;
-  this.maxVelocity = Rob.globals.maxSpeed;
-  this.motionMultiplier = 30;
-  this.optimalMass = 5;
-  this.optimalTemp = Rob.dnaConstants.archonStandardOptimalTemp;
-  this.sensorSize = 1;
-  this.smellFactor = Rob.dnaConstants.smellFactor;
-  this.targetChangeDelay = Rob.dnaConstants.targetChangeDelay;
-  this.tempFactor = Rob.dnaConstants.tempFactor;
-  this.tempRange = Rob.dnaConstants.archonStandardTempRange;
-  this.velocityFactor = Rob.dnaConstants.velocityFactor;
-  this.hungerMultiplier = Rob.dnaConstants.hungerMultiplier;
-  this.sensorScale = Rob.dnaConstants.sensorScale;
+Rob.Gene.prototype = {
+  inherit: function() { throw new TypeError("Gene base class doesn't inherit"); },
+  
+  mutateMutatability: function(parentGene) {
+    // Have to assign these first, before the mutation, because the
+    // mutation function needs them in place before it can
+    // operate properly.
+    this.changeProbability = parentGene.changeProbability;
+    this.changeRange = parentGene.changeRange;
 
-  this.color = { r: 0x88, g: 0x88, b: 0x88 };
-
-  this.finalSetup(this);
-};
-
-Rob.DNA.prototype.init = function() {
-};
-
-Rob.DNA.prototype.ready = function(archon) {
-  this.archon = archon;
-  this.organs = Object.assign({}, archon.organs);
-};
-
-Rob.DNA.prototype.tick = function(frameCount) {
-  this.frameCount = frameCount;
-};
-
-Rob.DNA.prototype.launch = function() {
-  var parentDNA = this.archon.parentDNA;
-  var i = null;
-
-  if(parentDNA === undefined) {
-    for(i in this) {
-      this.mutate(i, this);
-    }
-  } else {
-    this.color = Object.assign({}, parentDNA.color);
-
-    for(i in parentDNA) {
-      this.mutate(i, parentDNA);
-    }
-  }
-};
-
-Rob.DNA.prototype.finalSetup = function(dnaSource) {
-  this.embryoThreshold = (
-    Rob.dnaConstants.embryoThresholdMultiplier *
-    ((dnaSource.massOfMyBabies * Rob.globals.embryoCalorieDensity) +
-    (dnaSource.optimalMass * Rob.globals.adultFatCalorieDensity))
-  );
-
-  this.optimalTemp = this.getTempFromColor(dnaSource.color);
-  var halfTempRange = dnaSource.tempRange / 2;
-
-  this.optimalHiTemp = dnaSource.optimalTemp + halfTempRange;
-  this.optimalLoTemp = dnaSource.optimalTemp - halfTempRange;
-
-  this.clampTemp();
-};
-
-Rob.DNA.prototype.getTint = function() {
-	return (
-		this.color.r * Math.pow(2, 16) +
-		this.color.g * Math.pow(2, 8) +
-		this.color.b
-	);
-};
-
-// probability = how likely it is for a mutation to occur
-// range: percentage of change allowable; from 1 - (range / 100) to 1 + (range / 100)
-Rob.DNA.prototype.scalarMutations = {
-  color: { probability: 50, range: 50 },
-	embryoThreshold: { probability: 10, range: 10 },
-  lifetime: { probability: 10, range: 10 },
-  massOfMyBabies: { probability: 10, range: 10 },
-	maxAcceleration: { probability: 10, range: 10 },
-	maxVelocity: { probability: 10, range: 10 },
-  motionMultiplier: { probability: 10, range: 10 },
-	optimalTemp: { probability: 10, range: 10 },
-	optimalHiTemp: { probability: 10, range: 10 },
-	optimalLoTemp: { probability: 10, range: 10 },
-	optimalMass: { probability: 10, range: 10 },
-	sensorSize:  { probability: 10, range: 10 },
-  smellFactor: { probability: 10, range: 10 },
-  tempFactor: { probability: 10, range: 10 },
-  velocityFactor: { probability: 10, range: 10 },
-  avoidanceFactor: { probability: 10, range: 10 },
-  targetChangeDelay: { probability: 10, range: 10 },
-  hungerMultiplier: { probability: 10, range: 10 },
-  sensorScale: { probability: 10, range: 10 },
-  tasteFactor: { probability: 10, range: 10 }
-
-};
-
-Rob.DNA.prototype.clampTemp = function() {
-  this.optimalHiTemp = Math.max(this.optimalHiTemp, this.optimalTemp);
-	this.optimalLoTemp = Math.min(this.optimalLoTemp, this.optimalTemp);
-};
-
-Rob.DNA.prototype.mutate = function(traitName, parentDNA) {
-  if(parentDNA[traitName] instanceof Function) {
-    return;
-  }
-
-	switch(traitName) {
-		case 'color': this.mutateColor(parentDNA.color); break;
-		case 'optimalTemp': this.mutateTemperatureStuff(parentDNA); break;
-    case 'tempRange': break;
-		case 'optimalHiTemp': break;	// We do this along with optimal temp
-		case 'optimalLoTemp': break;	// We do this along with optimal temp
-		case 'scalarMutations': break;	// I might make this mutatable at some point
-
-    // Some objects that show up as properties that aren't mutation things
-    case 'archon': break;
-    case 'organs': break;
-    case 'frameCount': break;
-		default: {
-
-      // Just for showing the cool message about mutation
-			//var originalValue = parentDNA[traitName];
-
-      // This is the part that matters
-			this.mutateScalar(traitName, parentDNA);
-
-      // Just for showing the cool message about mutation
-/*			var newValue = this[traitName];
-
-			if(originalValue !== newValue) {
-				console.log(traitName, 'mutated to', newValue.toFixed(4), 'from', originalValue.toFixed(4));
-			}*/
-		}
-
-		break;
-	}
-};
-
-Rob.DNA.prototype.mutateColor = function(parentColors) {
-	var colors = ['r', 'g', 'b'];
-	var mutated = false;
-	for(var i in colors) {
-    var c = colors[i];
-		this.color[c] = Math.floor(this.mutateScalar_(
-      parentColors[c],
-      this.scalarMutations.color.probability,
-      this.scalarMutations.color.range
-    ));
+    var newChangeProbability = this.mutateScalar(parentGene.changeProbability);
+    var newChangeRange = this.mutateScalar(parentGene.changeRange);
     
-    this.color[c] = (this.color[c] + 255) % 256;
-
-    // Just so I can show the cool message about color mutation
-		if(this.color[c].toString(16) !== parentColors[c].toString(16)) { mutated = true; }
-	}
-
-/*	if(mutated) {
-		console.log(
-			'Color mutated to',
-			this.color.r.toString(16) + this.color.g.toString(16) + this.color.b.toString(16),
-			'from',
-			parentColors.r.toString(16) + parentColors.g.toString(16) + parentColors.b.toString(16)
-		);
-	}*/
-};
-
-Rob.DNA.prototype.mutateScalar = function(traitName, parentDNA) {
-  this[traitName] = this.mutateScalar_(
-    parentDNA[traitName],
-    this.scalarMutations[traitName].probability,
-    this.scalarMutations[traitName].range
-  );
-};
-
-Rob.DNA.prototype.mutateScalar_ = function(value, probability, range) {
-  var scratchRange = 0;
+    this.changeProbability = newChangeProbability;
+    this.changeRange = newChangeRange;
+  },
   
-  if(Rob.globals.creation) {
-    probability *= 2;
-    range *= 2;
-  }
+  mutateScalar: function(value, operation) {
+    var probability = this.changeProbability;
+    var range = this.changeRange;
+  
+    // Hopefull make creation a bit more interesting
+    if(Rob.globals.creation) { probability *= 2; range *= 2; }
 
-  // Just to make it interesting, every once in a while, a big change
-  for(var i = 0; i < 3; i++) {
-    if(this.mutateYN(probability)) {
-      scratchRange += range;
-      probability += 10;
-    } else {
-      break;
+    // Just to make it interesting, every once in a while, a big change
+    for(var i = 0; i < 3; i++) {
+      if(this.mutateYN(probability)) {
+        range += 10;
+        probability += 10;
+      } else {
+        break;
+      }
     }
+
+    if(operation === 'multiply' || operation === undefined) {
+      return Rob.realInRange(
+        value * (1 - range / 100), value * (1 + range / 100)
+      );
+    } else {
+      return Rob.realInRange(value - range, value + range);
+    }
+  },
+  
+  mutateYN: function() { return Rob.integerInRange(1, 100) < this.changeProbability; }
+};
+
+Rob.ScalarGene = function(geneScalarValue) { this.value = geneScalarValue; Rob.Gene.call(this); };
+
+Rob.ScalarGene.prototype = Object.create(Rob.Gene.prototype);
+Rob.ScalarGene.prototype.constructor = Rob.ScalarGene;
+Rob.ScalarGene.prototype.newGene = function() { return new Rob.ScalarGene(); };
+
+Rob.ScalarGene.prototype.inherit = function(parentGene) {
+  this.mutateMutatability(parentGene);
+  this.value = this.mutateScalar(parentGene.value);
+};
+
+Rob.ColorGene = function(gene) { this.color = Rob.tinycolor(gene); Rob.Gene.call(this); };
+
+Rob.ColorGene.prototype = Object.create(Rob.Gene.prototype);
+Rob.ColorGene.prototype.constructor = Rob.ColorGene;
+Rob.ColorGene.prototype.newGene = function() { return new Rob.ColorGene(); };
+
+Rob.ColorGene.prototype.inherit = function(parentGene) {
+  this.mutateMutatability(parentGene);
+
+  var color = Rob.tinycolor(parentGene.color);
+
+  var hsl = color.toHsl();
+  var h = this.mutateScalar(hsl.h, 'add');
+  var s = this.mutateScalar(hsl.s, 'add');
+  var l = this.mutateScalar(hsl.l, 'add');
+  
+
+  if(h < 0) { h += 360; } h %= 360; // Treat the hue like the wheel it is
+  if(s < 0) { s += 100; } s %= 100;
+  if(l < 0) { l += 100; } l %= 100;
+  
+  this.color = Rob.tinycolor('hsl(' + h + ', ' + s + '%, ' + l + '%)');
+};
+
+Rob.ColorGene.prototype.getColorAsDecimal = function() { return parseInt(this.color.toHex(), 16); };
+
+Rob.Genomer = function(archon) {
+  this.archon = archon;
+  
+  for(var i in this.primordialGenome) {
+    Object.defineProperty(this, i, { get: function() { return this.archon.genome[i].value; } });
+  }
+};
+
+Rob.Genomer.prototype = {
+  
+  // This is only for archons that have never been launched. After launch
+  // they will retain their genomes even after they die, so we never have
+  // to do this after the first launch. On recycling, we just reset their
+  // genomes by inheriting from the parent
+  genomifyChildArchon: function(parentGenome) {
+    if(parentGenome === undefined) { parentGenome = this.primordialGenome; } // For miraculous births at creation
+
+    var i = null;
+    if(this.archon.genome === undefined) {
+      this.archon.genome = {};
+      for(i in parentGenome) {
+        this.archon.genome[i] = parentGenome[i].newGene();
+      }
+    }
+    
+    for(i in parentGenome) {
+      this.archon.genome[i].inherit(parentGenome[i]);
+    }
+  },
+
+  getTint: function() { return (
+    this.archon.genomer.color.r * Math.pow(2, 16) + this.archon.genomer.color.g * Math.pow(2, 8) + this.archon.genomer.color.b
+  ); },
+
+  launch: function() {},
+
+  ready: function() {},
+
+  tick: function() {},
+
+  primordialGenome: {
+    // This is the only time we pass values to the constructors.
+    // For all births, we pass nulls and inherit from the parent.
+    // Note that even the initial, miraculous births inherit too;
+    // this object is the only one that creates genes from scratch.
+    color: new Rob.ColorGene(Rob.tinycolor('hsl(180, 100%, 50%)')),
+    embryoThresholdMultiplier: new Rob.ScalarGene(1.1),
+    hungerMultiplier: new Rob.ScalarGene(0.0005),
+    maxAcceleration: new Rob.ScalarGene(15),
+    maxVelocityMagnitude: new Rob.ScalarGene(75),
+    optimalMass: new Rob.ScalarGene(5),
+    offspringMass: new Rob.ScalarGene(0.5),
+    sensorScale: new Rob.ScalarGene(1),
+    targetChangeDelay: new Rob.ScalarGene(30),
+    tasteFactor: new Rob.ScalarGene(1),
+    tempFactor: new Rob.ScalarGene(1),
+    tempRange: new Rob.ScalarGene(400),
+    tempRangeBase: new Rob.ScalarGene(-200)
   }
 
-  return game.rnd.realInRange(
-    value * (1 - scratchRange / 100), value * (1 + scratchRange / 100)
-  );
 };
 
-Rob.DNA.prototype.mutateTemperatureStuff = function(parentDNA) {
-  this.mutateScalar('optimalTemp', parentDNA);
-  this.mutateScalar('optimalHiTemp', parentDNA);
-  this.mutateScalar('optimalLoTemp', parentDNA);
-  this.clampTemp();
-
-  this.tempRange = this.optimalHiTemp - this.optimalLoTemp;
-};
-
-Rob.DNA.prototype.mutateYN = function(probability) {
-	return game.rnd.integerInRange(1, 100) < probability;
-};
-
-Rob.DNA.prototype.getRandomTint = function() {
-  var r = game.rnd.integerInRange(128, 255);
-  var g = game.rnd.integerInRange(128, 255);
-  var b = game.rnd.integerInRange(128, 255);
-
-	return {r: r, g: g, b: b};
-};
-
-// We dont need the exact luma value; an approximation will do
-Rob.DNA.prototype.getTempFromColor = function(color) {
-  var tiny = tinycolor(color);
-  var hsl = tiny.toHsl();
-  
-  return Rob.globals.standardArchonTolerableTempRange.convertPoint(hsl.l, Rob.globals.oneToZeroRange);
-};
-
-Rob.DNA.prototype.setColor = function() {
-	this.color = this.getRandomTint();
-};
+})(Rob);
 
 if(typeof window === "undefined") {
-  exports.Rob.DNA = new Rob.DNA();
+  module.exports = Rob;
 }
