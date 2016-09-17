@@ -2,7 +2,13 @@
 // https://github.com/bgrins/TinyColor
 // Brian Grinstead, MIT License
 
-(function(Math) {
+var Rob = Rob || {};
+
+if(typeof window === "undefined") {
+  Rob = require('./Rob.js');
+}
+
+(function(Rob, Math) {
 
 var trimLeft = /^\s+/,
     trimRight = /\s+$/,
@@ -12,18 +18,18 @@ var trimLeft = /^\s+/,
     mathMax = Math.max,
     mathRandom = Math.random;
 
-function tinycolor (color, opts) {
+Rob.tinycolor = function(color, opts) {
 
     color = (color) ? color : '';
     opts = opts || { };
 
     // If input is already a tinycolor, return itself
-    if (color instanceof tinycolor) {
+    if (color instanceof Rob.tinycolor) {
        return color;
     }
     // If we are called as a function, call using new instead
-    if (!(this instanceof tinycolor)) {
-        return new tinycolor(color, opts);
+    if (!(this instanceof Rob.tinycolor)) {
+        return new Rob.tinycolor(color, opts);
     }
 
     var rgb = inputToRGB(color);
@@ -48,7 +54,7 @@ function tinycolor (color, opts) {
     this._tc_id = tinyCounter++;
 }
 
-tinycolor.prototype = {
+Rob.tinycolor.prototype = {
     isDark: function() {
         return this.getBrightness() < 128;
     },
@@ -157,7 +163,7 @@ tinycolor.prototype = {
         var gradientType = this._gradientType ? "GradientType = 1, " : "";
 
         if (secondColor) {
-            var s = tinycolor(secondColor);
+            var s = Rob.tinycolor(secondColor);
             secondHex8String = '#' + rgbaToArgbHex(s._r, s._g, s._b, s._a);
         }
 
@@ -210,7 +216,7 @@ tinycolor.prototype = {
         return formattedString || this.toHexString();
     },
     clone: function() {
-        return tinycolor(this.toString());
+        return Rob.tinycolor(this.toString());
     },
 
     _applyModification: function(fn, args) {
@@ -268,7 +274,7 @@ tinycolor.prototype = {
 
 // If input is an object, force 1 into "1.0" to handle ratios properly
 // String input requires "1.0" as input, so 1 will be treated as 1
-tinycolor.fromRatio = function(color, opts) {
+Rob.tinycolor.fromRatio = function(color, opts) {
     if (typeof color == "object") {
         var newColor = {};
         for (var i in color) {
@@ -284,7 +290,7 @@ tinycolor.fromRatio = function(color, opts) {
         color = newColor;
     }
 
-    return tinycolor(color, opts);
+    return Rob.tinycolor(color, opts);
 };
 
 // Given a string or object, convert that input to RGB
@@ -550,13 +556,13 @@ function rgbaToArgbHex(r, g, b, a) {
 
 // `equals`
 // Can be called with any tinycolor input
-tinycolor.equals = function (color1, color2) {
+Rob.tinycolor.equals = function (color1, color2) {
     if (!color1 || !color2) { return false; }
-    return tinycolor(color1).toRgbString() == tinycolor(color2).toRgbString();
+    return Rob.tinycolor(color1).toRgbString() == Rob.tinycolor(color2).toRgbString();
 };
 
-tinycolor.random = function() {
-    return tinycolor.fromRatio({
+Rob.tinycolor.random = function() {
+    return Rob.tinycolor.fromRatio({
         r: mathRandom(),
         g: mathRandom(),
         b: mathRandom()
@@ -571,56 +577,56 @@ tinycolor.random = function() {
 
 function desaturate(color, amount) {
     amount = (amount === 0) ? 0 : (amount || 10);
-    var hsl = tinycolor(color).toHsl();
+    var hsl = Rob.tinycolor(color).toHsl();
     hsl.s -= amount / 100;
     hsl.s = clamp01(hsl.s);
-    return tinycolor(hsl);
+    return Rob.tinycolor(hsl);
 }
 
 function saturate(color, amount) {
     amount = (amount === 0) ? 0 : (amount || 10);
-    var hsl = tinycolor(color).toHsl();
+    var hsl = Rob.tinycolor(color).toHsl();
     hsl.s += amount / 100;
     hsl.s = clamp01(hsl.s);
-    return tinycolor(hsl);
+    return Rob.tinycolor(hsl);
 }
 
 function greyscale(color) {
-    return tinycolor(color).desaturate(100);
+    return Rob.tinycolor(color).desaturate(100);
 }
 
 function lighten (color, amount) {
     amount = (amount === 0) ? 0 : (amount || 10);
-    var hsl = tinycolor(color).toHsl();
+    var hsl = Rob.tinycolor(color).toHsl();
     hsl.l += amount / 100;
     hsl.l = clamp01(hsl.l);
-    return tinycolor(hsl);
+    return Rob.tinycolor(hsl);
 }
 
 function brighten(color, amount) {
     amount = (amount === 0) ? 0 : (amount || 10);
-    var rgb = tinycolor(color).toRgb();
+    var rgb = Rob.tinycolor(color).toRgb();
     rgb.r = mathMax(0, mathMin(255, rgb.r - mathRound(255 * - (amount / 100))));
     rgb.g = mathMax(0, mathMin(255, rgb.g - mathRound(255 * - (amount / 100))));
     rgb.b = mathMax(0, mathMin(255, rgb.b - mathRound(255 * - (amount / 100))));
-    return tinycolor(rgb);
+    return Rob.tinycolor(rgb);
 }
 
 function darken (color, amount) {
     amount = (amount === 0) ? 0 : (amount || 10);
-    var hsl = tinycolor(color).toHsl();
+    var hsl = Rob.tinycolor(color).toHsl();
     hsl.l -= amount / 100;
     hsl.l = clamp01(hsl.l);
-    return tinycolor(hsl);
+    return Rob.tinycolor(hsl);
 }
 
 // Spin takes a positive or negative amount within [-360, 360] indicating the change of hue.
 // Values outside of this range will be wrapped into this range.
 function spin(color, amount) {
-    var hsl = tinycolor(color).toHsl();
+    var hsl = Rob.tinycolor(color).toHsl();
     var hue = (hsl.h + amount) % 360;
     hsl.h = hue < 0 ? 360 + hue : hue;
-    return tinycolor(hsl);
+    return Rob.tinycolor(hsl);
 }
 
 // Combination Functions
@@ -629,39 +635,39 @@ function spin(color, amount) {
 // <https://github.com/infusion/jQuery-xcolor/blob/master/jquery.xcolor.js>
 
 function complement(color) {
-    var hsl = tinycolor(color).toHsl();
+    var hsl = Rob.tinycolor(color).toHsl();
     hsl.h = (hsl.h + 180) % 360;
-    return tinycolor(hsl);
+    return Rob.tinycolor(hsl);
 }
 
 function triad(color) {
-    var hsl = tinycolor(color).toHsl();
+    var hsl = Rob.tinycolor(color).toHsl();
     var h = hsl.h;
     return [
-        tinycolor(color),
-        tinycolor({ h: (h + 120) % 360, s: hsl.s, l: hsl.l }),
-        tinycolor({ h: (h + 240) % 360, s: hsl.s, l: hsl.l })
+        Rob.tinycolor(color),
+        Rob.tinycolor({ h: (h + 120) % 360, s: hsl.s, l: hsl.l }),
+        Rob.tinycolor({ h: (h + 240) % 360, s: hsl.s, l: hsl.l })
     ];
 }
 
 function tetrad(color) {
-    var hsl = tinycolor(color).toHsl();
+    var hsl = Rob.tinycolor(color).toHsl();
     var h = hsl.h;
     return [
-        tinycolor(color),
-        tinycolor({ h: (h + 90) % 360, s: hsl.s, l: hsl.l }),
-        tinycolor({ h: (h + 180) % 360, s: hsl.s, l: hsl.l }),
-        tinycolor({ h: (h + 270) % 360, s: hsl.s, l: hsl.l })
+        Rob.tinycolor(color),
+        Rob.tinycolor({ h: (h + 90) % 360, s: hsl.s, l: hsl.l }),
+        Rob.tinycolor({ h: (h + 180) % 360, s: hsl.s, l: hsl.l }),
+        Rob.tinycolor({ h: (h + 270) % 360, s: hsl.s, l: hsl.l })
     ];
 }
 
 function splitcomplement(color) {
-    var hsl = tinycolor(color).toHsl();
+    var hsl = Rob.tinycolor(color).toHsl();
     var h = hsl.h;
     return [
-        tinycolor(color),
-        tinycolor({ h: (h + 72) % 360, s: hsl.s, l: hsl.l}),
-        tinycolor({ h: (h + 216) % 360, s: hsl.s, l: hsl.l})
+        Rob.tinycolor(color),
+        Rob.tinycolor({ h: (h + 72) % 360, s: hsl.s, l: hsl.l}),
+        Rob.tinycolor({ h: (h + 216) % 360, s: hsl.s, l: hsl.l})
     ];
 }
 
@@ -669,26 +675,26 @@ function analogous(color, results, slices) {
     results = results || 6;
     slices = slices || 30;
 
-    var hsl = tinycolor(color).toHsl();
+    var hsl = Rob.tinycolor(color).toHsl();
     var part = 360 / slices;
-    var ret = [tinycolor(color)];
+    var ret = [Rob.tinycolor(color)];
 
     for (hsl.h = ((hsl.h - (part * results >> 1)) + 720) % 360; --results; ) {
         hsl.h = (hsl.h + part) % 360;
-        ret.push(tinycolor(hsl));
+        ret.push(Rob.tinycolor(hsl));
     }
     return ret;
 }
 
 function monochromatic(color, results) {
     results = results || 6;
-    var hsv = tinycolor(color).toHsv();
+    var hsv = Rob.tinycolor(color).toHsv();
     var h = hsv.h, s = hsv.s, v = hsv.v;
     var ret = [];
     var modification = 1 / results;
 
     while (results--) {
-        ret.push(tinycolor({ h: h, s: s, v: v}));
+        ret.push(Rob.tinycolor({ h: h, s: s, v: v}));
         v = (v + modification) % 1;
     }
 
@@ -698,11 +704,11 @@ function monochromatic(color, results) {
 // Utility Functions
 // ---------------------
 
-tinycolor.mix = function(color1, color2, amount) {
+Rob.tinycolor.mix = function(color1, color2, amount) {
     amount = (amount === 0) ? 0 : (amount || 50);
 
-    var rgb1 = tinycolor(color1).toRgb();
-    var rgb2 = tinycolor(color2).toRgb();
+    var rgb1 = Rob.tinycolor(color1).toRgb();
+    var rgb2 = Rob.tinycolor(color2).toRgb();
 
     var p = amount / 100;
 
@@ -713,7 +719,7 @@ tinycolor.mix = function(color1, color2, amount) {
         a: ((rgb2.a - rgb1.a) * p) + rgb1.a
     };
 
-    return tinycolor(rgba);
+    return Rob.tinycolor(rgba);
 };
 
 
@@ -723,9 +729,9 @@ tinycolor.mix = function(color1, color2, amount) {
 
 // `contrast`
 // Analyze the 2 colors and returns the color contrast defined by (WCAG Version 2)
-tinycolor.readability = function(color1, color2) {
-    var c1 = tinycolor(color1);
-    var c2 = tinycolor(color2);
+Rob.tinycolor.readability = function(color1, color2) {
+    var c1 = Rob.tinycolor(color1);
+    var c2 = Rob.tinycolor(color2);
     return (Math.max(c1.getLuminance(),c2.getLuminance())+0.05) / (Math.min(c1.getLuminance(),c2.getLuminance())+0.05);
 };
 
@@ -739,8 +745,8 @@ tinycolor.readability = function(color1, color2) {
 // *Example*
 //    tinycolor.isReadable("#000", "#111") => false
 //    tinycolor.isReadable("#000", "#111",{level:"AA",size:"large"}) => false
-tinycolor.isReadable = function(color1, color2, wcag2) {
-    var readability = tinycolor.readability(color1, color2);
+Rob.tinycolor.isReadable = function(color1, color2, wcag2) {
+    var readability = Rob.tinycolor.readability(color1, color2);
     var wcag2Parms, out;
 
     out = false;
@@ -771,7 +777,7 @@ tinycolor.isReadable = function(color1, color2, wcag2) {
 //    tinycolor.mostReadable(tinycolor.mostReadable("#123", ["#124", "#125"],{includeFallbackColors:true}).toHexString();  // "#ffffff"
 //    tinycolor.mostReadable("#a8015a", ["#faf3f3"],{includeFallbackColors:true,level:"AAA",size:"large"}).toHexString(); // "#faf3f3"
 //    tinycolor.mostReadable("#a8015a", ["#faf3f3"],{includeFallbackColors:true,level:"AAA",size:"small"}).toHexString(); // "#ffffff"
-tinycolor.mostReadable = function(baseColor, colorList, args) {
+Rob.tinycolor.mostReadable = function(baseColor, colorList, args) {
     var bestColor = null;
     var bestScore = 0;
     var readability;
@@ -782,19 +788,19 @@ tinycolor.mostReadable = function(baseColor, colorList, args) {
     size = args.size;
 
     for (var i= 0; i < colorList.length ; i++) {
-        readability = tinycolor.readability(baseColor, colorList[i]);
+        readability = Rob.tinycolor.readability(baseColor, colorList[i]);
         if (readability > bestScore) {
             bestScore = readability;
-            bestColor = tinycolor(colorList[i]);
+            bestColor = Rob.tinycolor(colorList[i]);
         }
     }
 
-    if (tinycolor.isReadable(baseColor, bestColor, {"level":level,"size":size}) || !includeFallbackColors) {
+    if (Rob.tinycolor.isReadable(baseColor, bestColor, {"level":level,"size":size}) || !includeFallbackColors) {
         return bestColor;
     }
     else {
         args.includeFallbackColors=false;
-        return tinycolor.mostReadable(baseColor,["#fff", "#000"],args);
+        return Rob.tinycolor.mostReadable(baseColor,["#fff", "#000"],args);
     }
 };
 
@@ -802,7 +808,7 @@ tinycolor.mostReadable = function(baseColor, colorList, args) {
 // Big List of Colors
 // ------------------
 // <http://www.w3.org/TR/css3-color/#svg-color>
-var names = tinycolor.names = {
+var names = Rob.tinycolor.names = {
     aliceblue: "f0f8ff",
     antiquewhite: "faebd7",
     aqua: "0ff",
@@ -955,7 +961,7 @@ var names = tinycolor.names = {
 };
 
 // Make it easy to access colors via `hexNames[hex]`
-var hexNames = tinycolor.hexNames = flip(names);
+var hexNames = Rob.tinycolor.hexNames = flip(names);
 
 
 // Utilities
@@ -1181,15 +1187,19 @@ function validateWCAG2Parms(parms) {
 
 // Node: Export function
 if (typeof module !== "undefined" && module.exports) {
-    module.exports = tinycolor;
+    module.exports = Rob.tinycolor;
 }
 // AMD/requirejs: Define the module
 else if (typeof define === 'function' && define.amd) {
-    define(function () {return tinycolor;});
+    define(function () {return Rob.tinycolor;});
 }
 // Browser: Expose to window
 else {
-    window.tinycolor = tinycolor;
+    window.tinycolor = Rob.tinycolor;
 }
 
-})(Math);
+})(Rob, Math);
+
+if(typeof window === "undefined") {
+  module.exports = Rob;
+}
