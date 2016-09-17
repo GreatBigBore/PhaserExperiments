@@ -1,7 +1,7 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global Rob, tinycolor */
+/* global Rob */
 
 "use strict";
 
@@ -126,7 +126,7 @@ Rob.Lizer.prototype.launch = function() {
 
 	this.costForHavingBabies = this.organs.dna.massOfMyBabies * Rob.globals.embryoCalorieDensity;
 		
-	this.optimalTempRange = Rob.Range(this.organs.dna.optimalLoTemp, this.organs.dna.optimalHiTemp);
+	this.optimalTempRange = new Rob.Range(this.organs.dna.optimalLoTemp, this.organs.dna.optimalHiTemp);
 
 	this.archon.setSize(this.getMass());
 };
@@ -195,7 +195,7 @@ Rob.Lizer.prototype.setButtonColor = function(temp) {
 	
 	var hue = Rob.globals.buttonHueRange.convertPoint(tempDelta, this.optimalTempRange);
 	var hsl = 'hsl(' + Math.floor(hue) + ', 100%, 50%)';
-	var rgb = tinycolor(hsl).toHex();
+	var rgb = Rob.tinycolor(hsl).toHex();
 	var tint = parseInt(rgb, 16);
 
 	this.archon.button.tint = tint;

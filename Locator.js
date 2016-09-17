@@ -44,7 +44,7 @@ Rob.Locator.prototype = {
 
     // We don't use this; the mover does, after it
     // gets our vector. The highest value food is that closest to us
-    this.foodDistanceRange = Rob.Range(1, 2);
+    this.foodDistanceRange = new Rob.Range(1, 2);
   },
   
   reset: function() {

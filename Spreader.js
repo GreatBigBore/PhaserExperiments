@@ -6,7 +6,7 @@
 "use strict";
 
 Rob.Spreader = function() {
-  this.yAxisRange = Rob.Range(game.height, 0);
+  this.yAxisRange = new Rob.Range(game.height, 0);
   this.darknessRange = Rob.globals.darknessRange;
   this.stopped = false;
 

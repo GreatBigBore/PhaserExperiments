@@ -112,7 +112,7 @@ Rob.Temper.prototype.ready = function(archon) {
   this.optimalHiTemp = archon.organs.dna.optimalHiTemp;
   this.senseLimit = archon.sensorRadius;
   
-  this.tempRange = Rob.Range(0, 1000);
+  this.tempRange = new Rob.Range(0, 1000);
 };
 
 })(Rob);
