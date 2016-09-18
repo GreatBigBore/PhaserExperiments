@@ -32,6 +32,7 @@ Rob.Mover.prototype = {
   launch: function(archon) {
     this.archon = archon;
     this.noNewTargetUntil = this.archon.targetChangeDelay;
+    this.jitterReductionActive = false;
   },
   
   tick: function(frameCount) {
@@ -69,6 +70,8 @@ Rob.Mover.prototype = {
         roblog('target', 'position', this.archon.position.x, this.archon.position.y);
       }
 
+      var finalVector = Rob.XY();
+      
       if(this.archon.temper.howUncomfortableAmI(mTemp) > this.archon.lizer.howHungryAmI(mTaste)) {
         tempVector.scalarMultiply(this.archon.sensorWidth);
         tempVector.add(this.archon.position);
@@ -77,7 +80,7 @@ Rob.Mover.prototype = {
           roblog('target', 'temp set', tempVector.x, tempVector.y);
         }
         
-        this.archon.accel.setTarget(tempVector);
+        finalVector.set(tempVector);
       } else {
         tasteVector.scalarMultiply(this.archon.sensorWidth);
         tasteVector.add(this.archon.position);
@@ -85,10 +88,22 @@ Rob.Mover.prototype = {
         if(this.archon.uniqueID === 0) {
           roblog('target', 'taste set', tasteVector.x, tasteVector.y);
         }
-        this.archon.accel.setTarget(tasteVector);
+        
+        finalVector.set(tasteVector);
       }
-      
+
       this.noNewTargetUntil = frameCount + this.archon.targetChangeDelay;
+
+      if(Rob.pointInBounds(finalVector)) {
+        this.archon.accel.setTarget(finalVector);
+        this.jitterReductionActive = false;
+      } else {
+        if(!this.jitterReductionActive) {
+          // Hopefully this will reduce the jitter at the edges
+          this.noNewTargetUntil += this.archon.targetChangeDelay;
+          this.jitterReductionActive = true;
+        }
+      }
     
       this.archon.locator.reset();
     }
