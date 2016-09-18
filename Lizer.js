@@ -9,7 +9,7 @@ Rob.Lizer = function(archon) {
   this.archon = archon;
   
   this.mannaNutritionRange =
-  	new Rob.Range(Rob.globals.caloriesPerMannaMorsel, 3 * Rob.globals.caloriesPerMannaMorsel);
+  	new Rob.Range(Rob.globals.caloriesPerMannaMorsel, 5 * Rob.globals.caloriesPerMannaMorsel);
   };
 
 Rob.Lizer.prototype.doLog = function(id, interval) {
@@ -32,7 +32,7 @@ Rob.Lizer.prototype.eat = function(sprite, foodParticle/*, caloriesPerMannaMorse
     this.embryoCalorieBudget += calories;
 
 		if(this.embryoCalorieBudget >= this.costForHavingBabies) {
-			this.archon.breed(this, this.archon.offspringMass);
+			this.archon.breed();
 			this.embryoCalorieBudget -= this.costForHavingBabies;
 
 			var costToAdultCalorieBudget =
@@ -184,6 +184,7 @@ Rob.Lizer.prototype.metabolize = function() {
 		this.archon.sprite.kill();
 		this.archon.button.kill();
 		this.archon.sensor.kill();
+    Rob.globals.dailyDeathCounter++;
 	} else {
 		this.archon.setSize(this.getMass());
 	}

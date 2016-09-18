@@ -95,7 +95,7 @@ Rob.Archon.prototype.activatePhysicsBodies = function() {
 };
 
 Rob.Archon.prototype.breed = function() {
-  this.god.breed(this.myParentArchon);
+  this.god.breed(this);
 };
 
 Rob.Archon.prototype.getPosition = function() {
@@ -115,7 +115,7 @@ Rob.Archon.prototype.launch = function(myParentArchon) {
   
   this.myParentArchon = myParentArchon;
   this.frameCount = Rob.integerInRange(0, 60);
-  this.sprite.tint = this.color;
+  this.flashDirection = -1;
 
 	this.uniqueID = this.god.getUniqueID();
   if(this.uniqueID === 0) {
@@ -165,6 +165,22 @@ Rob.Archon.prototype.throttle = function(id, interval, callback, context) {
 
 Rob.Archon.prototype.tick = function() {
   this.frameCount++;
+  
+  if(this.frameCount % 60 === 0) {
+    this.flashDirection *= -1;
+  }
+  
+  if(this.frameCount > 600) {
+    this.flashDirection = 0;
+  }
+  
+  if(this.flashDirection === -1) {
+    this.sprite.tint = 0;
+  } else if(this.flashDirection === 1) {
+    this.sprite.tint = 0xffffff;
+  } else {
+    this.sprite.tint = this.color;
+  }
 
   this.sensor.x = this.sprite.x; // So the sensor will stay attached
   this.sensor.y = this.sprite.y; // So the sensor will stay attached
