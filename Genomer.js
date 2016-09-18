@@ -94,9 +94,9 @@ Rob.ColorGene.prototype.inherit = function(parentGene) {
   var color = Rob.tinycolor(parentGene.color);
 
   var hsl = color.toHsl();
-  var h = this.mutateScalar(hsl.h, 360);
-  var s = this.mutateScalar(hsl.s, 1);
-  var l = this.mutateScalar(hsl.l, 1);
+  var h = this.mutateScalar(hsl.h, 90);   // Make the domain sizes artificially small to
+  var s = this.mutateScalar(hsl.s, 0.25); // limit the amount of color change between
+  var l = this.mutateScalar(hsl.l, 0.25); // generations. I like to see some signs of inheritance
   
 
   if(h < 0) { h += 360; } h %= 360; // Treat the hue like the wheel it is
@@ -133,7 +133,9 @@ Rob.Genome = function(archon, parentGenome) {
 Rob.Genome.prototype = {
   inherit: function(parentGenome) {
     for(var i in parentGenome) {
-      if(parentGenome[i] !== null) { this[i].inherit(parentGenome[i]); }
+      if(parentGenome[i] !== null && i !== 'archon' && typeof parentGenome[i] !== 'function') {
+        this[i].inherit(parentGenome[i]);
+      }
     }
   }
 };
@@ -160,8 +162,8 @@ Rob.Genomer = {
     color: new Rob.ColorGene(Rob.tinycolor('hsl(180, 100%, 50%)')),
     embryoThresholdMultiplier: new Rob.ScalarGene(1.1),
     hungerMultiplier: new Rob.ScalarGene(0.0005),
-    maxAcceleration: new Rob.ScalarGene(15),
-    maxVelocityMagnitude: new Rob.ScalarGene(75),
+    maxMAcceleration: new Rob.ScalarGene(15),
+    maxMVelocity: new Rob.ScalarGene(75),
     optimalMass: new Rob.ScalarGene(5),
     offspringMass: new Rob.ScalarGene(0.5),
     sensorScale: new Rob.ScalarGene(1),
