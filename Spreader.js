@@ -196,20 +196,6 @@ Rob.Spreader.prototype.update = function() {
 
   this.frameCount++;
   
-  if(this.frameCount % 600 === 0) {
-    this.tideX *= -1;
-  }
-  
-  if((this.frameCount + 150) % 600 === 0) {
-    this.tideY *= -1;
-  }
-  
-  /*Rob.globals.archonia.archons.phaseronPool.forEachAlive(function(p) {
-    var m = Rob.globals.tideRange.convertPoint(p.archon.lizer.getMass(), Rob.globals.archonMassRange);
-    p.body.velocity.x += this.tideX * m;
-    p.body.velocity.y += this.tideY * m;
-  }, this);*/
-  
   this.mannaGarden.tick(Rob.globals.archonia.theSun.getStrength());
   this.archons.tick();
 };
