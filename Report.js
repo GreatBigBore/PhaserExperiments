@@ -46,10 +46,18 @@ Rob.Report.prototype = {
           var value = p.archon[i];
 
           if(this.accumulator[i] === undefined) {
-            this.accumulator[i] = { all: [value], accumulated: value, average: 0, nearAverage: 0, median: 0, nearMedian: 0 };
+            this.accumulator[i] = {
+              all: [value], accumulated: value, average: 0, nearAverage: 0, median: 0, nearMedian: 0,
+              minimum: value, nearMinimum: 0, maximum: value, nearMaximum: 0
+            };
           } else {
-            this.accumulator[i].accumulated += value;
-            this.accumulator[i].all.push(value);
+            var entry = this.accumulator[i];
+
+            entry.accumulated += value;
+            entry.all.push(value);
+            
+            if(value < entry.minimum) { entry.minimum = value; }
+            if(value > entry.maximum) { entry.maximum = value; }
           }
         }
       }
@@ -65,6 +73,8 @@ Rob.Report.prototype = {
 
       entry.nearAverage = this.countValuesNear(i, 'average');
       entry.nearMedian = this.countValuesNear(i, 'median');
+      entry.nearMaximum = this.countValuesNear(i, 'maximum');
+      entry.nearMinimum = this.countValuesNear(i, 'minimum');
     }
     
     this.accumulator.population = this.archonCount;
@@ -87,6 +97,19 @@ Rob.Report.prototype = {
   
       console.log("\n\n\nReport for day " + dayNumber + " -- Population " + j.population + ", " +
                   "Births: " + Rob.globals.dailyBirthCounter + ", Deaths: " + Rob.globals.dailyDeathCounter + "\n");
+                  
+      console.log("\n");
+      console.log(
+        rPad(lPad("Gene", 9), 19) +
+        rPad(lPad("Avg", 7), 10) +
+        rPad(lPad("±10%", 6), 5) +
+        rPad(lPad("Min", 8), 10) +
+        rPad(lPad("±10%", 8), 5) +
+        rPad(lPad("Med", 8), 10) +
+        rPad(lPad("±10%", 8), 5) +
+        rPad(lPad("Max", 8), 10) +
+        rPad(lPad("±10%", 8), 5)
+      );
   
       for(var k in keys) {
         var propertyName = keys[k];
@@ -95,8 +118,13 @@ Rob.Report.prototype = {
         if(propertyName === 'embryoThresholdMultiplier') { propertyName = 'embryoThreshold'; }
     
         if(propertyName !== 'population') {
-          console.log(rPad(propertyName, 20) + " -- average: " + lPad(entry.average.toFixed(4), 10) + ' / ' + lPad(entry.nearAverage, 2) +
-                      ", median: " + lPad(entry.median.toFixed(4), 10) + ' / ' + lPad(entry.nearMedian, 2));
+          console.log(
+            rPad(propertyName, 20) +
+            rPad(lPad(entry.average.toFixed(4), 9), 0) + rPad(lPad(entry.nearAverage, 5), 0) +
+            rPad(lPad(entry.minimum.toFixed(4), 12), 0) + rPad(lPad(entry.nearMinimum, 6), 0) +
+            rPad(lPad(entry.median.toFixed (4), 12), 0) + rPad(lPad(entry.nearMedian,  6), 0) +
+            rPad(lPad(entry.maximum.toFixed(4), 12), 0) + rPad(lPad(entry.nearMaximum, 6), 0)
+          );
         }
       }
     }
