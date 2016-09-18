@@ -114,4 +114,11 @@ if(typeof window === "undefined") {
   module.exports = Rob;
 } else {
   window.onload = function() { Rob.go(runWhichState); };
+  window.onerror = function(message, source, lineno, colno, error) {
+    console.log(message);
+    console.log(source);
+    console.log('Line', lineno, 'Column', colno);
+    console.log(error);
+    debugger;
+  };
 }
