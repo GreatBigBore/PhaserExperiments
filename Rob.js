@@ -37,7 +37,9 @@ Rob = {
     standardBabyMass: 0.5,          // Grams
     temperatureLo: -1000,
     temperatureHi: 1000,
-    worldBorder: 2                // Make room for our wall sprites
+    worldBorder: 2,                // Make room for our wall sprites
+    dailyBirthCounter: 0,
+    dailyDeathCounter: 0
   },
 
   clamp: function(value, lo, hi) {
@@ -50,7 +52,7 @@ Rob = {
     game = new Phaser.Game(600, 600, Phaser.CANVAS);
 
     var states = [
-      'Spreader'
+      'Spreader', 'Extinction'
     ];
 
     for(var i in states) {
@@ -81,6 +83,7 @@ Rob = {
     // For now I'll have them die when their mass gets down to 0.1g;
     // by default, until mutations set in, the birth mass is 0.5g
     Rob.globals.archonMassRange = new Rob.Range(0.25, 10);
+    Rob.globals.tideRange = new Rob.Range(1.5, 1);
     Rob.globals.archonSizeRange = new Rob.Range(0.07, 0.125);
     Rob.globals.standardArchonTolerableTempRange = new Rob.Range(-500, 500);
     Rob.globals.archonColorRange = new Rob.Range(1, 255);
