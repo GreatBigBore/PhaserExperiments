@@ -75,7 +75,6 @@ Rob.Temper.prototype.getTempVector = function() {
 
   this.tempVector.set(0, 1);
   this.tempVector.scalarMultiply(e.signedDelta);
-  this.tempVector.x = Rob.integerInRange(-this.archon.sensorWidth, this.archon.sensorWidth);
   
   return this.tempVector;
 };

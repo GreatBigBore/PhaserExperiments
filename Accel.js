@@ -34,12 +34,13 @@ Rob.Accel.prototype = {
   setTarget: function(target) {
     this.target.set(target);
     this.maneuverStamp = this.frameCount;
+
     this.currentSpeed = this.archon.maxMVelocity;
-    
-    // We don't use this for anything at the moment,
-    // just setting it along with current speed for
-    // anal tidyness purposes
     this.currentAcceleration = this.archon.maxMAcceleration;
+    if(this.archon.mover.feeding) {
+      this.currentSpeed *= this.archon.feedingSpeedDamper;
+      this.currentAcceleration *= this.archon.feedingAccelerationDamper;
+    }
 
     this.maneuverComplete = false;
     this.setNewVelocity();
@@ -78,7 +79,7 @@ Rob.Accel.prototype = {
 
     this.archon.velocity.set(newVelocity);
 
-    this.currentAcceleration = bestDeltaM;
+    this.currentAcceleration = bestDeltaV.getMagnitude();
     this.currentSpeed = newVelocity.getMagnitude();
   },
 
@@ -86,6 +87,7 @@ Rob.Accel.prototype = {
     this.frameCount = frameCount; // Need this for setting maneuver timestamps
     
     if(this.frameCount > (this.maneuverStamp + this.maneuverTimeout)) {
+      this.maneuverComplete = true;
       this.currentSpeed *= 0.99;
     }
 
@@ -93,20 +95,6 @@ Rob.Accel.prototype = {
       !this.maneuverComplete && this.needUpdate &&
       this.frameCount > this.maneuverAdjustStamp + this.damper) {
       this.setNewVelocity();
-    }
-
-    if(this.maneuverComplete) {
-      this.archon.velocity.scalarMultiply(0.9);
-      if(this.archon.velocity.getMagnitude() < this.maxSpeed / 50) {
-        this.velocity.set(0, 0);
-      }
-    } else {
-      // If we're close enough to the target, or we've slowed
-      // down a lot due to the maneuver taking too long, consider
-      // the maneuver done and just stop
-      if(this.target.getDistanceTo(this.archon.position) < 20 || this.currentSpeed < this.maxSpeed / 50) {
-        this.maneuverComplete = true;
-      }
     }
   }
 };

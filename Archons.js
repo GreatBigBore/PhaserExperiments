@@ -27,7 +27,7 @@ Rob.Archons = function() {
 };
 
 Rob.Archons.prototype.getUniqueID = function() {
-  return this.uniqueID++;
+  return this.archonUniqueID++;
 };
 
 Rob.Archons.prototype.makeArchonGetters = function() {

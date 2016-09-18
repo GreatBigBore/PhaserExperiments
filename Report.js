@@ -116,6 +116,7 @@ Rob.Report.prototype = {
         var entry = j[propertyName];
         
         if(propertyName === 'embryoThresholdMultiplier') { propertyName = 'embryoThreshold'; }
+        if(propertyName === 'feedingAccelerationDamper') { propertyName = 'feedingAccDamper'; }
     
         if(propertyName !== 'population') {
           console.log(
