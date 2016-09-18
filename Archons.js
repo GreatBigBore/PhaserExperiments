@@ -63,7 +63,7 @@ Rob.Archons.prototype.makeArchonGetters = function() {
         function(propertyName) {
           return {
             get: function() { return this.genome[propertyName].value; } 
-          }
+          };
         }
       )(i));
       break;
