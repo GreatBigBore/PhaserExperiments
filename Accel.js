@@ -34,12 +34,12 @@ Rob.Accel.prototype = {
   setTarget: function(target) {
     this.target.set(target);
     this.maneuverStamp = this.frameCount;
-    this.currentSpeed = Rob.globals.maxSpeed;
+    this.currentSpeed = this.archon.maxMVelocity;
     
     // We don't use this for anything at the moment,
     // just setting it along with current speed for
     // anal tidyness purposes
-    this.currentAcceleration = Rob.globals.maxAcceleration;
+    this.currentAcceleration = this.archon.maxMAcceleration;
 
     this.maneuverComplete = false;
     this.setNewVelocity();
