@@ -1,6 +1,8 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
+/* global game */
+
 "use strict";
 
 var Rob = Rob || {};
@@ -14,27 +16,13 @@ Rob.Report = function(genePool) {
 
 Rob.Report.prototype = {
   
-  countColorsNear: function(colorName, whichField) {
-    var count = 0;
-    var valueToCheck = this.accumulator.color[colorName][whichField];
-    var closeEnough = Math.abs(valueToCheck) / 10;
-    
-    this.genePool.forEachAlive(function(p) {
-      if(Math.abs(valueToCheck - p.archon.color[colorName]) <= closeEnough) {
-        count++;
-      }
-    });
-    
-    return count;
-  },
-  
   countValuesNear: function(propertyName, whichField) {
     var count = 0;
     var valueToCheck = this.accumulator[propertyName][whichField];
     var closeEnough = Math.abs(valueToCheck / 10);
     
     this.genePool.forEachAlive(function(p) {
-      if(Math.abs(valueToCheck - p.archon.propertyName) <= closeEnough) {
+      if(Math.abs(valueToCheck - p.archon[propertyName]) <= closeEnough) {
         count++;
       }
     });
@@ -47,7 +35,6 @@ Rob.Report.prototype = {
   },
 
   getJson: function() {
-    return;
     this.accumulator = {};
     this.archonCount = 0;
 
@@ -55,29 +42,11 @@ Rob.Report.prototype = {
     
     this.genePool.forEachAlive(function(p) {
       for(i in Rob.Genomer.primordialGenome) {
-        var value = p.archon[i];
-        
-        if(this.isReportable(value) || i === 'color') {
+        if(i !== 'color') {
+          var value = p.archon[i];
+
           if(this.accumulator[i] === undefined) {
-            if(i === 'color') {
-              this.accumulator[i] = {
-                r: { all: [], accumulated: 0, average: 0, nearAverage: 0, median: 0, nearMedian: 0 },
-                g: { all: [], accumulated: 0, average: 0, nearAverage: 0, median: 0, nearMedian: 0 },
-                b: { all: [], accumulated: 0, average: 0, nearAverage: 0, median: 0, nearMedian: 0 }
-              };
-            } else {
-              this.accumulator[i] = { all: [], accumulated: 0, average: 0, nearAverage: 0, median: 0, nearMedian: 0 };
-            }
-          }
-          
-          if(i === 'color') {
-            this.accumulator.color.r.accumulated += value.r;
-            this.accumulator.color.g.accumulated += value.g;
-            this.accumulator.color.b.accumulated += value.b;
-            
-            this.accumulator.color.r.all.push(value.r);
-            this.accumulator.color.g.all.push(value.g);
-            this.accumulator.color.b.all.push(value.b);
+            this.accumulator[i] = { all: [value], accumulated: value, average: 0, nearAverage: 0, median: 0, nearMedian: 0 };
           } else {
             this.accumulator[i].accumulated += value;
             this.accumulator[i].all.push(value);
@@ -91,29 +60,11 @@ Rob.Report.prototype = {
     for(i in this.accumulator) {
       var entry = this.accumulator[i];
       
-      if(i === 'color') {
-        entry.r.average = entry.r.accumulated / this.archonCount;
-        entry.g.average = entry.g.accumulated / this.archonCount;
-        entry.b.average = entry.b.accumulated / this.archonCount;
-        
-        entry.r.median = getMedian(entry.r.all);
-        entry.g.median = getMedian(entry.g.all);
-        entry.b.median = getMedian(entry.b.all);
-        
-        entry.r.nearAverage = this.countColorsNear('r', 'average');
-        entry.g.nearAverage = this.countColorsNear('g', 'average');
-        entry.b.nearAverage = this.countColorsNear('b', 'average');
-        
-        entry.r.nearMedian = this.countColorsNear('r', 'median');
-        entry.g.nearMedian = this.countColorsNear('g', 'median');
-        entry.b.nearMedian = this.countColorsNear('b', 'median');
-      } else {
-        entry.average = entry.accumulated / this.archonCount;
-        entry.median = getMedian(entry.all);
+      entry.average = entry.accumulated / this.archonCount;
+      entry.median = getMedian(entry.all);
 
-        entry.nearAverage = this.countValuesNear(i, 'average');
-        entry.nearMedian = this.countValuesNear(i, 'median');
-      }
+      entry.nearAverage = this.countValuesNear(i, 'average');
+      entry.nearMedian = this.countValuesNear(i, 'median');
     }
     
     this.accumulator.population = this.archonCount;
@@ -126,28 +77,31 @@ Rob.Report.prototype = {
   },
   
   reportAsText: function(dayNumber) {
-    return;
     var j = this.getJson();
     
     if(this.archonCount === 0) {
-      console.log("They're all dead, you're a terrible person");
+      console.log("They're all dead, and you're a terrible person");
+      game.state.start('Extinction');
     } else {
         var keys = Object.keys(j).sort();
   
-      console.log("\n\n\nReport for day " + dayNumber + " -- Population " + j.population + "\n");
+      console.log("\n\n\nReport for day " + dayNumber + " -- Population " + j.population + ", " +
+                  "Births: " + Rob.globals.dailyBirthCounter + ", Deaths: " + Rob.globals.dailyDeathCounter + "\n");
   
       for(var k in keys) {
         var propertyName = keys[k];
         var entry = j[propertyName];
+        
+        if(propertyName === 'embryoThresholdMultiplier') { propertyName = 'embryoThreshold'; }
     
-        if(propertyName !== 'color' && propertyName !== 'population') {
+        if(propertyName !== 'population') {
           console.log(rPad(propertyName, 20) + " -- average: " + lPad(entry.average.toFixed(4), 10) + ' / ' + lPad(entry.nearAverage, 2) +
                       ", median: " + lPad(entry.median.toFixed(4), 10) + ' / ' + lPad(entry.nearMedian, 2));
         }
       }
-  
-      console.log('\nAverage color: 0x' + hexPad(Math.floor(j.color.r.average)) + hexPad(Math.floor(j.color.g.average)) + hexPad(Math.floor(j.color.b.average)));
     }
+    
+    Rob.globals.dailyBirthCounter = 0; Rob.globals.dailyDeathCounter = 0;
   }
 
 };
@@ -166,16 +120,6 @@ function lPad(value, length) {
   }
   
   return value;
-}
-
-function hexPad(value) {
-  var h = value.toString(16);
-  
-  if(h.length === 1) {
-    h = '0' + h;
-  }
-  
-  return h;
 }
 
 function getMedian(values) {
