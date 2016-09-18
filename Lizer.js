@@ -191,10 +191,10 @@ Rob.Lizer.prototype.metabolize = function() {
 };
 
 Rob.Lizer.prototype.setButtonColor = function(temp) {
-	var tempDelta = temp - this.optimalTemp;
-	tempDelta = Rob.clamp(tempDelta, this.optimalLoTemp, this.optimalHiTemp);
+	var tempDelta = temp - this.archon.optimalTemp;
+	tempDelta = Rob.clamp(tempDelta, this.archon.optimalLoTemp, this.archon.optimalHiTemp);
 	
-	var hue = Rob.globals.buttonHueRange.convertPoint(tempDelta, this.optimalTempRange);
+	var hue = Rob.globals.buttonHueRange.convertPoint(tempDelta, this.archon.optimalTempRange);
 	var hsl = 'hsl(' + Math.floor(hue) + ', 100%, 50%)';
 	var rgb = Rob.tinycolor(hsl).toHex();
 	var tint = parseInt(rgb, 16);
