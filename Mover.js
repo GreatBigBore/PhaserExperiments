@@ -112,13 +112,6 @@ Rob.Mover.prototype = {
           // Hopefully this will reduce the jitter at the edges
           this.noNewTargetUntil += this.archon.targetChangeDelay / 2;
           this.jitterReductionActive = true;
-          
-          if(finalVector.x > 600 || finalVector.x < 0) {
-            finalVector.x *= -0.5;
-          }
-          if(finalVector.y > 600 || finalVector.y < 0) {
-            finalVector.y *= -0.5;
-          }
         }
       }
 
