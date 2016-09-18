@@ -5,18 +5,12 @@
 
 "use strict";
 
-Rob.Lizer = function() {
+Rob.Lizer = function(archon) {
+  this.archon = archon;
+  
   this.mannaNutritionRange =
   	new Rob.Range(Rob.globals.caloriesPerMannaMorsel, 3 * Rob.globals.caloriesPerMannaMorsel);
   };
-
-Rob.Lizer.prototype.init = function() {
-};
-
-Rob.Lizer.prototype.ready = function(archon) {
-  this.archon = archon;
-  this.organs = Object.assign({}, archon.organs);
-};
 
 Rob.Lizer.prototype.doLog = function(id, interval) {
   return this.archon.uniqueID === id && this.frameCount % interval === 0;
@@ -25,8 +19,8 @@ Rob.Lizer.prototype.doLog = function(id, interval) {
 Rob.Lizer.prototype.eat = function(sprite, foodParticle/*, caloriesPerMannaMorsel_which_we_are_not_using_why*/) {
   // Once we've caught the food, tell the mover
   // and the accel that we're ready to move again
-  this.archon.organs.mover.noNewTargetUntil = 0;
-  this.archon.organs.accel.maneuverComplete = true;
+  this.archon.mover.noNewTargetUntil = 0;
+  this.archon.accel.maneuverComplete = true;
   
   foodParticle.kill();
   
@@ -74,7 +68,7 @@ Rob.Lizer.prototype.getMass = function() {
 };
 
 Rob.Lizer.prototype.getMotionCost = function() {
-  var motion = this.organs.accel.getMotion();
+  var motion = this.archon.accel.getMotion();
   var c = 0;
   
 	c += motion.mVelocity * Rob.globals.lizerCostPerSpeed;
@@ -117,7 +111,8 @@ Rob.Lizer.prototype.getTempCost = function(temp) {
   return c + d * e;
 };
 
-Rob.Lizer.prototype.launch = function() {
+Rob.Lizer.prototype.launch = function(archon) {
+  this.archon = archon;
 	this.expirationDate = this.lifetime + this.archon.frameCount;
 	this.adultCalorieBudget = 0;
 	this.babyCalorieBudget = 0;

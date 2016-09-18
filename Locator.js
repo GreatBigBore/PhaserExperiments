@@ -32,15 +32,8 @@ Rob.Locator.prototype = {
     return t.vector;
   },
   
-  init: function() {},
-  
-  launch: function() {},
-  
-  tick: function(/*frameCount*/) {},
-  
-  ready: function(archon) {
+  launch: function(archon) {
     this.archon = archon;
-    this.organs = Object.assign({}, archon.organs);
 
     // We don't use this; the mover does, after it
     // gets our vector. The highest value food is that closest to us

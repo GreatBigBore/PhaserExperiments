@@ -27,16 +27,10 @@ Rob.Accel.prototype = {
   
   getMotion: function() { return { mVelocity: this.currentSpeed, mAcceleration: this.currentAcceleration }; },
   
-  init: function() {
-  },
-  
-  launch: function() {},
-  
-  ready: function(archon) {
+  launch: function(archon) {
     this.archon = archon;
-    this.organs = Object.assign({}, archon.organs);
   },
-
+  
   setTarget: function(target) {
     this.target.set(target);
     this.maneuverStamp = this.frameCount;

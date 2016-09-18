@@ -22,23 +22,16 @@ Rob.Mover = function() {
 Rob.Mover.prototype = {
   
   getTempVector: function() {
-    return this.archon.organs.temper.getTempVector();
+    return this.archon.temper.getTempVector();
   },
   
   getTasteVector: function() {
-    return this.archon.organs.locator.getSenseVector('taste');
+    return this.archon.locator.getSenseVector('taste');
   },
   
-  init: function() {
-  },
-  
-  launch: function() {
-    this.noNewTargetUntil = this.archon.targetChangeDelay;
-  },
-  
-  ready: function(archon) {
+  launch: function(archon) {
     this.archon = archon;
-    this.organs = Object.assign({}, archon.organs);
+    this.noNewTargetUntil = this.archon.targetChangeDelay;
   },
   
   tick: function(frameCount) {
@@ -57,7 +50,7 @@ Rob.Mover.prototype = {
       }
     
       if(m > 0) {
-        mTaste = Rob.globals.zeroToOneRange.convertPoint(m, this.archon.organs.locator.foodDistanceRange);
+        mTaste = Rob.globals.zeroToOneRange.convertPoint(m, this.archon.locator.foodDistanceRange);
         tasteVector.scaleTo(mTaste);
         
         // If there's any food, don't let my goofy random
@@ -67,7 +60,7 @@ Rob.Mover.prototype = {
       }
       
       m = tempVector.getMagnitude();
-      mTemp = Rob.globals.zeroToOneRange.convertPoint(m, this.archon.organs.temper.tempRange);
+      mTemp = Rob.globals.zeroToOneRange.convertPoint(m, this.archon.temper.tempRange);
       tempVector.scaleTo(mTemp);
     
       if(this.archon.uniqueID === 0) {
@@ -76,7 +69,7 @@ Rob.Mover.prototype = {
         roblog('target', 'position', this.archon.position.x, this.archon.position.y);
       }
 
-      if(this.archon.organs.temper.howUncomfortableAmI(mTemp) > this.archon.organs.lizer.howHungryAmI(mTaste)) {
+      if(this.archon.temper.howUncomfortableAmI(mTemp) > this.archon.lizer.howHungryAmI(mTaste)) {
         tempVector.scalarMultiply(this.archon.sensorWidth);
         tempVector.add(this.archon.position);
      
@@ -84,7 +77,7 @@ Rob.Mover.prototype = {
           roblog('target', 'temp set', tempVector.x, tempVector.y);
         }
         
-        this.archon.organs.accel.setTarget(tempVector);
+        this.archon.accel.setTarget(tempVector);
       } else {
         tasteVector.scalarMultiply(this.archon.sensorWidth);
         tasteVector.add(this.archon.position);
@@ -92,12 +85,12 @@ Rob.Mover.prototype = {
         if(this.archon.uniqueID === 0) {
           roblog('target', 'taste set', tasteVector.x, tasteVector.y);
         }
-        this.archon.organs.accel.setTarget(tasteVector);
+        this.archon.accel.setTarget(tasteVector);
       }
       
       this.noNewTargetUntil = frameCount + this.archon.targetChangeDelay;
     
-      this.archon.organs.locator.reset();
+      this.archon.locator.reset();
     }
   }
   

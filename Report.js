@@ -47,13 +47,14 @@ Rob.Report.prototype = {
   },
 
   getJson: function() {
+    return;
     this.accumulator = {};
     this.archonCount = 0;
 
     var i = null;
     
     this.genePool.forEachAlive(function(p) {
-      for(i in p.archon.organs.genomer.primordialGenome) {
+      for(i in Rob.Genomer.primordialGenome) {
         var value = p.archon[i];
         
         if(this.isReportable(value) || i === 'color') {
@@ -125,6 +126,7 @@ Rob.Report.prototype = {
   },
   
   reportAsText: function(dayNumber) {
+    return;
     var j = this.getJson();
     
     if(this.archonCount === 0) {

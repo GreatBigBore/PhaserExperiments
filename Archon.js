@@ -26,52 +26,52 @@ if(typeof window === "undefined") {
 // Have to delay creation of the prototype because it needs XY,
 // which doesn't exist until later, when XY.js gets loaded
 var generateArchonoidPrototype = function() { 
-  Rob.Archonoid = function(archonite) { this.archonite = archonite; Rob.XY.call(this); };
+  if(Rob.Archonoid === undefined) {
+    Rob.Archonoid = function(archonite) { this.archonite = archonite; Rob.XY.call(this); };
 
-  Rob.Archonoid.prototype = Object.create(Rob.XY.prototype);
-  Rob.Archonoid.prototype.constructor = Rob.Archonoid;
+    Rob.Archonoid.prototype = Object.create(Rob.XY.prototype);
+    Rob.Archonoid.prototype.constructor = Rob.Archonoid;
 
-  Object.defineProperty(Rob.Archonoid.prototype, 'x', {
-    get: function x() { return this.archonite.x; },
-    set: function x(x) { this.archonite.x = x; }
-  });
+    Object.defineProperty(Rob.Archonoid.prototype, 'x', {
+      get: function x() { return this.archonite.x; },
+      set: function x(x) { this.archonite.x = x; }
+    });
 
-  Object.defineProperty(Rob.Archonoid.prototype, 'y', {
-    get: function y() { return this.archonite.y; },
-    set: function y(y) { this.archonite.y = y; }
-  });
+    Object.defineProperty(Rob.Archonoid.prototype, 'y', {
+      get: function y() { return this.archonite.y; },
+      set: function y(y) { this.archonite.y = y; }
+    });
+  }
 };
 
-Rob.Archon = function(sprite, button, sensor, parentArchon) {
-  this.uniqueID = -1; // Remember we need to incorporate before being usable
-  this.sprite = sprite;
-  this.button = button;
-  this.sensor = sensor;
+Rob.Archon = function(god, phaseron) {
+  this.sprite = phaseron;
+  this.button = phaseron.button;
+  this.sensor = phaseron.sensor;  this.sensor.archon = this;
+  this.god = god;
+  
+  var p = phaseron, b = p.button, s = p.sensor;
 
-	sensor.archon = this;	// So we can hook back from sensors too
+	p.anchor.setTo(0.5, 0.5); p.alpha = 1.0; p.tint = 0x00FF00; p.scale.setTo(0.07, 0.07);
+	b.anchor.setTo(0.5, 0.5);	b.alpha = 1.0; b.tint = 0;        b.scale.setTo(0.25, 0.25);
+	s.anchor.setTo(0.5, 0.5); s.alpha = 0.0; s.tint = 0x0000FF;  // s scale set in launch
 
-	sprite.anchor.setTo(0.5, 0.5); sprite.alpha = 1.0; sprite.tint = 0x00FF00; sprite.scale.setTo(0.07, 0.07);
-	button.anchor.setTo(0.5, 0.5);	button.alpha = 1.0; button.tint = 0; button.scale.setTo(0.25, 0.25);
-	sensor.anchor.setTo(0.5, 0.5); sensor.alpha = 0.0; sensor.tint = 0x0000FF;  // Sensor scale set in launch
-
-	sprite.body.collideWorldBounds = true;
-	sprite.inputEnabled = true;
-	sprite.input.enableDrag();
+	p.body.collideWorldBounds = true; p.inputEnabled = true; p.input.enableDrag();
   
   this.activatePhysicsBodies();
   
-  generateArchonoidPrototype();
+  generateArchonoidPrototype(); // This happens only once
   
-  this.position = new Rob.Archonoid(this.sprite);
-  this.velocity = new Rob.Archonoid(this.sprite.body.velocity);
-
-  this.organs = { genomer: new Rob.Genomer(this) };
+  this.position = new Rob.Archonoid(p);
+  this.velocity = new Rob.Archonoid(p.body.velocity);
   
-  var parentArchonGenome = null;
-  if(parentArchon !== undefined) { if(parentArchon.genome !== undefined) { parentArchonGenome = parentArchon.genome; }}
-
-  this.organs.genomer.genomifyChildArchon(parentArchonGenome);
-	this.stopped = false;
+  Rob.Genomer.genomifyMe(this); // No inheritance here; just getting a skeleton genome
+  
+  this.accel = new Rob.Accel();
+  this.lizer = new Rob.Lizer();
+  this.locator = new Rob.Locator();
+  this.mover = new Rob.Mover();
+  this.temper = new Rob.Temper(game.width / 2);
 };
 
 Rob.Archon.prototype.activatePhysicsBodies = function() {
@@ -94,36 +94,8 @@ Rob.Archon.prototype.activatePhysicsBodies = function() {
 	this.sensor.body.setCircle(this.sensorRadius);
 };
 
-Rob.Archon.prototype.breed = function(parent, offspringMass) {
-  this.god.breed(parent, offspringMass);
-};
-
-Rob.Archon.prototype.fetch = function(parentPhaseron, newUniqueID) {
-	if(this.uniqueID === -1) {
-    // Final setup before we can launch into the
-    // world for the first time
-		this.readyForLaunch = true;
-    
-    this.organs.accel = new Rob.Accel();
-    this.organs.lizer = new Rob.Lizer();
-    this.organs.locator = new Rob.Locator();
-    this.organs.mover = new Rob.Mover();
-    this.organs.parasite = new Rob.Parasite();
-    this.organs.temper = new Rob.Temper(game.width / 2);
-    
-    for(var i in this.organs) {
-      this.organs[i].ready(this);
-    }
-	}
-  
-  this.sprite.tint = this.color;
-
-	this.uniqueID = newUniqueID;
-  if(this.uniqueID === 0) {
-    this.sprite.tint = 0x00FFFF;
-  }
-  
-  return this;
+Rob.Archon.prototype.breed = function() {
+  this.god.breed(this.myParentArchon);
 };
 
 Rob.Archon.prototype.getPosition = function() {
@@ -138,14 +110,31 @@ Rob.Archon.prototype.getVelocity = function() {
   return this.velocity;
 };
 
-Rob.Archon.prototype.launch = function() {
-  this.frameCount = Rob.integerInRange(0, 60);
+Rob.Archon.prototype.launch = function(myParentArchon) {
+  Rob.Genomer.inherit(this, myParentArchon);
   
-  for(var i in this.organs) {
-    this.organs[i].launch();
+  this.myParentArchon = myParentArchon;
+  this.frameCount = Rob.integerInRange(0, 60);
+  this.sprite.tint = this.color;
+
+	this.uniqueID = this.god.getUniqueID();
+  if(this.uniqueID === 0) {
+    this.sprite.tint = 0x00FFFF;
   }
   
   this.sensor.scale.setTo(this.sensorScale, this.sensorScale);  
+
+  this.accel.launch(this);
+  this.lizer.launch(this);
+  this.locator.launch(this);
+  this.temper.launch(this);
+  this.mover.launch(this);
+  
+  if(myParentArchon === undefined) {
+    this.position.set(Rob.integerInRange(20, game.width - 20), Rob.integerInRange(20, game.height - 20));
+  } else {
+    this.position.set(myParentArchon.position);
+  }
 
 	this.sprite.revive(); this.button.revive(); this.sensor.revive();
 };
@@ -180,9 +169,9 @@ Rob.Archon.prototype.tick = function() {
   this.sensor.x = this.sprite.x; // So the sensor will stay attached
   this.sensor.y = this.sprite.y; // So the sensor will stay attached
   
-  for(var i in this.organs) {
-    this.organs[i].tick(this.frameCount);
-  }
+  this.accel.tick(this.frameCount);
+  this.lizer.tick(this.frameCount);
+  this.mover.tick(this.frameCount);
 };
 
 })(Rob);

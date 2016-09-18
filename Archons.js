@@ -26,12 +26,12 @@ Rob.Archons = function() {
   Rob.globals.creation = false;
 };
 
+Rob.Archons.prototype.getUniqueID = function() {
+  return this.uniqueID++;
+};
+
 Rob.Archons.prototype.makeArchonGetters = function() {
-  var keys = Object.keys(Rob.Genomer.prototype.primordialGenome).concat(
-    'optimalHiTemp', 'optimalLoTemp', 'optimalTemp'
-  );
-  
-  for(var i in Rob.Genomer.prototype.primordialGenome) {
+  for(var i in Rob.Genomer.primordialGenome) {
     switch(i) {
     case 'color':
       Object.defineProperty(Rob.Archon.prototype, i, { get: function () {
@@ -126,7 +126,6 @@ Rob.Archons.prototype.makeArchonGetters = function() {
       
     default:
       throw new TypeError("Need a getter for property '" + i + "'");
-      break;
     }
   }
 };
@@ -135,50 +134,15 @@ Rob.Archons.prototype.dailyReport = function(dayNumber) {
   this.report.reportAsText(dayNumber);
 };
 
-Rob.Archons.prototype.breed = function(parent, birthWeight) {
-	if(birthWeight === undefined) { birthWeight = Rob.globals.standardBabyMass; }
-
-	var p = this.phaseronPool.getFirstDead();
-	if(p === null) { throw "No more phaserons in pool"; }
-
-	if(parent === undefined) {
-		p.x = Rob.integerInRange(20, game.width - 20);
-		p.y = Rob.integerInRange(20, game.height - 20);
-	} else {
-		p.x = parent.archon.position.x; p.y = parent.archon.position.y;
-	}
-
-//	var oldID = p.archon.uniqueID;
-
-	var a = p.archon.fetch(parent, this.archonUniqueID++);
-
-	/*var t = "Birth: archon " + a.uniqueID;
-
-	if(parent === undefined) {
-		t += " by miracle";
-	} else {
-	 	t += " sprung from archon " + parent.archon.uniqueID;
-
-		if(oldID === -1) {
-			t += "; first launch";
-		} else {
-			t += "; recycled from " + oldID;
-		}
-	}
-
-	console.log(t);*/
+Rob.Archons.prototype.breed = function(parentArchon) {
+	var phaseron = this.phaseronPool.getFirstDead();
+	if(phaseron === null) { throw "No more phaserons in pool"; }
   
-  var parentArchon = (parent === undefined) ? parent : parent.archon;
-  a.launch(parentArchon, birthWeight);
-};
-
-Rob.Archons.prototype.dumpGenePool = function() {
-	var genePool = [];
-	this.phaseronPool.forEachAlive(function(p) {
-		genePool.push(p.archon.organs.genome);
-	});
-
-	console.log(genePool);
+  if(phaseron.archon === undefined) {
+    phaseron.archon = new Rob.Archon(this, phaseron);
+  }
+  
+  phaseron.archon.launch(parentArchon);
 };
 
 Rob.Archons.prototype.constructPhaserons = function() {
@@ -194,9 +158,7 @@ Rob.Archons.prototype.constructPhaserons = function() {
 		var b = this.buttonPool.getChildAt(0);
 		a.addChild(b);	// b is removed from its pool by this call
     
-		// This is how we retain the soul of the sprite, not
-		// allowing it to run off into limbo
-		a.archon = new Rob.Archon(a, b, s, this);
+    a.sensor = s; a.button = b; s.sprite = a;
 	}, this);
 };
 

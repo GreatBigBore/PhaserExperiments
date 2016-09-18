@@ -44,10 +44,6 @@ Rob = {
     var c = Math.max(value, lo); c = Math.min(c, hi); return c;
   },
 
-  dumpGenePool: function() {
-    Rob.globals.archonia.archons.dumpGenePool();
-  },
-
   go: function(runWhichState) {
     Rob.preGameInit();
 
@@ -94,6 +90,7 @@ Rob = {
     Rob.globals.temperatureRange = new Rob.Range(Rob.globals.temperatureLo, Rob.globals.temperatureHi);
 		Rob.globals.buttonHueRange = new Rob.Range(240, 0);	// Blue (240) is cold, Red (0) is hot
     Rob.globals.normalZeroCenterRange = new Rob.Range(-0.5, 0.5);
+    Rob.globals.testTemperatureRange = new Rob.Range(-500, 500);
   },
 
   realInRange: function(lo, hi) {

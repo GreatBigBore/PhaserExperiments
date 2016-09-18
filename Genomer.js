@@ -40,7 +40,7 @@ Rob.Gene.prototype = {
     this.changeRange = newChangeRange;
   },
   
-  mutateScalar: function(value, operation) {
+  mutateScalar: function(value, sizeOfDomain) {
     var probability = this.changeProbability;
     var range = this.changeRange;
   
@@ -57,12 +57,14 @@ Rob.Gene.prototype = {
       }
     }
 
-    if(operation === 'multiply' || operation === undefined) {
+    if(sizeOfDomain === undefined) {
       return Rob.realInRange(
         value * (1 - range / 100), value * (1 + range / 100)
       );
     } else {
-      return Rob.realInRange(value - range, value + range);
+      var r = sizeOfDomain * (1 + range / 100);
+      
+      return Rob.realInRange(value - r, value + r);
     }
   },
   
@@ -92,16 +94,17 @@ Rob.ColorGene.prototype.inherit = function(parentGene) {
   var color = Rob.tinycolor(parentGene.color);
 
   var hsl = color.toHsl();
-  var h = this.mutateScalar(hsl.h, 'add');
-  var s = this.mutateScalar(hsl.s, 'add');
-  var l = this.mutateScalar(hsl.l, 'add');
+  var h = this.mutateScalar(hsl.h, 360);
+  var s = this.mutateScalar(hsl.s, 1);
+  var l = this.mutateScalar(hsl.l, 1);
   
 
   if(h < 0) { h += 360; } h %= 360; // Treat the hue like the wheel it is
-  if(s < 0) { s += 100; } s %= 100;
-  if(l < 0) { l += 100; } l %= 100;
+  if(s < 0) { s += 1; } s %= 1;
+  if(l < 0) { l += 1; } l %= 1;
   
-  this.color = Rob.tinycolor('hsl(' + h + ', ' + s + '%, ' + l + '%)');
+  hsl = 'hsl(' + h + ', ' + (s.toFixed(2) * 100) + '%, ' + (l.toFixed(2) * 100) + '%)';
+  this.color = Rob.tinycolor(hsl);
 };
 
 Rob.ColorGene.prototype.getColorAsDecimal = function() { return parseInt(this.color.toHex(), 16); };
@@ -135,39 +138,25 @@ Rob.Genome.prototype = {
   }
 };
 
-Rob.Genomer = function(archon) {
-  this.archon = archon;
-};
-
-Rob.Genomer.prototype = {
+Rob.Genomer = {
   
-  // This is only for archons that have never been launched. After launch
-  // they will retain their genomes even after they die, so we never have
-  // to do this after the first launch. On recycling, we just reset their
-  // genomes by inheriting from the parent
-  genomifyChildArchon: function(parentGenome) {
-    if(parentGenome === null) { parentGenome = this.primordialGenome; } // For miraculous births at creation
-
-    if(this.archon.genome === undefined) {
-      this.archon.genome = new Rob.Genome(this.archon, parentGenome);
-    }
-    
-    this.archon.genome.inherit(parentGenome);
+  genomifyMe: function(archon) {
+    archon.genome = new Rob.Genome(archon, Rob.Genomer.primordialGenome);
   },
   
-  init: function() {},
-
-  launch: function() {},
-
-  ready: function() {},
-
-  tick: function() {},
+  inherit: function(childArchon, parentArchon) {
+    // We already used the primordial to generate the genome for
+    // the child archon. Now, if no parent archon is specified,
+    // meaning this is a miraculous birth at creation, we're
+    // inheriting from the primordial -- but we're not doing anything 
+    // weird, and it doesn't waste anything; we're not creating new
+    // genes, we're just updating the existing ones, using the
+    // primordial as our starting point
+    if(parentArchon === undefined) { parentArchon = { genome: Rob.Genomer.primordialGenome }; }
+    childArchon.genome.inherit(parentArchon.genome);
+  },
 
   primordialGenome: {
-    // This is the only time we pass values to the constructors.
-    // For all births, we pass nulls and inherit from the parent.
-    // Note that even the initial, miraculous births inherit too;
-    // this object is the only one that creates genes from scratch.
     color: new Rob.ColorGene(Rob.tinycolor('hsl(180, 100%, 50%)')),
     embryoThresholdMultiplier: new Rob.ScalarGene(1.1),
     hungerMultiplier: new Rob.ScalarGene(0.0005),
@@ -180,6 +169,8 @@ Rob.Genomer.prototype = {
     tasteFactor: new Rob.ScalarGene(1),
     tempFactor: new Rob.ScalarGene(1),
     tempRange: new Rob.ScalarGene(400),
+    
+    // dummy entries so the getters will work
     optimalTemp: null,
     optimalHiTemp: null,
     optimalLoTemp: null

@@ -84,20 +84,8 @@ Rob.Temper.prototype.howUncomfortableAmI = function(baseValue) {
   return Math.abs(baseValue * this.archon.tempFactor);
 };
 
-Rob.Temper.prototype.init = function() {
-  
-};
-
-Rob.Temper.prototype.launch = function() {
-};
-
-Rob.Temper.prototype.tick = function(/*frameCount*/) {
-};
-
-Rob.Temper.prototype.ready = function(archon) {
+Rob.Temper.prototype.launch = function(archon) {
   this.archon = archon;
-  
-  this.organs = Object.assign({}, archon.organs);
 
   this.senseLimit = archon.sensorRadius;
   

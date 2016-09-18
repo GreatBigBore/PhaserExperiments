@@ -64,7 +64,7 @@ Rob.Spreader.prototype.debugText = function(text) {
 };
 
 Rob.Spreader.prototype.eat = function(sprite, foodParticle) {
-  sprite.archon.organs.lizer.eat(sprite, foodParticle, Rob.globals.caloriesPerMannaMorsel);
+  sprite.archon.lizer.eat(sprite, foodParticle, Rob.globals.caloriesPerMannaMorsel);
 };
 
 Rob.Spreader.prototype.getTemperature = function(x, y) {
@@ -157,15 +157,15 @@ Rob.Spreader.prototype.report = function(whichSprite) {
   var a = whichSprite.archon;
 
   console.log("\n\n\nArchon " + a.uniqueID);
-  console.log("Mass = " + a.organs.lizer.getMass().toFixed(4));
+  console.log("Mass = " + a.lizer.getMass().toFixed(4));
 
   console.log(
-    "Energy budget - baby fat: " + a.organs.lizer.babyCalorieBudget.toFixed() +
-    ", reserves: " + a.lizer.organs.adultCalorieBudget.toFixed() +
-    ", embryo storage: " + a.organs.lizer.embryoCalorieBudget.toFixed()
+    "Energy budget - baby fat: " + a.lizer.babyCalorieBudget.toFixed() +
+    ", reserves: " + a.lizer.adultCalorieBudget.toFixed() +
+    ", embryo storage: " + a.lizer.embryoCalorieBudget.toFixed()
   );
 
-  var t = a.lizer.organs.expirationDate - a.frameCount;
+  var t = a.lizer.expirationDate - a.frameCount;
   console.log("Life remaining: " + (t / 60).toFixed() + "s (" + t + " ticks)");
 
   console.log("\nDNA:");
@@ -176,7 +176,7 @@ Rob.Spreader.prototype.report = function(whichSprite) {
 
 
 Rob.Spreader.prototype.taste = function(sprite, tastyParticle) {
-  sprite.archon.organs.locator.taste(tastyParticle);
+  sprite.archon.locator.taste(tastyParticle);
 };
 
 Rob.Spreader.prototype.update = function() {

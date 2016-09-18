@@ -11,20 +11,12 @@ Rob.Parasite = function() {
 };
 
 Rob.Parasite.prototype = {
-  init: function() {
+  launch: function(/*archon*/) {
     
   },
   
-  launch: function() {
+  tick: function(/*frameCount*/) {
     
-  },
-  
-  ready: function(archon) {
-    this.archon = archon;
-    this.organs = Object.assign({}, archon.organs);
-  },
-  
-  tick: function() {
   }
 };
 
