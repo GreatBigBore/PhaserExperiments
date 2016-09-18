@@ -173,6 +173,7 @@ Rob.Genomer = {
     tasteFactor: new Rob.ScalarGene(1),
     tempFactor: new Rob.ScalarGene(1),
     tempRange: new Rob.ScalarGene(400),
+    tempRangeDamping: new Rob.ScalarGene(0.5),
     
     // dummy entries so the getters will work
     optimalTemp: null,

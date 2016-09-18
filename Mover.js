@@ -75,6 +75,14 @@ Rob.Mover.prototype = {
       
       if(this.archon.temper.howUncomfortableAmI(mTemp) > this.archon.lizer.howHungryAmI(mTaste)) {
         tempVector.scalarMultiply(this.archon.sensorWidth);
+        
+        // If our genes allow it, slow down when we're close to our
+        // optimal temp, so we don't bounce up and down so much
+        var targetTemp = Rob.getTemperature(tempVector.plus(this.archon.position));
+        if(targetTemp > this.archon.optimalLoTemp && targetTemp < this.archon.optimalHiTemp) {
+          tempVector.scalarMultiply(this.archon.tempRangeDamping);
+        }
+        
         tempVector.add(this.archon.position);
      
         if(this.archon.uniqueID === 0) {
