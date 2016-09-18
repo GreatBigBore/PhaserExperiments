@@ -58,74 +58,15 @@ Rob.Archons.prototype.makeArchonGetters = function() {
       }});
       break;
       
-    case 'embryoThresholdMultiplier':
-      Object.defineProperty(Rob.Archon.prototype, i, { get: function() {
-        return this.genome.embryoThresholdMultiplier.value;
-      }});
-      break;
-        
-    case 'hungerMultiplier':
-      Object.defineProperty(Rob.Archon.prototype, i, { get: function() {
-        return this.genome.hungerMultiplier.value;
-      }});
-      break;    
-    
-    case 'tempFactor':
-      Object.defineProperty(Rob.Archon.prototype, i, { get: function() {
-        return this.genome.tempFactor.value;
-      }});
-      break;
-        
-    case 'tasteFactor':
-      Object.defineProperty(Rob.Archon.prototype, i, { get: function() {
-        return this.genome.tasteFactor.value;
-      }});
-      break;
-
-    case 'targetChangeDelay':
-      Object.defineProperty(Rob.Archon.prototype, i, { get: function() {
-        return this.genome.targetChangeDelay.value;
-      }});
-      break;
-
-    case 'sensorScale':
-      Object.defineProperty(Rob.Archon.prototype, i, { get: function() {
-        return this.genome.sensorScale.value;
-      }});
-      break;
-
-    case 'offspringMass':
-      Object.defineProperty(Rob.Archon.prototype, i, { get: function() {
-        return this.genome.offspringMass.value;
-      }});
-      break;
-
-    case 'optimalMass':
-      Object.defineProperty(Rob.Archon.prototype, i, { get: function() {
-        return this.genome.optimalMass.value;
-      }});
-      break;
-
-    case 'maxVelocityMagnitude':
-      Object.defineProperty(Rob.Archon.prototype, i, { get: function() {
-        return this.genome.maxVelocityMagnitude.value;
-      }});
-      break;  
-
-    case 'maxAcceleration':
-      Object.defineProperty(Rob.Archon.prototype, i, { get: function() {
-        return this.genome.maxAcceleration.value;
-      }});
-      break;
-
-    case 'tempRange':
-      Object.defineProperty(Rob.Archon.prototype, i, { get: function() {
-        return this.genome.tempRange.value;
-      }});
-      break;
-      
     default:
-      throw new TypeError("Need a getter for property '" + i + "'");
+      Object.defineProperty(Rob.Archon.prototype, i, (
+        function(propertyName) {
+          return {
+            get: function() { return this.genome[propertyName].value; } 
+          }
+        }
+      )(i));
+      break;
     }
   }
 };
@@ -143,6 +84,7 @@ Rob.Archons.prototype.breed = function(parentArchon) {
   }
   
   phaseron.archon.launch(parentArchon);
+  Rob.globals.dailyBirthCounter++;
 };
 
 Rob.Archons.prototype.constructPhaserons = function() {
