@@ -24,7 +24,8 @@ Rob = {
     archonia: {},
     babyFatCalorieDensity: 1000,    // Calories per gram of mass
     caloriesPerMannaMorsel: 25,
-    caloriesPerParasiteBite: 100,
+    caloriesGainedPerParasiteBite: 25,
+    caloriesLostPerParasiteBite: 100,
     darknessAlphaHi: 0.3,
     darknessAlphaLo: 0.0,
     embryoCalorieDensity: 5000,    // Very high density fat stored for making babies

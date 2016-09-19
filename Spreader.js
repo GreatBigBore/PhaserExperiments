@@ -70,7 +70,9 @@ Rob.Spreader.prototype.eat = function(sprite, foodParticle) {
 };
 
 Rob.Spreader.prototype.ffAction = function(lhs, rhs) {
-  lhs.archon.lizer.ffAction(rhs);
+  if(lhs.archon.uniqueID !== rhs.archon.uniqueID) {
+    lhs.archon.lizer.ffAction(rhs);
+  }
 };
 
 Rob.Spreader.prototype.getTemperature = function(x, y) {

@@ -118,6 +118,19 @@ Rob.Archon.prototype.getVelocity = function() {
   return this.velocity;
 };
 
+Rob.Archon.prototype.isCloseRelative = function(rhsArchon) {
+  // Let's see how it goes: if we're both part of the miracle
+  // of creation, say we're too closely related to eat each other
+  if(this.myParentArchon === undefined || rhsArchon.myParentArchon === undefined) {
+    return true;
+  } else {
+    return (
+      this.uniqueID === rhsArchon.myParentArchon.uniqueID ||
+      this.myParentArchon.uniqueID === rhsArchon.uniqueID
+    );
+  }
+};
+
 Rob.Archon.prototype.launch = function(myParentArchon) {
   Rob.Genomer.inherit(this, myParentArchon);
   

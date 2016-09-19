@@ -37,6 +37,10 @@ Rob.Lizer.prototype.absorbCalories = function(calories) {
     // if we're not an adult yet
     this.adultCalorieBudget += calories;
   }
+  
+  this.archon.throttle(0, 1, function() {
+    roblog('calories', 'just absorbed', calories);
+  }, this);
 
 	this.archon.setSize(this.getMass());
 }
@@ -56,16 +60,16 @@ Rob.Lizer.prototype.eat = function(foodParticle) {
 };
 
 Rob.Lizer.prototype.ffAction = function(preyHopefully) {
-  // We don't eat our children, although we will eat anyone else, siblings, grandchildren, etc
-  if(
-    preyHopefully.archon.myParentArchon !== undefined &&
-    this.archon.uniqueID !== preyHopefully.archon.myParentArchon.uniqueID
-  ) {
-    if(this.getMass() > preyHopefully.archon.lizer.getMass()) {
+  // We don't eat our children, although we will eat anyone else, siblings, grandchildren, etc.
+  // Note that calories gained or lost per bite are measured in seconds, so we divide
+  // by frames per second
+  if(!this.archon.isCloseRelative(preyHopefully.archon)) {
+    var myMass = this.getMass(), hisMass = preyHopefully.archon.lizer.getMass();
+    if(myMass > hisMass) {
       // You don't get the full benefit of all your prey's lost calories
-      this.absorbCalories(Rob.globals.caloriesPerParasiteBite / 2);
-    } else {
-      this.parasitismCost += Rob.globals.caloriesPerParasiteBite;
+      this.absorbCalories(Rob.globals.caloriesGainedPerParasiteBite / 60);
+    } else if(hisMass > myMass){
+      this.parasitismCost += Rob.globals.caloriesLostPerParasiteBite / 60;
 
       // If my cost is positive, that means I'm being eaten. Tell the locator we're in trouble
       this.archon.locator.sense('ff', preyHopefully);
@@ -74,7 +78,7 @@ Rob.Lizer.prototype.ffAction = function(preyHopefully) {
 };
 
 Rob.Lizer.prototype.howPredatoryAmI = function(baseValue) {
-  this.howHungryAmI(baseValue) * Rob.caloriesPerParasiteBite / Rob.caloriesPerMannaMorsel;
+  this.howHungryAmI(baseValue) * Rob.caloriesGainedPerParasiteBite / Rob.caloriesPerMannaMorsel;
 };
 
 Rob.Lizer.prototype.howHungryAmI = function(baseValue) {
