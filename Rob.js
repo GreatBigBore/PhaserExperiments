@@ -24,6 +24,7 @@ Rob = {
     archonia: {},
     babyFatCalorieDensity: 1000,    // Calories per gram of mass
     caloriesPerMannaMorsel: 25,
+    caloriesPerParasiteBite: 100,
     darknessAlphaHi: 0.3,
     darknessAlphaLo: 0.0,
     embryoCalorieDensity: 5000,    // Very high density fat stored for making babies
@@ -41,7 +42,7 @@ Rob = {
     dailyBirthCounter: 0,
     dailyDeathCounter: 0
   },
-
+  
   clamp: function(value, lo, hi) {
     var c = Math.max(value, lo); c = Math.min(c, hi); return c;
   },
@@ -50,16 +51,11 @@ Rob = {
     Rob.preGameInit();
 
     game = new Phaser.Game(600, 600, Phaser.CANVAS);
+    
+    game.state.add('Spreader', Rob.Spreader, false);
+    game.state.add('Extinction', { create: function() { console.log("They're all dead, and you're a terrible person"); } }, false);
 
-    var states = [
-      'Spreader', 'Extinction'
-    ];
-
-    for(var i in states) {
-      game.state.add(states[i], Rob[states[i]], false);
-    }
-
-    game.state.start(runWhichState);
+    game.state.start('Spreader');
   },
 
   integerInRange: function(lo, hi) {

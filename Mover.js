@@ -20,7 +20,6 @@ Rob.Mover = function() {
 };
 
 Rob.Mover.prototype = {
-  
   getTempVector: function() {
     return this.archon.temper.getTempVector();
   },
@@ -36,6 +35,30 @@ Rob.Mover.prototype = {
     this.feeding = false;
   },
   
+  processMannaVector: function(tasteVector, finalVector) {
+    tasteVector.scalarMultiply(this.archon.sensorWidth);
+    tasteVector.add(this.archon.position);
+    
+    this.feeding = true;
+    finalVector.set(tasteVector);
+  },
+  
+  processTempVector: function(tempVector, finalVector) {
+    tempVector.scalarMultiply(this.archon.sensorWidth);
+    
+    // If our genes allow it, slow down when we're close to our
+    // optimal temp, so we don't bounce up and down so much
+    var targetTemp = Rob.getTemperature(tempVector.plus(this.archon.position));
+    if(targetTemp > this.archon.optimalLoTemp && targetTemp < this.archon.optimalHiTemp) {
+      tempVector.scalarMultiply(this.archon.tempRangeDamping);
+    }
+    
+    tempVector.add(this.archon.position);
+    
+    this.feeding = false;
+    finalVector.set(tempVector);
+  },
+  
   tick: function(frameCount) {
     if(!this.archon.stopped && frameCount > this.noNewTargetUntil) {
       var m = 0, mTemp = 0, mTaste = 0;
@@ -43,65 +66,40 @@ Rob.Mover.prototype = {
       var tempVector = this.getTempVector();
       var tasteVector = this.getTasteVector();
 
-      // Don't count taste if we haven't tasted anything
       m = tasteVector.getMagnitude();
-
-      if(this.archon.uniqueID === 0) {
-        roblog('target', 'taste raw', tasteVector.x, tasteVector.y);
-        roblog('target', 'temp raw', tempVector.x, tempVector.y);
-      }
-    
       if(m > 0) {
         mTaste = Rob.globals.zeroToOneRange.convertPoint(m, this.archon.locator.foodDistanceRange);
         tasteVector.scaleTo(mTaste);
-        
-        // If there's any food, don't let my goofy random
-        // x-coordinate stuff influence the decision by adding
-        // fake magnitude to the temp vector
-        tempVector.x = 0;
       }
       
       m = tempVector.getMagnitude();
-      mTemp = Rob.globals.zeroToOneRange.convertPoint(m, this.archon.temper.tempRange);
-      tempVector.scaleTo(mTemp);
-    
-      if(this.archon.uniqueID === 0) {
-        roblog('target', 'taste 0-1', tasteVector.x, tasteVector.y);
-        roblog('target', 'temp 0-1', tempVector.x, tempVector.y);
-        roblog('target', 'position', this.archon.position.x, this.archon.position.y);
+      if(m > 0) {
+        mTemp = Rob.globals.zeroToOneRange.convertPoint(m, this.archon.temper.tempRange);
+        tempVector.scaleTo(mTemp);
       }
 
-      var finalVector = Rob.XY();
+      var vectorsToCompare = [];
+      vectorsToCompare.push({ name: 'processTempVector', v: tempVector, value: this.archon.temper.howUncomfortableAmI(mTemp) });
+      vectorsToCompare.push({ name: 'processMannaVector', v: tasteVector, value: this.archon.lizer.howHungryAmI(mTaste) });
+
+      var getWinner = function() {
+        var highestValue = null, vName = null, winner = null;
+        for(var i = 0; i < vectorsToCompare.length; i++) {
+          var v = vectorsToCompare[i];
+          
+          if(highestValue === null || Math.abs(v.value) > Math.abs(highestValue)) {
+            highestValue = v.value;
+            winner = i;
+          }
+        }
+        
+        return winner;
+      };
       
-      if(this.archon.temper.howUncomfortableAmI(mTemp) > this.archon.lizer.howHungryAmI(mTaste)) {
-        tempVector.scalarMultiply(this.archon.sensorWidth);
-        
-        // If our genes allow it, slow down when we're close to our
-        // optimal temp, so we don't bounce up and down so much
-        var targetTemp = Rob.getTemperature(tempVector.plus(this.archon.position));
-        if(targetTemp > this.archon.optimalLoTemp && targetTemp < this.archon.optimalHiTemp) {
-          tempVector.scalarMultiply(this.archon.tempRangeDamping);
-        }
-        
-        tempVector.add(this.archon.position);
-     
-        if(this.archon.uniqueID === 0) {
-          roblog('target', 'temp set', tempVector.x, tempVector.y);
-        }
-        
-        this.feeding = false;
-        finalVector.set(tempVector);
-      } else {
-        tasteVector.scalarMultiply(this.archon.sensorWidth);
-        tasteVector.add(this.archon.position);
-        
-        if(this.archon.uniqueID === 0) {
-          roblog('target', 'taste set', tasteVector.x, tasteVector.y);
-        }
-        
-        this.feeding = true;
-        finalVector.set(tasteVector);
-      }
+      var finalVector = Rob.XY();
+      var winner = vectorsToCompare[getWinner()];
+      
+      this[winner.name](winner.v, finalVector);
 
       this.noNewTargetUntil = frameCount + this.archon.targetChangeDelay;
 

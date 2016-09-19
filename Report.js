@@ -90,7 +90,6 @@ Rob.Report.prototype = {
     var j = this.getJson();
     
     if(this.archonCount === 0) {
-      console.log("They're all dead, and you're a terrible person");
       game.state.start('Extinction');
     } else {
         var keys = Object.keys(j).sort();
