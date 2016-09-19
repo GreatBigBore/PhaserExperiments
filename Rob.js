@@ -19,19 +19,21 @@ Rob = {
   debugText: "",
 
   globals: {
-    adultFatCalorieDensity: 250,    // Calories per gram of mass
+    adultFatCalorieDensity: 1000,    // Calories per gram of mass
     archonCount: 15,
     archonia: {},
-    babyFatCalorieDensity: 1000,    // Calories per gram of mass
+    babyFatCalorieDensity: 2500,    // Calories per gram of mass
+    costFactorForGivingBirth: 2,
+    costFactorForBeingBorn: 5,
     caloriesPerMannaMorsel: 25,
     caloriesGainedPerParasiteBite: 25,
     caloriesLostPerParasiteBite: 100,
     darknessAlphaHi: 0.3,
     darknessAlphaLo: 0.0,
     embryoCalorieDensity: 5000,    // Very high density fat stored for making babies
-    lizerCostPerAcceleration: 0.11 / 60,  // Cost of overcoming inertia
+    lizerCostPerAcceleration: 0.2 / 60,  // Cost of overcoming inertia
     lizerCostPerMass: 0.1,          // Mass of 10g costs 1 calorie per tick
-    lizerCostPerSpeed: 0.011 / 60,  // Cost of overcoming friction
+    lizerCostPerSpeed: 0.02 / 60,  // Cost of overcoming friction
     lizerCostPerTemp: 0.01 / 60,    // Diff by 100˚ costs 1 calorie per second
     maxAcceleration: 15,
     maxSpeed: 75,                   // pix/sec

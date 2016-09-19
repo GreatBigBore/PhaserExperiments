@@ -119,12 +119,17 @@ Rob.Archon.prototype.getVelocity = function() {
 };
 
 Rob.Archon.prototype.isCloseRelative = function(rhsArchon) {
-  // Let's see how it goes: if we're both part of the miracle
-  // of creation, say we're too closely related to eat each other
-  if(this.myParentArchon === undefined || rhsArchon.myParentArchon === undefined) {
+  if(this.myParentArchon === undefined && rhsArchon.myParentArchon === undefined) {
+    // If they're both in the miracle generation, tell them not to eat each other
     return true;
   } else {
     return (
+      // If they're not both miraculous, then an eating situation is
+      // possible. If either one is miraculous, either one can eat
+      // the other. If neither is miraculous, then it comes down to
+      // whether one is the parent of the other
+      this.myParentArchon === undefined ||
+      rhsArchon.myParentArchon === undefined ||
       this.uniqueID === rhsArchon.myParentArchon.uniqueID ||
       this.myParentArchon.uniqueID === rhsArchon.uniqueID
     );

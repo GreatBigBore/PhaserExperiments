@@ -10,37 +10,30 @@ Rob.Lizer = function(archon) {
   
   this.mannaNutritionRange =
   	new Rob.Range(Rob.globals.caloriesPerMannaMorsel, 5 * Rob.globals.caloriesPerMannaMorsel);
-  };
-
-Rob.Lizer.prototype.doLog = function(id, interval) {
-  return this.archon.uniqueID === id && this.frameCount % interval === 0;
 };
 
 Rob.Lizer.prototype.absorbCalories = function(calories) {
-  if(this.adultCalorieBudget > this.embryoThreshold) {
-    // Store up for breeding if we have enough reserves already
+
+  if((this.adultCalorieBudget < this.embryoThreshold) || (this.babyCalorieBudget > 0)) {
+
+    // Start building an embry only after we're an adult, and only
+    // after we have sufficient energy reserves for giving birth
+    this.adultCalorieBudget += calories;
+
+  } else {
+
+    // We've reached maturity, and we've built up enough
+    // reserves that we can now start building an embryo
     this.embryoCalorieBudget += calories;
 
-		if(this.embryoCalorieBudget >= this.costForHavingBabies) {
-			this.archon.breed();
-			this.embryoCalorieBudget -= this.costForHavingBabies;
+		if(this.embryoCalorieBudget >= this.birthThreshold) {
+			this.archon.breed();        // And now we can finally have a baby
+    
+			this.embryoCalorieBudget -= this.birthThreshold;
+      this.adultCalorieBudget -= this.costForHavingBabies;
+    }
 
-			var costToAdultCalorieBudget =
-				this.costForHavingBabies - this.embryoCalorieBudget;
-
-			if(costToAdultCalorieBudget < 0) { costToAdultCalorieBudget = 0; }
-
-			this.adultCalorieBudget -= costToAdultCalorieBudget;
-		}
-  } else {
-    // Don't start building if we don't have reserves, or
-    // if we're not an adult yet
-    this.adultCalorieBudget += calories;
   }
-  
-  this.archon.throttle(0, 1, function() {
-    roblog('calories', 'just absorbed', calories);
-  }, this);
 
 	this.archon.setSize(this.getMass());
 }
@@ -83,7 +76,8 @@ Rob.Lizer.prototype.howPredatoryAmI = function(baseValue) {
 
 Rob.Lizer.prototype.howHungryAmI = function(baseValue) {
   var hunger = (
-    (this.embryoThreshold - this.embryoCalorieBudget) * this.archon.hungerMultiplier
+    ((this.birthThreshold - this.embryoCalorieBudget) +
+    (this.embryoThreshold - this.adultCalorieBudget)) * this.archon.hungerMultiplier
   );
   
   return Math.abs(baseValue * this.archon.tasteFactor * hunger);
@@ -143,26 +137,43 @@ Rob.Lizer.prototype.getTempCost = function(temp) {
 
 Rob.Lizer.prototype.launch = function(archon) {
   this.archon = archon;
-  this.lifetime = 0;
-	this.expirationDate = this.lifetime + this.archon.frameCount;
 	this.adultCalorieBudget = 0;
-	this.babyCalorieBudget = 0;
-	this.embryoCalorieBudget = this.archon.offspringMass * Rob.globals.embryoCalorieDensity;
+	this.embryoCalorieBudget = 0;
 	this.accumulatedMetabolismCost = 0;
   this.parasitismCost = 0;
   this.parasitismBenefit = 0;
-
-	this.costForHavingBabies = this.archon.offspringMass * Rob.globals.embryoCalorieDensity;
 		
 	this.optimalTempRange = new Rob.Range(this.archon.optimalLoTemp, this.archon.optimalHiTemp);
 
+  // Right now we aren't using these, as we don't have fixed lifetimes.
+  // Usually someone will eat us, or we'll starve to death, before we
+  // get a chance to grow old
+  this.lifetime = 0;
+	this.expirationDate = this.lifetime + this.archon.frameCount;
+
+  // This is how many calories we start life with
+  if(this.archon.myParentarchon === undefined) {
+    this.babyCalorieBudget = Rob.globals.standardBabyMass * Rob.globals.embryoCalorieDensity;
+  } else {
+    this.babyCalorieBudget = this.archon.myParentArchon.embryoCaloriesForNewBaby / Rob.globals.costFactorForBeingBorn;
+  }
+
+  // This is how many calories are subtracted from our embryo when we give birth.
+  this.embryoCaloriesForNewBaby = this.archon.offspringMass * Rob.globals.embryoCalorieDensity;
+
+  // In addition to the calories I give to my offspring from the
+  // embryo, I also expend a certain amount of energy by giving birth
+	this.costForHavingBabies = this.archon.offspringMass * Rob.globals.adultFatCalorieDensity * Rob.globals.costFactorForGivingBirth;
+
+  // Before I can start building an embryo for offspring, I need
+  // to have at least this many calories in reserve
   this.embryoThreshold = (
-    this.archon.embryoThresholdMultiplier *
-    (
-      (this.archon.offspringMass * Rob.globals.embryoCalorieDensity) +
-      (this.archon.optimalMass * Rob.globals.adultFatCalorieDensity)
-    )
+    this.costForHavingBabies +
+    (this.archon.embryoThresholdMultiplier * this.archon.optimalMass * Rob.globals.adultFatCalorieDensity)
   );
+  
+  // This is how many calories my embryo must contain before it can produce an offspring
+  this.birthThreshold = this.archon.offspringMass * Rob.globals.embryoCalorieDensity;
 
 	this.archon.setSize(this.getMass());
 };
