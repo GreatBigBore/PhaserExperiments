@@ -125,11 +125,12 @@ Rob.Spreader.prototype.handleClick = function(pointer) {
       this.stopped = false; changeState = true;
     }
   } else {
-    if(pointer.x > 550 && pointer.y > 550) {
-      Rob.globals.archonia.archons.geneReport();
-    } else if(pointer.x < 50 && pointer.y > 550) {
+    if(pointer.x < 50 && pointer.y > 550) { // left-corner click to dismiss the histogram
       Rob.pg.clear();
       Rob.pg.tx.setText("");
+    else if(pointer.x > 550 || || pointer.x < 50 || pointer.y > 550 || pointer.y < 50) {
+      // Any other click near the edges advances through the genes
+      Rob.globals.archonia.archons.geneReport();
     } else {
       // We're running normally; a click anywhere stops everyone
       this.stopped = true;

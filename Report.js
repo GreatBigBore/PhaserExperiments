@@ -32,7 +32,7 @@ Rob.Report.prototype = {
   },
   
   drawBar: function(whichBar, height) {
-    var graphWidth = 0.6 * game.width;
+    var graphWidth = 0.4 * game.width;
     var graphLeft = (game.width - graphWidth) / 2;
     var graphBottom = game.height * 0.9;
     var barWidth = graphWidth / 10;
@@ -53,7 +53,7 @@ Rob.Report.prototype = {
     Rob.pg.clear();
     
     var json = this.reportAsJson();
-    var geneNames = Object.keys(json);
+    var geneNames = Object.keys(json).sort();
     
     geneNames.splice(geneNames.indexOf('population'), 1);
     
