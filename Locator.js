@@ -21,6 +21,12 @@ Rob.Locator = function() {
 };
 
 Rob.Locator.prototype = {
+  
+  ffSense: function(rhs) {
+    if(this.archon.uniqueID !== rhs.archon.uniqueID) {
+      this.sense('ff', rhs);
+    }
+  },
 
   getSenseVector: function(sense) {
     var t = this.trackers[sense];
@@ -50,11 +56,24 @@ Rob.Locator.prototype = {
   },
 
   sense: function(sense, sensee) {
-    var t = this.trackers[sense];
+    var t = this.trackers.taste;
     var radius = this.archon.sensorRadius;
     var relativePosition = Rob.XY(sensee).minus(this.archon.position);
     var distance = relativePosition.getMagnitude();
+    
     var value = 2 - (distance / radius);
+    
+    if(sense === 'ff') {
+      // If I'm being pursued, the vector needs to point away
+      // from the pursuer. We'll let the genes decide how
+      // important flight is in relation to our own hunger
+      if(this.archon.lizer.getMass() < sensee.archon.lizer.getMass()) {
+        this.fleeing = true;
+        value *= -1 * this.archon.parasiteFlightFactor;
+      } else {
+        value *= this.archon.parasiteChaseFactor;
+      }
+    }
 
     relativePosition.normalize();
     relativePosition.scalarMultiply(value);
@@ -62,12 +81,17 @@ Rob.Locator.prototype = {
     t.vector.add(relativePosition);
     t.hitCount++;
   
-    var drawDebugLines = false;
+    var drawDebugLines = true;
     if(drawDebugLines) {
       var color = null;
       switch(sense) {
         case 'taste': color = 'cyan'; break;
+        case 'ff': color = 'blue'; break;
         default: throw "Bad sense '" + sense + "'";
+      }
+      
+      if(color === 'blue') {
+        Rob.db.draw(this.archon.position, relativePosition.plus(this.archon.position), color, 1);
       }
     }
   },

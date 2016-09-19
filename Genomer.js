@@ -168,6 +168,8 @@ Rob.Genomer = {
     maxMVelocity: new Rob.ScalarGene(75),
     optimalMass: new Rob.ScalarGene(5),
     offspringMass: new Rob.ScalarGene(0.5),
+    parasiteChaseFactor: new Rob.ScalarGene(1),
+    parasiteFlightFactor: new Rob.ScalarGene(1),
     sensorScale: new Rob.ScalarGene(1),
     targetChangeDelay: new Rob.ScalarGene(5),
     tasteFactor: new Rob.ScalarGene(1),

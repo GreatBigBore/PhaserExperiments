@@ -34,12 +34,12 @@ var generateArchonoidPrototype = function() {
 
     Object.defineProperty(Rob.Archonoid.prototype, 'x', {
       get: function x() { return this.archonite.x; },
-      set: function x(x) { this.archonite.x = x; }
+      set: function x(v) { this.archonite.x = v; }
     });
 
     Object.defineProperty(Rob.Archonoid.prototype, 'y', {
       get: function y() { return this.archonite.y; },
-      set: function y(y) { this.archonite.y = y; }
+      set: function y(v) { this.archonite.y = v; }
     });
   }
 };
@@ -67,11 +67,19 @@ Rob.Archon = function(god, phaseron) {
   
   Rob.Genomer.genomifyMe(this); // No inheritance here; just getting a skeleton genome
   
-  this.accel = new Rob.Accel();
-  this.lizer = new Rob.Lizer();
-  this.locator = new Rob.Locator();
-  this.mover = new Rob.Mover();
-  this.temper = new Rob.Temper(game.width / 2);
+  this.organs = {
+    accel: new Rob.Accel(),
+    lizer: new Rob.Lizer(),
+    locator: new Rob.Locator(),
+    mover: new Rob.Mover(),
+    temper: new Rob.Temper(game.width / 2)
+  };
+  
+  for(var organ in this.organs) {
+    this[organ] = new Proxy(this.organs[organ], {
+      get: function(target, name) { if(name in target) { return target[name]; } else { debugger; } }
+    });
+  }
 };
 
 Rob.Archon.prototype.activatePhysicsBodies = function() {

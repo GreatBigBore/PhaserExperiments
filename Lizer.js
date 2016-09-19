@@ -16,17 +16,7 @@ Rob.Lizer.prototype.doLog = function(id, interval) {
   return this.archon.uniqueID === id && this.frameCount % interval === 0;
 };
 
-Rob.Lizer.prototype.eat = function(sprite, foodParticle/*, caloriesPerMannaMorsel_which_we_are_not_using_why*/) {
-  // Once we've caught the food, tell the mover
-  // and the accel that we're ready to move again
-  this.archon.mover.noNewTargetUntil = 0;
-  this.archon.accel.maneuverComplete = true;
-  
-  foodParticle.kill();
-  
-	var sunStrength = Rob.globals.archonia.sun.getStrength();
-	var calories = this.mannaNutritionRange.convertPoint(sunStrength, Rob.globals.oneToZeroRange);
-  
+Rob.Lizer.prototype.absorbCalories = function(calories) {
   if(this.adultCalorieBudget > this.embryoThreshold) {
     // Store up for breeding if we have enough reserves already
     this.embryoCalorieBudget += calories;
@@ -49,6 +39,42 @@ Rob.Lizer.prototype.eat = function(sprite, foodParticle/*, caloriesPerMannaMorse
   }
 
 	this.archon.setSize(this.getMass());
+}
+
+Rob.Lizer.prototype.eat = function(foodParticle) {
+  // Once we've caught the food, tell the mover
+  // and the accel that we're ready to move again
+  this.archon.mover.noNewTargetUntil = 0;
+  this.archon.accel.maneuverComplete = true;
+  
+  foodParticle.kill();
+  
+	var sunStrength = Rob.globals.archonia.sun.getStrength();
+	var calories = this.mannaNutritionRange.convertPoint(sunStrength, Rob.globals.oneToZeroRange);
+
+  this.absorbCalories(calories);
+};
+
+Rob.Lizer.prototype.ffAction = function(preyHopefully) {
+  // We don't eat our children, although we will eat anyone else, siblings, grandchildren, etc
+  if(
+    preyHopefully.archon.myParentArchon !== undefined &&
+    this.archon.uniqueID !== preyHopefully.archon.myParentArchon.uniqueID
+  ) {
+    if(this.getMass() > preyHopefully.archon.lizer.getMass()) {
+      // You don't get the full benefit of all your prey's lost calories
+      this.absorbCalories(Rob.globals.caloriesPerParasiteBite / 2);
+    } else {
+      this.parasitismCost += Rob.globals.caloriesPerParasiteBite;
+
+      // If my cost is positive, that means I'm being eaten. Tell the locator we're in trouble
+      this.archon.locator.sense('ff', preyHopefully);
+    }
+  }
+};
+
+Rob.Lizer.prototype.howPredatoryAmI = function(baseValue) {
+  this.howHungryAmI(baseValue) * Rob.caloriesPerParasiteBite / Rob.caloriesPerMannaMorsel;
 };
 
 Rob.Lizer.prototype.howHungryAmI = function(baseValue) {
@@ -113,11 +139,14 @@ Rob.Lizer.prototype.getTempCost = function(temp) {
 
 Rob.Lizer.prototype.launch = function(archon) {
   this.archon = archon;
+  this.lifetime = 0;
 	this.expirationDate = this.lifetime + this.archon.frameCount;
 	this.adultCalorieBudget = 0;
 	this.babyCalorieBudget = 0;
 	this.embryoCalorieBudget = this.archon.offspringMass * Rob.globals.embryoCalorieDensity;
 	this.accumulatedMetabolismCost = 0;
+  this.parasitismCost = 0;
+  this.parasitismBenefit = 0;
 
 	this.costForHavingBabies = this.archon.offspringMass * Rob.globals.embryoCalorieDensity;
 		
@@ -144,6 +173,9 @@ Rob.Lizer.prototype.metabolize = function() {
   
   cost += this.getTempCost(temp);
   cost += this.getMotionCost();
+  cost += this.parasitismCost;
+  
+  this.parasitismCost = 0;      // We've taken it into account for this tick
 
 	if(this.babyCalorieBudget > 0) {
 		this.babyCalorieBudget -= cost;
@@ -202,6 +234,8 @@ Rob.Lizer.prototype.setButtonColor = function(temp) {
 };
 
 Rob.Lizer.prototype.tick = function(frameCount) {
+  try {
   this.frameCount = frameCount;
 	this.metabolize();
+} catch(e) {}
 };
