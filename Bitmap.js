@@ -12,16 +12,17 @@ Rob.Bitmap = function(whichBitmap) {
     case 'rectGradient':
     case 'realityGoo':
     case 'wallsGoo':
+    case 'reportBackground':
     this[whichBitmap]();
     break;
     default: throw "No '" + whichBitmap + "' background available";
   }
 
+  this.name = whichBitmap;
   this.cx = this.bm.context;
 
-
   this.txStyle = {
-    font: "12pt Courier", fill: "blue", wordWrap: false,
+    font: "12pt Courier", fill: "white", wordWrap: false,
     align: "left", backgroundColor: null
   };
 
@@ -90,6 +91,17 @@ Rob.Bitmap.prototype.debugBackground = function() {
   game.cache.addBitmapData('debugBackground', this.bm);
 };
 
+Rob.Bitmap.prototype.reportBackground = function() {
+  this.bm = game.add.bitmapData(game.width, game.height);
+  this.cx = this.bm.context;
+
+  this.cx.fillStyle = 'rgba(255, 255, 255, 1)';
+  this.cx.strokeStyle = 'rgba(255, 255, 255, 1)';
+
+  game.add.image(0, 0, this.bm);
+  game.cache.addBitmapData('reportBackground', this.bm);
+};
+
 Rob.Bitmap.prototype.draw = function(xyStart, xyEnd, style, width) {
   if(style === undefined) { style = 'rgb(255, 255, 255)'; }
   if(width === undefined) { width = 1; }
@@ -101,6 +113,15 @@ Rob.Bitmap.prototype.draw = function(xyStart, xyEnd, style, width) {
   this.cx.moveTo(xyStart.x, xyStart.y);
   this.cx.lineTo(xyEnd.x, xyEnd.y);
   this.cx.stroke();
+};
+
+Rob.Bitmap.prototype.drawRectangle = function(left, top, width, height, fillStyle, strokeStyle) {
+  this.cx.fillStyle = fillStyle;
+  this.cx.strokeStyle = strokeStyle;
+  this.cx.lineWidth = 1;
+
+  this.cx.fillRect(left, top, width, height);
+  this.cx.strokeRect(left, top, width, height);
 };
 
 Rob.Bitmap.prototype.rectGradient = function() {
@@ -126,12 +147,22 @@ Rob.Bitmap.prototype.rectGradient = function() {
 };
 
 Rob.Bitmap.prototype.text = function(x, y, text) {
+
+  this.txStyle = {
+    font: "12pt Courier", fill: "white", wordWrap: false,
+    align: "left", backgroundColor: null
+  };
+
+  this.tx.tint = 0xffffff;
+  this.tx.anchor.setTo(0.5, 0.5);
+  this.tx.x = x; this.tx.y = y;
   this.tx.setText(text);
 };
 
 Rob.Bitmap.prototype.tick = function() {
-  this.clear();
+  if(this.name !== 'reportBackground') { this.clear(); }
 };
+  
 
 Rob.Bitmap.prototype.wallsGoo = function() {
   this.bm = game.add.bitmapData(1, 1);

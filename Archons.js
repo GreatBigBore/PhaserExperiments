@@ -75,6 +75,10 @@ Rob.Archons.prototype.dailyReport = function(dayNumber) {
   this.report.reportAsText(dayNumber);
 };
 
+Rob.Archons.prototype.geneReport = function(dayNumber) {
+  this.report.geneReport();
+};
+
 Rob.Archons.prototype.breed = function(parentArchon) {
 	var phaseron = this.phaseronPool.getFirstDead();
 	if(phaseron === null) { throw "No more phaserons in pool"; }

@@ -125,9 +125,16 @@ Rob.Spreader.prototype.handleClick = function(pointer) {
       this.stopped = false; changeState = true;
     }
   } else {
-    // We're running normally; a click anywhere stops everyone
-    this.stopped = true;
-    changeState = true;
+    if(pointer.x > 550 && pointer.y > 550) {
+      Rob.globals.archonia.archons.geneReport();
+    } else if(pointer.x < 50 && pointer.y > 550) {
+      Rob.pg.clear();
+      Rob.pg.tx.setText("");
+    } else {
+      // We're running normally; a click anywhere stops everyone
+      this.stopped = true;
+      changeState = true;
+    }
   }
 
   if(changeState) {
@@ -193,7 +200,7 @@ Rob.Spreader.prototype.update = function() {
   // the sprite and the sensor
   game.physics.arcade.overlap(this.archons.sensorPool, this.mannaGarden.foodGroup, this.taste, null, this);
   game.physics.arcade.overlap(this.archons.phaseronPool, this.mannaGarden.foodGroup, this.eat, null, this);
-
+  
   this.frameCount++;
   
   this.mannaGarden.tick(Rob.globals.archonia.theSun.getStrength());

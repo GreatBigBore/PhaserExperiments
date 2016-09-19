@@ -12,6 +12,7 @@ var Rob = Rob || {};
 Rob.Report = function(genePool) {
   this.genePool = genePool;
   this.accumulator = {};
+  this.indexForHistogram = 0;
 };
 
 Rob.Report.prototype = {
@@ -30,8 +31,63 @@ Rob.Report.prototype = {
     return count;
   },
   
+  drawBar: function(whichBar, height) {
+    var graphWidth = 0.6 * game.width;
+    var graphLeft = (game.width - graphWidth) / 2;
+    var graphBottom = game.height * 0.9;
+    var barWidth = graphWidth / 10;
+    
+    var barLeft = graphLeft + barWidth * whichBar;
+    var barTop = graphBottom - height;
+    
+    Rob.pg.drawRectangle(
+      barLeft, barTop, barWidth, height, 'rgba(200, 200, 0, 0.75)', 'black'
+    );
+  },
+  
   isReportable: function(item) {
     return typeof item === 'number';
+  },
+  
+  geneReport: function() {
+    Rob.pg.clear();
+    
+    var json = this.reportAsJson();
+    var geneNames = Object.keys(json);
+    
+    geneNames.splice(geneNames.indexOf('population'), 1);
+    
+    this.indexForHistogram = (this.indexForHistogram + 1) % geneNames.length;
+    
+    var values = json[geneNames[this.indexForHistogram]].all;
+    
+    values.sort(function(a, b) { return a - b; });
+
+    var lowestValue = values[0];
+    var range = (values[values.length - 1] - values[0]) * 1.1;
+    var barDomain = range / 10;
+    var histogram = Array(10).fill(0);
+
+    for(var i = 0; i < values.length; i++) {
+      var value = values[i];
+    
+      var whichBucket = Math.floor((value - lowestValue) / barDomain);
+      if(whichBucket === 10) { whichBucket = 9; }
+      histogram[whichBucket]++;
+    }
+
+    var heightOfTallestBar = 0;
+    for(var i = 0; i < histogram.length; i++) {
+      if(histogram[i] > heightOfTallestBar) {
+        heightOfTallestBar = histogram[i];
+      }
+    }
+  
+    for(var i = 0; i < histogram.length; i++) {
+      this.drawBar(i, histogram[i] / heightOfTallestBar * 100);
+    }
+    
+    Rob.pg.text(300, 575, geneNames[this.indexForHistogram]);
   },
 
   getJson: function() {
