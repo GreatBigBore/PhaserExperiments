@@ -87,7 +87,10 @@ Rob.Report.prototype = {
       this.drawBar(i, histogram[i] / heightOfTallestBar * 100);
     }
     
-    Rob.pg.text(300, 575, geneNames[this.indexForHistogram]);
+    Rob.pg.tx[0].setText(geneNames[this.indexForHistogram]);
+    Rob.pg.tx[1].setText(values[0].toFixed(4));
+    Rob.pg.tx[2].setText(values[values.length - 1].toFixed(4));
+    Rob.pg.tx[3].setText(json[geneNames[this.indexForHistogram]].median.toFixed(4));
   },
 
   getJson: function() {

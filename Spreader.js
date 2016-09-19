@@ -127,8 +127,8 @@ Rob.Spreader.prototype.handleClick = function(pointer) {
   } else {
     if(pointer.x < 50 && pointer.y > 550) { // left-corner click to dismiss the histogram
       Rob.pg.clear();
-      Rob.pg.tx.setText("");
-    else if(pointer.x > 550 || || pointer.x < 50 || pointer.y > 550 || pointer.y < 50) {
+      for(var i = 0; i < 4; i++) { Rob.pg.tx[i].setText(""); }
+    } else if(pointer.x > 550 || pointer.y > 550) {
       // Any other click near the edges advances through the genes
       Rob.globals.archonia.archons.geneReport();
     } else {

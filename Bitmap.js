@@ -20,15 +20,6 @@ Rob.Bitmap = function(whichBitmap) {
 
   this.name = whichBitmap;
   this.cx = this.bm.context;
-
-  this.txStyle = {
-    font: "12pt Courier", fill: "white", wordWrap: false,
-    align: "left", backgroundColor: null
-  };
-
-  this.tx = game.add.text(0, 0, "", this.txStyle);
-  this.tx.width = game.width / 2; this.tx.height = game.height / 2;
-  this.tx.anchor.set(0);
 };
 
 Rob.Bitmap.prototype.archonBackground = function() {
@@ -97,6 +88,30 @@ Rob.Bitmap.prototype.reportBackground = function() {
 
   this.cx.fillStyle = 'rgba(255, 255, 255, 1)';
   this.cx.strokeStyle = 'rgba(255, 255, 255, 1)';
+
+  this.txStyle = {
+    font: "12pt Courier", fill: "white", wordWrap: false,
+    align: "left", backgroundColor: null
+  };
+
+  this.tx = Array(3);
+  
+  this.tx[0] = game.add.text(300, 575, "", this.txStyle);
+  this.tx[0].width = game.width / 2; this.tx.height = game.height / 2;
+  this.tx[0].anchor.setTo(0.5, 0.5);
+  
+  this.txStyle.fill = 'black';
+  this.tx[1] = game.add.text(200, 400, "", this.txStyle);
+  this.tx[1].width = game.width / 2; this.tx.height = game.height / 2;
+  this.tx[1].anchor.setTo(0.5, 0.5);
+  
+  this.tx[2] = game.add.text(400, 400, "", this.txStyle);
+  this.tx[2].width = game.width / 2; this.tx.height = game.height / 2;
+  this.tx[2].anchor.setTo(0.5, 0.5);
+  
+  this.tx[3] = game.add.text(300, 400, "", this.txStyle);
+  this.tx[3].width = game.width / 2; this.tx.height = game.height / 2;
+  this.tx[3].anchor.setTo(0.5, 0.5);
 
   game.add.image(0, 0, this.bm);
   game.cache.addBitmapData('reportBackground', this.bm);
