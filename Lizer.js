@@ -9,7 +9,7 @@ Rob.Lizer = function(archon) {
   this.archon = archon;
   
   this.mannaNutritionRange =
-  	new Rob.Range(Rob.globals.caloriesPerMannaMorsel, 5 * Rob.globals.caloriesPerMannaMorsel);
+  	new Rob.Range(Rob.globals.caloriesPerMannaMorsel, 4 * Rob.globals.caloriesPerMannaMorsel);
 };
 
 Rob.Lizer.prototype.eat = function(foodParticle) {

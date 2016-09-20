@@ -134,6 +134,9 @@ Rob = {
       Rob.globals_.caloriesNeededForBabyFormation / Rob.globals_.typicalMannaCountPerFeeding
     );
     
+    // Ok, trial and error still; the manna is too nutritious
+    Rob.globals_.caloriesPerMannaMorsel /= 3;
+    
     Rob.globals_.caloriesGainedPerParasiteBite = Rob.globals_.caloriesPerMannaMorsel * 2 / frameRate;
     Rob.globals_.caloriesLostPerParasiteBite = Rob.globals_.caloriesPerMannaMorsel * 5 / frameRate;
     
