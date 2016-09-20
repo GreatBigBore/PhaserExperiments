@@ -65,7 +65,7 @@ Rob.Archon = function(god, phaseron) {
   this.position = new Rob.Archonoid(p);
   this.velocity = new Rob.Archonoid(p.body.velocity);
   
-  Rob.Genomer.genomifyMe(this); // No inheritance here; just getting a skeleton genome
+  Rob.globals.archonia.genomer.genomifyMe(this); // No inheritance here; just getting a skeleton genome
   
   this.organs = {
     accel: new Rob.Accel(),
@@ -91,7 +91,7 @@ Rob.Archon.prototype.activatePhysicsBodies = function() {
 	};
 
 	enable(this.sprite);
-	this.setSize(Rob.globals.standardBabyMass);
+	this.setSize(Rob.globals.massOfMiracleBabies);
 
 	enable(this.sensor);
   
@@ -137,7 +137,7 @@ Rob.Archon.prototype.isCloseRelative = function(rhsArchon) {
 };
 
 Rob.Archon.prototype.launch = function(myParentArchon) {
-  Rob.Genomer.inherit(this, myParentArchon);
+  Rob.globals.archonia.genomer.inherit(this, myParentArchon);
   
   this.myParentArchon = myParentArchon;
   this.frameCount = Rob.integerInRange(0, 60);
@@ -173,6 +173,10 @@ Rob.Archon.prototype.setVelocity = function(a1, a2) {
   this.velocity.set(a1, a2);
 };
 
+Rob.Archon.prototype.getSize = function() {
+  return this.sprite.width / Rob.rg.bm.width;
+};
+
 Rob.Archon.prototype.setSize = function(mass) {
 	var p = Rob.globals.archonSizeRange.convertPoint(mass, Rob.globals.archonMassRange);
 
@@ -201,11 +205,11 @@ Rob.Archon.prototype.tick = function() {
   }
   
   if(this.flashDirection === -1) {
-    this.sprite.tint = 0;
+    this.sprite.tint = this.uniqueID === 0 ? 0x00FF00 : 0;
   } else if(this.flashDirection === 1) {
-    this.sprite.tint = 0xffffff;
+    this.sprite.tint = this.uniqueID === 0 ? 0x0000FF : 0xffffff;
   } else {
-    this.sprite.tint = this.color;
+    this.sprite.tint = this.uniqueID === 0 ? 0x00FFFF : this.color;
   }
 
   this.sensor.x = this.sprite.x; // So the sensor will stay attached

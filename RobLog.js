@@ -21,7 +21,7 @@ function roblog(/* arbitrary parameters */) {
   }
 
   if(
-    arguments[0] === 'calories'
+    arguments[0] === 'ate'
   ) {
     theRobLogObject.log.apply(theRobLogObject, arguments);
   }

@@ -12,32 +12,6 @@ Rob.Lizer = function(archon) {
   	new Rob.Range(Rob.globals.caloriesPerMannaMorsel, 5 * Rob.globals.caloriesPerMannaMorsel);
 };
 
-Rob.Lizer.prototype.absorbCalories = function(calories) {
-
-  if((this.adultCalorieBudget < this.embryoThreshold) || (this.babyCalorieBudget > 0)) {
-
-    // Start building an embry only after we're an adult, and only
-    // after we have sufficient energy reserves for giving birth
-    this.adultCalorieBudget += calories;
-
-  } else {
-
-    // We've reached maturity, and we've built up enough
-    // reserves that we can now start building an embryo
-    this.embryoCalorieBudget += calories;
-
-		if(this.embryoCalorieBudget >= this.birthThreshold) {
-			this.archon.breed();        // And now we can finally have a baby
-    
-			this.embryoCalorieBudget -= this.birthThreshold;
-      this.adultCalorieBudget -= this.costForHavingBabies;
-    }
-
-  }
-
-	this.archon.setSize(this.getMass());
-}
-
 Rob.Lizer.prototype.eat = function(foodParticle) {
   // Once we've caught the food, tell the mover
   // and the accel that we're ready to move again
@@ -52,6 +26,17 @@ Rob.Lizer.prototype.eat = function(foodParticle) {
   this.absorbCalories(calories);
 };
 
+Rob.Lizer.prototype.absorbCalories = function(calories) {
+  this.calorieBudget += calories;
+  
+  if(this.calorieBudget > this.birthThreshold) {
+    this.archon.breed();
+    this.calorieBudget -= this.costForHavingBabies;
+  }
+  
+	this.archon.setSize(this.getMass());
+}
+
 Rob.Lizer.prototype.ffAction = function(preyHopefully) {
   // We don't eat our children, although we will eat anyone else, siblings, grandchildren, etc.
   // Note that calories gained or lost per bite are measured in seconds, so we divide
@@ -60,43 +45,37 @@ Rob.Lizer.prototype.ffAction = function(preyHopefully) {
     var myMass = this.getMass(), hisMass = preyHopefully.archon.lizer.getMass();
     if(myMass > hisMass) {
       // You don't get the full benefit of all your prey's lost calories
-      this.absorbCalories(Rob.globals.caloriesGainedPerParasiteBite / 60);
+      this.absorbCalories(Rob.globals.caloriesGainedPerParasiteBite);
     } else if(hisMass > myMass){
-      this.parasitismCost += Rob.globals.caloriesLostPerParasiteBite / 60;
+      this.absorbCalories(-Rob.globals.caloriesLostPerParasiteBite);
 
-      // If my cost is positive, that means I'm being eaten. Tell the locator we're in trouble
+      // If I'm losing calories, that means I'm being eaten. Tell the locator we're in trouble
       this.archon.locator.sense('ff', preyHopefully);
     }
   }
 };
 
 Rob.Lizer.prototype.howPredatoryAmI = function(baseValue) {
-  this.howHungryAmI(baseValue) * Rob.caloriesGainedPerParasiteBite / Rob.caloriesPerMannaMorsel;
+  this.howHungryAmI(baseValue) * Rob.globals.caloriesGainedPerParasiteBite / Rob.globals.caloriesPerMannaMorsel;
 };
 
 Rob.Lizer.prototype.howHungryAmI = function(baseValue) {
   var hunger = (
-    ((this.birthThreshold - this.embryoCalorieBudget) +
-    (this.embryoThreshold - this.adultCalorieBudget)) * this.archon.hungerMultiplier
+    (this.birthThreshold - this.calorieBudget) * this.archon.hungerMultiplier
   );
   
   return Math.abs(baseValue * this.archon.tasteFactor * hunger);
 };
 
 Rob.Lizer.prototype.getMass = function() {
-  var b = this.babyCalorieBudget / Rob.globals.babyFatCalorieDensity;
-  var e = this.embryoCalorieBudget / Rob.globals.embryoCalorieDensity;
-  var a = this.adultCalorieBudget / Rob.globals.adultFatCalorieDensity;
-  
-	return b + e + a;
+  return this.calorieBudget / Rob.globals.fatCalorieDensity;
 };
 
 Rob.Lizer.prototype.getMotionCost = function() {
-  var motion = this.archon.accel.getMotion();
-  var c = 0;
+  var c = 0, motion = this.archon.accel.getMotion();
   
-	c += motion.mVelocity * Rob.globals.lizerCostPerSpeed;
-  c += motion.mAcceleration * Rob.globals.lizerCostPerAcceleration;
+	c += motion.mVelocity * Rob.globals.costPerSpeed;
+  c += motion.mAcceleration * Rob.globals.costPerAcceleration;
 
   return c;
 };
@@ -110,35 +89,30 @@ Rob.Lizer.prototype.getTempCost = function(temp) {
   
 	// Costs for keeping the body warm, for moving, and
 	// for simply maintaining the body
-	c += Math.abs(temp - this.archon.optimalTemp) *
-        Rob.globals.lizerCostPerTemp;
+	c += Math.abs(temp - this.archon.optimalTemp) * Rob.globals.costPerTemp;
   
-  // Being outside your preferred temp range costs
-  // more than being inside it. Factor in the fact that
-  // the cost of maintaining body temperature scales
-  // up sort of logarithmically with body size
-        
   if(temp > this.archon.optimalHiTemp) {
     d = temp - this.archon.optimalHiTemp;
   } else if(temp < this.archon.optimalLoTemp) {
     d = this.archon.optimalLoTemp - temp;
   }
-
-  // Lazy! 100 is the size of the bitmap we use as sprite texture
-  f = this.archon.sprite.width / 100;
   
-  // For now, we'll charge 10x the normal rate
-  d *= Rob.globals.lizerCostPerTemp * 10;
-  
-  e = 2 + (Math.log(f - (Rob.globals.archonSizeRange.lo * 0.80))) / 4;
+  d *= Rob.globals.costPerExcessTemp;  // Temps outside your range cost more than normal
 
-  return c + d * e;
+  // This will make the costs grow with size, but logarithmically
+  var e = Math.floor(
+    Rob.globals.oneToTenRange.convertPoint(this.archon.getSize(), Rob.globals.archonSizeRange)
+  );
+  
+  var f = Math.pow(1.07, e);
+  
+  return (c + d) * f;
 };
 
 Rob.Lizer.prototype.launch = function(archon) {
+  this.calorieDebug = 0;
   this.archon = archon;
-	this.adultCalorieBudget = 0;
-	this.embryoCalorieBudget = 0;
+	this.calorieBudget = 0;
 	this.accumulatedMetabolismCost = 0;
   this.parasitismCost = 0;
   this.parasitismBenefit = 0;
@@ -151,29 +125,24 @@ Rob.Lizer.prototype.launch = function(archon) {
   this.lifetime = 0;
 	this.expirationDate = this.lifetime + this.archon.frameCount;
 
+  var caloriesIHaveAtLaunch = (
+    this.archon.myParentArchon === undefined ?
+    Rob.globals.massOfMiracleBabies :
+    this.archon.myParentArchon.offspringMass
+  ) * Rob.globals.fatCalorieDensity;
+  
   // This is how many calories we start life with
-  if(this.archon.myParentarchon === undefined) {
-    this.babyCalorieBudget = Rob.globals.standardBabyMass * Rob.globals.embryoCalorieDensity;
-  } else {
-    this.babyCalorieBudget = this.archon.myParentArchon.embryoCaloriesForNewBaby / Rob.globals.costFactorForBeingBorn;
-  }
-
-  // This is how many calories are subtracted from our embryo when we give birth.
-  this.embryoCaloriesForNewBaby = this.archon.offspringMass * Rob.globals.embryoCalorieDensity;
+  this.calorieBudget = caloriesIHaveAtLaunch * Rob.globals.costFactorForBeingBorn;
 
   // In addition to the calories I give to my offspring from the
   // embryo, I also expend a certain amount of energy by giving birth
-	this.costForHavingBabies = this.archon.offspringMass * Rob.globals.adultFatCalorieDensity * Rob.globals.costFactorForGivingBirth;
-
-  // Before I can start building an embryo for offspring, I need
-  // to have at least this many calories in reserve
-  this.embryoThreshold = (
-    this.costForHavingBabies +
-    (this.archon.embryoThresholdMultiplier * this.archon.optimalMass * Rob.globals.adultFatCalorieDensity)
-  );
+	this.costForHavingBabies = this.archon.offspringMass * Rob.globals.fatCalorieDensity * Rob.globals.costFactorForGivingBirth;
   
   // This is how many calories my embryo must contain before it can produce an offspring
-  this.birthThreshold = this.archon.offspringMass * Rob.globals.embryoCalorieDensity;
+  this.birthThreshold = (
+    (this.costForHavingBabies + (Rob.globals.archonMassRange.lo * Rob.globals.fatCalorieDensity)) *
+    this.archon.birthThresholdMultiplier
+  );
 
 	this.archon.setSize(this.getMass());
 };
@@ -184,56 +153,36 @@ Rob.Lizer.prototype.metabolize = function() {
   
   this.setButtonColor(temp);
   
-  cost += 0.01 * this.archon.sensorScale;  // Sensors aren't free
+  cost += Rob.globals.archonSensorCost * this.archon.sensorScale;  // Sensors aren't free
+  var a = cost;
   
   cost += this.getTempCost(temp);
+  var b = cost - a;
   cost += this.getMotionCost();
+  var c = cost - b;
   cost += this.parasitismCost;
+  var d = cost - c;
   
+  if(this.calorieDebug) {
+    this.archon.throttle(0, 1, function() {
+      roblog('ate', this.calorieDebug.toFixed(6), 'lized', a.toFixed(6), b.toFixed(6), c.toFixed(6), d.toFixed(6), 'total', cost.toFixed(6), this.getMass().toFixed(4));
+    }, this);
+  }
+  
+  this.calorieDebug = 0;
   this.parasitismCost = 0;      // We've taken it into account for this tick
 
-	if(this.babyCalorieBudget > 0) {
-		this.babyCalorieBudget -= cost;
-		if(this.babyCalorieBudget < 0) {
-			cost = -this.babyCalorieBudget;
-			this.babyCalorieBudget = 0;
-		} else {
-			cost = 0;
-		}
-	}
+	this.calorieBudget -= cost;
 
-	if(this.embryoCalorieBudget > 0) {
-		this.embryoCalorieBudget -= cost;
-		if(this.embryoCalorieBudget < 0) {
-			cost = -this.embryoCalorieBudget;
-			this.embryoCalorieBudget = 0;
-		} else {
-			cost = 0;
-		}
-	}
+  if(this.calorieBudget < Rob.globals.archonMassRange.lo) {
 
-	var minimumCalorieBudget = Rob.globals.minimumAdultMass * Rob.globals.adultFatCalorieDensity;
-	var causeOfDeath = null;
-
-	// If there's any cost remaining, see if it can come out
-	// of his adult calorie budget
-  
-	if(cost > 0 && this.adultCalorieBudget < minimumCalorieBudget) {
-		causeOfDeath = 'malnourishment';
-	} else if(this.frameCount > this.expirationDate) {
-		causeOfDeath = null; //causeOfDeath = 'old age';
-	} else {
-		this.adultCalorieBudget -= cost;
-	}
-
-	if(causeOfDeath !== null) {
-		//console.log('Archon', this.archon.uniqueID, 'just died of', causeOfDeath);
-		this.archon.sprite.kill();
-		this.archon.button.kill();
-		this.archon.sensor.kill();
+    this.archon.sprite.kill(); this.archon.button.kill(); this.archon.sensor.kill();
     Rob.globals.dailyDeathCounter++;
-	} else {
+
+  } else {
+
 		this.archon.setSize(this.getMass());
+
 	}
 };
 

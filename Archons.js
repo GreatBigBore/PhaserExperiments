@@ -31,7 +31,7 @@ Rob.Archons.prototype.getUniqueID = function() {
 };
 
 Rob.Archons.prototype.makeArchonGetters = function() {
-  for(var i in Rob.Genomer.primordialGenome) {
+  for(var i in Rob.globals.archonia.genomer.primordialGenome) {
     switch(i) {
     case 'color':
       Object.defineProperty(Rob.Archon.prototype, i, { get: function () {

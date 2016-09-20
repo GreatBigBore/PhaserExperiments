@@ -100,7 +100,7 @@ Rob.Report.prototype = {
     var i = null;
     
     this.genePool.forEachAlive(function(p) {
-      for(i in Rob.Genomer.primordialGenome) {
+      for(i in Rob.globals.archonia.genomer.primordialGenome) {
         if(i !== 'color') {
           var value = p.archon[i];
 
@@ -149,7 +149,7 @@ Rob.Report.prototype = {
     var j = this.getJson();
     
     if(this.archonCount === 0) {
-      game.state.start('Extinction');
+      console.log("Extinction");
     } else {
         var keys = Object.keys(j).sort();
   
@@ -173,7 +173,7 @@ Rob.Report.prototype = {
         var propertyName = keys[k];
         var entry = j[propertyName];
         
-        if(propertyName === 'embryoThresholdMultiplier') { propertyName = 'embryoThreshold'; }
+        if(propertyName === 'birthThresholdMultiplier') { propertyName = 'birthThresholdXer'; }
         if(propertyName === 'feedingAccelerationDamper') { propertyName = 'feedingAccDamper'; }
     
         if(propertyName !== 'population') {

@@ -18,27 +18,16 @@ if(typeof window === "undefined") {
 Rob = {
   debugText: "",
 
-  globals: {
-    adultFatCalorieDensity: 1000,    // Calories per gram of mass
+  globals_: {
     archonCount: 15,
     archonia: {},
-    babyFatCalorieDensity: 2500,    // Calories per gram of mass
     costFactorForGivingBirth: 2,
-    costFactorForBeingBorn: 5,
-    caloriesPerMannaMorsel: 25,
-    caloriesGainedPerParasiteBite: 25,
-    caloriesLostPerParasiteBite: 100,
+    costFactorForBeingBorn: 1,
     darknessAlphaHi: 0.3,
     darknessAlphaLo: 0.0,
-    embryoCalorieDensity: 5000,    // Very high density fat stored for making babies
-    lizerCostPerAcceleration: 0.2 / 60,  // Cost of overcoming inertia
-    lizerCostPerMass: 0.1,          // Mass of 10g costs 1 calorie per tick
-    lizerCostPerSpeed: 0.02 / 60,  // Cost of overcoming friction
-    lizerCostPerTemp: 0.01 / 60,    // Diff by 100˚ costs 1 calorie per second
     maxAcceleration: 15,
     maxSpeed: 75,                   // pix/sec
     minimumAdultMass: 1,            // Below this, an adult will die
-    standardBabyMass: 0.5,          // Grams
     temperatureLo: -1000,
     temperatureHi: 1000,
     worldBorder: 2,                // Make room for our wall sprites
@@ -78,21 +67,86 @@ Rob = {
   },
 
   preGameInit: function() {
-    // At this point, I don't expect them ever to weigh more than 10g.
-    // For now I'll have them die when their mass gets down to 0.1g;
-    // by default, until mutations set in, the birth mass is 0.5g
-    Rob.globals.archonMassRange = new Rob.Range(0.25, 10);
-    Rob.globals.tideRange = new Rob.Range(1.5, 1);
-    Rob.globals.archonSizeRange = new Rob.Range(0.07, 0.125);
-    Rob.globals.standardArchonTolerableTempRange = new Rob.Range(-500, 500);
-    Rob.globals.archonColorRange = new Rob.Range(1, 255);
-    Rob.globals.darknessRange = new Rob.Range(Rob.globals.darknessAlphaHi, Rob.globals.darknessAlphaLo);
-    Rob.globals.zeroToOneRange = new Rob.Range(0, 1);
-    Rob.globals.oneToZeroRange = new Rob.Range(1, 0);
-    Rob.globals.temperatureRange = new Rob.Range(Rob.globals.temperatureLo, Rob.globals.temperatureHi);
-		Rob.globals.buttonHueRange = new Rob.Range(240, 0);	// Blue (240) is cold, Red (0) is hot
-    Rob.globals.normalZeroCenterRange = new Rob.Range(-0.5, 0.5);
-    Rob.globals.testTemperatureRange = new Rob.Range(-500, 500);
+    Rob.globals_.tideRange = new Rob.Range(1.5, 1);
+    Rob.globals_.archonSizeRange = new Rob.Range(0.07, 0.125);
+    Rob.globals_.standardArchonTolerableTempRange = new Rob.Range(-500, 500);
+    Rob.globals_.archonColorRange = new Rob.Range(1, 255);
+    Rob.globals_.darknessRange = new Rob.Range(Rob.globals_.darknessAlphaHi, Rob.globals_.darknessAlphaLo);
+    Rob.globals_.zeroToOneRange = new Rob.Range(0, 1);
+    Rob.globals_.oneToZeroRange = new Rob.Range(1, 0);
+    Rob.globals_.temperatureRange = new Rob.Range(Rob.globals_.temperatureLo, Rob.globals_.temperatureHi);
+		Rob.globals_.buttonHueRange = new Rob.Range(240, 0);	// Blue (240) is cold, Red (0) is hot
+    Rob.globals_.normalZeroCenterRange = new Rob.Range(-0.5, 0.5);
+    Rob.globals_.testTemperatureRange = new Rob.Range(-500, 500);
+    Rob.globals_.oneToTenRange = new Rob.Range(1, 10);
+    
+    // Fat density is fixed by god
+    // Adult fat density = 1 gram / calorie
+    // Baby fat density = 0.1 gram / calorie
+    // What you're born with should last you 45 sec
+    // --> typical metabolism cost in calories ~ primordial baby calories / 45
+    // -->        meaning typical temp cost + typical motion cost
+    // --> # calories you need for having baby = gene-determined baby mass * baby fat calorie density
+    // Two feedings should allow you 30more seconds of life and to have one baby
+    // Estimate 50 morsels per feeding, so 100
+    // to have a baby, you need 100 cal * entropy cost
+    // If we make it such that you need two feedings to have a baby,
+    //    and about 30 sec between feedings, then you need 170+ cal.
+    //    If you can get 50 manna per feeding, that's 100 manna, so let's say 2cal / manna
+    
+    // typical temp cost ~ 1/2 typical metabolism cost for anything w/in 200˚ of optimal
+    // typical speed cost also
+    
+    var frameRate = 60;
+
+    Rob.globals_.fatCalorieDensity = 100;             // 100 calories = 1 gram
+    Rob.globals_.massOfMiracleBabies = 1;      // In grams
+    Rob.globals_.approximateLifeOf100Calories = 45;  // In seconds
+    
+    // In ticks
+    Rob.globals_.approximateLifeOf1Calorie = (
+      Rob.globals_.approximateLifeOf100Calories / (Rob.globals_.massOfMiracleBabies * Rob.globals_.fatCalorieDensity) / frameRate
+    );
+    
+    Rob.globals_.typicalCalorieBurnRate = Rob.globals_.approximateLifeOf1Calorie / frameRate;
+
+    // W/in 200˚ of optimal should cost about half the life of a calorie
+    Rob.globals_.costPerTemp = Rob.globals_.approximateLifeOf1Calorie / 200 / 2;
+    Rob.globals_.costPerExcessTemp = Rob.globals_.costPerTemp * 2;
+    
+    // Traveling at primordial max speed should cost about half the life of a calorie
+    Rob.globals_.costPerSpeed = Rob.globals_.typicalCalorieBurnRate / 2 / Rob.globals_.maxSpeed;
+    Rob.globals_.costPerAcceleration = Rob.globals_.costPerSpeed * 2;
+    
+    Rob.globals_.expectedNumberOfFeedingsToHaveABaby = 2;
+    Rob.globals_.typicalMannaCountPerFeeding = 50;
+    Rob.globals_.ticksBetweenFeedings = 30 * frameRate;  // 30-ish, that is
+    Rob.globals_.caloriesNeededPerFeeding = (
+      Rob.globals_.massOfMiracleBabies * Rob.globals_.fatCalorieDensity / Rob.globals_.expectedNumberOfFeedingsToHaveABaby
+    );
+    Rob.globals_.caloriesNeededBetweenFeedings = Rob.globals_.ticksBetweenFeedings * Rob.globals_.typicalCalorieBurnRate;
+    
+    Rob.globals_.caloriesNeededForBabyFormation = (
+      (Rob.globals_.caloriesNeededPerFeeding * Rob.globals_.expectedNumberOfFeedingsToHaveABaby) + Rob.globals_.caloriesNeededBetweenFeedings
+    );
+    
+    Rob.globals_.caloriesPerMannaMorsel = (
+      Rob.globals_.caloriesNeededForBabyFormation / Rob.globals_.typicalMannaCountPerFeeding
+    );
+    
+    Rob.globals_.caloriesGainedPerParasiteBite = Rob.globals_.caloriesPerMannaMorsel * 2 / frameRate;
+    Rob.globals_.caloriesLostPerParasiteBite = Rob.globals_.caloriesPerMannaMorsel * 5 / frameRate;
+    
+    var archonMassRangeLo = Rob.globals_.massOfMiracleBabies / 2;
+    var archonMassRangeHi = 4;
+    
+    Rob.globals_.archonMassRange = new Rob.Range(archonMassRangeLo, archonMassRangeHi);
+
+    Rob.globals_.archonSensorCost = 0.01 / frameRate;   // Calories per second for having a sensor; larger sensor costs more
+    
+    Rob.globals = new Proxy(Rob.globals_, {
+      get: function(target, name) { if(name in target) { return target[name]; } else { debugger; } }
+    });
   },
 
   realInRange: function(lo, hi) {

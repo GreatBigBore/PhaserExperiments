@@ -140,10 +140,14 @@ Rob.Genome.prototype = {
   }
 };
 
-Rob.Genomer = {
+Rob.Genomer = function() {
+  this.makePrimordialGenome();
+};
+
+Rob.Genomer.prototype = {
   
   genomifyMe: function(archon) {
-    archon.genome = new Rob.Genome(archon, Rob.Genomer.primordialGenome);
+    archon.genome = new Rob.Genome(archon, this.primordialGenome);
   },
   
   inherit: function(childArchon, parentArchon) {
@@ -154,33 +158,35 @@ Rob.Genomer = {
     // weird, and it doesn't waste anything; we're not creating new
     // genes, we're just updating the existing ones, using the
     // primordial as our starting point
-    if(parentArchon === undefined) { parentArchon = { genome: Rob.Genomer.primordialGenome }; }
+    if(parentArchon === undefined) { parentArchon = { genome: this.primordialGenome }; }
     childArchon.genome.inherit(parentArchon.genome);
   },
 
-  primordialGenome: {
-    color: new Rob.ColorGene(Rob.tinycolor('hsl(180, 100%, 50%)')),
-    embryoThresholdMultiplier: new Rob.ScalarGene(1.1),
-    feedingAccelerationDamper: new Rob.ScalarGene(1),
-    feedingSpeedDamper: new Rob.ScalarGene(1),
-    hungerMultiplier: new Rob.ScalarGene(0.0005),
-    maxMAcceleration: new Rob.ScalarGene(15),
-    maxMVelocity: new Rob.ScalarGene(75),
-    optimalMass: new Rob.ScalarGene(5),
-    offspringMass: new Rob.ScalarGene(0.5),
-    parasiteChaseFactor: new Rob.ScalarGene(1),
-    parasiteFlightFactor: new Rob.ScalarGene(1),
-    sensorScale: new Rob.ScalarGene(1),
-    targetChangeDelay: new Rob.ScalarGene(5),
-    tasteFactor: new Rob.ScalarGene(1),
-    tempFactor: new Rob.ScalarGene(1),
-    tempRange: new Rob.ScalarGene(400),
-    tempRangeDamping: new Rob.ScalarGene(0.5),
+  makePrimordialGenome: function() {
+    this.primordialGenome = {
+      color: new Rob.ColorGene(Rob.tinycolor('hsl(180, 100%, 50%)')),
+      birthThresholdMultiplier: new Rob.ScalarGene(1.1),
+      feedingAccelerationDamper: new Rob.ScalarGene(1),
+      feedingSpeedDamper: new Rob.ScalarGene(1),
+      hungerMultiplier: new Rob.ScalarGene(0.0005),
+      maxMAcceleration: new Rob.ScalarGene(15),
+      maxMVelocity: new Rob.ScalarGene(75),
+      optimalMass: new Rob.ScalarGene(5),
+      offspringMass: new Rob.ScalarGene(Rob.globals.massOfMiracleBabies),
+      parasiteChaseFactor: new Rob.ScalarGene(1),
+      parasiteFlightFactor: new Rob.ScalarGene(1),
+      sensorScale: new Rob.ScalarGene(1),
+      targetChangeDelay: new Rob.ScalarGene(5),
+      tasteFactor: new Rob.ScalarGene(100),
+      tempFactor: new Rob.ScalarGene(1),
+      tempRange: new Rob.ScalarGene(400),
+      tempRangeDamping: new Rob.ScalarGene(0.5),
     
-    // dummy entries so the getters will work
-    optimalTemp: null,
-    optimalHiTemp: null,
-    optimalLoTemp: null
+      // dummy entries so the getters will work
+      optimalTemp: null,
+      optimalHiTemp: null,
+      optimalLoTemp: null
+    }
   }
 
 };

@@ -47,6 +47,8 @@ Rob.Spreader.prototype.create = function() {
   Rob.globals.archonia.sun = new Rob.Sun();
 
   Rob.globals.archonia.mannaGarden = new Rob.MannaGarden(300, 3, this.db);
+  
+  Rob.globals.archonia.genomer = new Rob.Genomer();
 
   Rob.globals.archonia.archons = new Rob.Archons();
 
@@ -175,11 +177,7 @@ Rob.Spreader.prototype.report = function(whichSprite) {
   console.log("\n\n\nArchon " + a.uniqueID);
   console.log("Mass = " + a.lizer.getMass().toFixed(4));
 
-  console.log(
-    "Energy budget - baby fat: " + a.lizer.babyCalorieBudget.toFixed() +
-    ", reserves: " + a.lizer.adultCalorieBudget.toFixed() +
-    ", embryo storage: " + a.lizer.embryoCalorieBudget.toFixed()
-  );
+  console.log( "Energy budget: " + a.lizer.calorieBudget.toFixed());
 
   var t = a.lizer.expirationDate - a.frameCount;
   console.log("Life remaining: " + (t / 60).toFixed() + "s (" + t + " ticks)");
