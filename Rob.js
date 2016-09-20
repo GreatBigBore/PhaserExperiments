@@ -33,7 +33,7 @@ Rob = {
     worldBorder: 2,                // Make room for our wall sprites
     dailyBirthCounter: 0,
     dailyDeathCounter: 0,
-    worldBoundsBorder: 10
+    worldBoundsBorder: 15
   },
   
   clamp: function(value, lo, hi) {
