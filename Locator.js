@@ -56,12 +56,13 @@ Rob.Locator.prototype = {
   },
 
   sense: function(sense, sensee) {
+    var a = null;
     var t = this.trackers.taste;
     var radius = this.archon.sensorRadius;
     var relativePosition = Rob.XY(sensee).minus(this.archon.position);
     var distance = relativePosition.getMagnitude();
     
-    var value = 2 - (distance / radius);
+    var value = 2 - Math.min(distance / radius, 1);
     
     var addThisSensee = true;
     
@@ -74,7 +75,35 @@ Rob.Locator.prototype = {
         // from the pursuer. We'll let the genes decide how
         // important flight is in relation to our own hunger
         if(this.archon.lizer.getMass() < sensee.archon.lizer.getMass()) {
-          value *= -1 * this.archon.parasiteFlightFactor;
+          value *= this.archon.parasiteFlightFactor;
+          
+          if(Rob.fuzzyEqual(20, this.archon.position.x, sensee.archon.position.x)) {
+            if(Rob.pointInXBounds(this.archon.position)) {
+              a = this.archon.position.x - sensee.archon.position.x;
+              
+              if(a === 0) {
+                relativePosition.x += (Rob.integerInRange(0, 1) || -1) * 100;
+              } else {
+                relativePosition.x += Math.sign(a) * 100;
+              }
+            } else {
+              relativePosition.x -= Rob.pointXBoundsSign(this.archon.position) * 100;
+            }
+          }
+          
+          if(Rob.fuzzyEqual(20, this.archon.position.y, sensee.archon.position.y)) {
+            if(Rob.pointInYBounds(this.archon.position)) {
+              a = this.archon.position.y - sensee.archon.position.y;
+              
+              if(a === 0) {
+                relativePosition.y += (Rob.integerInRange(0, 1) || -1) * 100;
+              } else {
+                relativePosition.y += Math.sign(a) * 100;
+              }
+            } else {
+              relativePosition.y -= Rob.pointYBoundsSign(this.archon.position) * 100;
+            }
+          }
         } else {
           value *= this.archon.parasiteChaseFactor;
         }

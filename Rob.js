@@ -32,11 +32,16 @@ Rob = {
     temperatureHi: 1000,
     worldBorder: 2,                // Make room for our wall sprites
     dailyBirthCounter: 0,
-    dailyDeathCounter: 0
+    dailyDeathCounter: 0,
+    worldBoundsBorder: 10
   },
   
   clamp: function(value, lo, hi) {
     var c = Math.max(value, lo); c = Math.min(c, hi); return c;
+  },
+  
+  fuzzyEqual: function(bounds, lhs, rhs) {
+    return Math.abs(rhs - lhs) < bounds;
   },
 
   go: function(runWhichState) {
@@ -62,8 +67,26 @@ Rob = {
   },
   
   pointInBounds: function(point) {
-    var border = 10;
+    var border = Rob.globals.worldBoundsBorder;
     return point.x > border && point.x < game.width - border && point.y > border && point.y < game.width - border;
+  },
+  
+  pointInXBounds: function(point) {
+    var border = Rob.globals.worldBoundsBorder * 2;
+    return point.x > border && point.x < game.width - border;
+  },
+  
+  pointXBoundsSign: function(point) {
+    return point.x - (game.width - Rob.globals.worldBoundsBorder);
+  },
+  
+  pointInYBounds: function(point) {
+    var border = Rob.globals.worldBoundsBorder * 2;
+    return point.y > border && point.y < game.height - border;
+  },
+  
+  pointYBoundsSign: function(point) {
+    return point.y - (game.height - Rob.globals.worldBoundsBorder);
   },
 
   preGameInit: function() {
