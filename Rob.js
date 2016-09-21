@@ -92,7 +92,7 @@ Rob = {
   preGameInit: function() {
     Rob.globals_.tideRange = new Rob.Range(1.5, 1);
     Rob.globals_.archonSizeRange = new Rob.Range(0.07, 0.125);
-    Rob.globals_.standardArchonTolerableTempRange = new Rob.Range(-500, 500);
+    Rob.globals_.standardArchonTolerableTempRange = new Rob.Range(-200, 200);
     Rob.globals_.archonColorRange = new Rob.Range(1, 255);
     Rob.globals_.darknessRange = new Rob.Range(Rob.globals_.darknessAlphaHi, Rob.globals_.darknessAlphaLo);
     Rob.globals_.zeroToOneRange = new Rob.Range(0, 1);
@@ -158,7 +158,7 @@ Rob = {
     );
     
     // Ok, trial and error still; the manna is too nutritious
-    Rob.globals_.caloriesPerMannaMorsel /= 3;
+    Rob.globals_.caloriesPerMannaMorsel /= 2;
     
     Rob.globals_.caloriesGainedPerParasiteBite = Rob.globals_.caloriesPerMannaMorsel * 2 / frameRate;
     Rob.globals_.caloriesLostPerParasiteBite = Rob.globals_.caloriesPerMannaMorsel * 5 / frameRate;
@@ -168,7 +168,8 @@ Rob = {
     
     Rob.globals_.archonMassRange = new Rob.Range(archonMassRangeLo, archonMassRangeHi);
 
-    Rob.globals_.archonSensorCost = 0.01 / frameRate;   // Calories per second for having a sensor; larger sensor costs more
+    Rob.globals_.archonSensorCost = 0.01 / frameRate; // Calories per second for having a sensor; larger sensor costs more
+    Rob.globals_.parasitismCost = 0.1 / frameRate;    // Being a parasite requires extra metabolic machinery
     
     Rob.globals = new Proxy(Rob.globals_, {
       get: function(target, name) { if(name in target) { return target[name]; } else { debugger; } }

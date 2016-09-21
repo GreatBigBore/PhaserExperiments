@@ -106,6 +106,14 @@ Rob.Lizer.prototype.getTempCost = function(temp) {
   }
   
   d *= Rob.globals.costPerExcessTemp;  // Temps outside your range cost more than normal
+  
+  // There's also a cost for having the ability to tolerate wide temperature ranges
+  var geneticTempRange = this.archon.optimalHiTemp - this.archon.optimalLoTemp;
+  var standardTempRange = Rob.globals.standardArchonTolerableTempRange.hi - Rob.globals.standardArchonTolerableTempRange.lo;
+
+  if(geneticTempRange > standardTempRange) {
+    d *= geneticTempRange / standardTempRange;
+  }
 
   // This will make the costs grow with size, but logarithmically
   var e = Math.floor(
@@ -118,11 +126,9 @@ Rob.Lizer.prototype.getTempCost = function(temp) {
 };
 
 Rob.Lizer.prototype.launch = function(archon) {
-  this.calorieDebug = 0;
   this.archon = archon;
 	this.calorieBudget = 0;
 	this.accumulatedMetabolismCost = 0;
-  this.parasitismCost = 0;
   this.parasitismBenefit = 0;
 		
 	this.optimalTempRange = new Rob.Range(this.archon.optimalLoTemp, this.archon.optimalHiTemp);
@@ -168,18 +174,7 @@ Rob.Lizer.prototype.metabolize = function() {
   var b = cost - a;
   cost += this.getMotionCost();
   var c = cost - b;
-  cost += this.parasitismCost;
-  var d = cost - c;
   
-  if(this.calorieDebug) {
-    this.archon.throttle(0, 1, function() {
-      roblog('ate', this.calorieDebug.toFixed(6), 'lized', a.toFixed(6), b.toFixed(6), c.toFixed(6), d.toFixed(6), 'total', cost.toFixed(6), this.getMass().toFixed(4));
-    }, this);
-  }
-  
-  this.calorieDebug = 0;
-  this.parasitismCost = 0;      // We've taken it into account for this tick
-
 	this.calorieBudget -= cost;
 
   if(this.calorieBudget < Rob.globals.archonMassRange.lo) {
