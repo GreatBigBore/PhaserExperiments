@@ -105,8 +105,8 @@ Rob.ColorGene.prototype.inherit = function(parentGene) {
   
 
   if(h < 0) { h += 360; } h %= 360; // Treat the hue like the wheel it is
-  if(s < 0) { s += 1; } s %= 1;
-  if(l < 0) { l += 1; } l %= 1;
+  if(s < 0) { s += 1; } s *= 100; s %= 100; s /= 100;
+  if(l < 0) { l += 1; } l *= 100; l %= 100; l /= 100;
   
   hsl = 'hsl(' + h + ', ' + (s.toFixed(2) * 100) + '%, ' + (l.toFixed(2) * 100) + '%)';
   this.color = Rob.tinycolor(hsl);
