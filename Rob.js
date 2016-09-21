@@ -131,8 +131,9 @@ Rob = {
     var frameRate = 60;
 
     Rob.globals_.fatCalorieDensity = 100;             // 100 calories = 1 gram
-    Rob.globals_.massOfMiracleBabies = 1;      // In grams
-    Rob.globals_.approximateLifeOf100Calories = 45;  // In seconds
+    Rob.globals_.massOfMiracleBabies = 1;             // In grams
+    Rob.globals_.approximateLifeOf100Calories = 45;   // In seconds
+    Rob.globals_.masslessCaloriesAtBirth = 100;       // To get the baby through the initial night/day spent away from the food
     
     // In ticks
     Rob.globals_.approximateLifeOf1Calorie = (

@@ -184,6 +184,7 @@ Rob.Lizer.prototype.launch = function(archon) {
   
   // This is how many calories we start life with
   this.calorieBudget = caloriesIHaveAtLaunch * Rob.globals.costFactorForBeingBorn;
+  this.masslessCaloriesForBaby = Rob.globals.masslessCaloriesAtBirth;
 
   // In addition to the calories I give to my offspring from the
   // embryo, I also expend a certain amount of energy by giving birth
@@ -209,6 +210,16 @@ Rob.Lizer.prototype.metabolize = function() {
   
   cost += this.getTempCost(temp);
   cost += this.getMotionCost();
+  
+  if(this.masslessCaloriesForBaby > 0) {
+    this.masslessCaloriesForBaby -= cost;
+    
+    if(this.masslessCaloriesForBaby < 0) {
+      cost -= this.masslessCaloriesForBaby;
+    } else {
+      cost = 0;
+    }
+  }
   
 	this.calorieBudget -= cost;
   this.stats.thisSecond.caloriesOut += cost;
