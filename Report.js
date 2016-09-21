@@ -135,8 +135,6 @@ Rob.Report.prototype = {
     var geneNames = Object.keys(json).sort();
     
     var values = json[geneNames[this.indexForHistogram]].all;
-
-    this.indexForHistogram = (this.indexForHistogram + 1) % geneNames.length;
     
     values.sort(function(a, b) { return a - b; });
 
@@ -144,8 +142,10 @@ Rob.Report.prototype = {
     var range = (values[values.length - 1] - values[0]) * 1.1;
     var barDomain = range / 10;
     var histogram = Array(10).fill(0);
+    
+    var i = null;
 
-    for(var i = 0; i < values.length; i++) {
+    for(i = 0; i < values.length; i++) {
       var value = values[i];
     
       var whichBucket = Math.floor((value - lowestValue) / barDomain);
@@ -154,13 +154,13 @@ Rob.Report.prototype = {
     }
 
     var heightOfTallestBar = 0;
-    for(var i = 0; i < histogram.length; i++) {
+    for(i = 0; i < histogram.length; i++) {
       if(histogram[i] > heightOfTallestBar) {
         heightOfTallestBar = histogram[i];
       }
     }
   
-    for(var i = 0; i < histogram.length; i++) {
+    for(i = 0; i < histogram.length; i++) {
       this.drawBar(i, histogram[i] / heightOfTallestBar * 100);
     }
     
@@ -170,6 +170,8 @@ Rob.Report.prototype = {
     Rob.pg.tx[3].setText(json[geneNames[this.indexForHistogram]].median.toFixed(4));
 
     Rob.pg.show(true);
+
+    this.indexForHistogram = (this.indexForHistogram + 1) % geneNames.length;
   },
 
   getJson: function() {
