@@ -45,10 +45,11 @@ Rob.Gene.prototype = {
     var range = this.changeRange;
   
     // Hopefull make creation a bit more interesting
-    if(Rob.globals.creation) { probability *= 2; range *= 2; }
+    if(Rob.globals.creation) { probability *= 5; range *= 5; }
 
     // Just to make it interesting, every once in a while, a big change
-    for(var i = 0; i < 3; i++) {
+    var i = null;
+    for(i = 0; i < 3; i++) {
       if(this.mutateYN(probability)) {
         range += 10;
         probability += 10;
@@ -56,15 +57,19 @@ Rob.Gene.prototype = {
         break;
       }
     }
-
-    if(sizeOfDomain === undefined) {
-      return Rob.realInRange(
-        value * (1 - range / 100), value * (1 + range / 100)
-      );
+    
+    if(i === 0) {
+      return value; // No mutation on this gene for this baby
     } else {
-      var r = sizeOfDomain * (1 + range / 100);
+      if(sizeOfDomain === undefined) {
+        return Rob.realInRange(
+          value * (1 - range / 100), value * (1 + range / 100)
+        );
+      } else {
+        var r = sizeOfDomain * (1 + range / 100);
       
-      return Rob.realInRange(value - r, value + r);
+        return Rob.realInRange(value - r, value + r);
+      }
     }
   },
   
