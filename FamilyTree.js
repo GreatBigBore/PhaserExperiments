@@ -54,6 +54,19 @@ Rob.FamilyTree.prototype = {
     } while(currentId !== 'none');
     
     return generationCount +  indexInMyAncestry;
+  },
+  
+  getLineage: function(myId) {
+    var currentId = myId;
+    var lineage = [];
+
+    do {
+      currentId = this.everyone[currentId].parentId;
+      lineage.push(currentId);
+      
+    } while(currentId !== 'god');
+    
+    return lineage;
   }
 };
   

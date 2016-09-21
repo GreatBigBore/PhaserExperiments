@@ -21,6 +21,7 @@ Rob.Report.prototype = {
   
   archonReport: function(whichSprite) {
     var a = whichSprite.archon;
+    var whichReport = a.whichArchonReport % 2;
 
     console.log(
       "\n\nReport for archon " + a.uniqueID +
@@ -29,62 +30,68 @@ Rob.Report.prototype = {
       ", children " + a.howManyChildren
     );
   
-    console.log("\nMetabolism");
+    if(whichReport === 0) {
+      var lineage = Rob.globals.archonia.familyTree.getLineage(a.uniqueID);
+    
+      console.log("\nLineage: ", lineage);
   
-    var showStats = function(whichSet) {
+      console.log("\nMetabolism");
+  
+      var showStats = function(whichSet) {
+        console.log(
+          Rob.rPad(whichSet + ": calories in", 28, '.') +
+          Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats[whichSet].caloriesIn, 2), 10) +
+          Rob.rPad(', calories out', 27, '.') +
+          Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats[whichSet].caloriesOut, 2), 9)
+        );
+      };
+
+      showStats('thisSecond');
+      showStats('thisLifetime');
+  
+      console.log("\nCalories in:");
+  
+      var gainLossMessage = whichSprite.archon.parasite ? ", gained from parasitism" : ", lost to parasites";
       console.log(
-        Rob.rPad(whichSet + ": calories in", 28, '.') +
-        Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats[whichSet].caloriesIn, 2), 10) +
-        Rob.rPad(', calories out', 27, '.') +
-        Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats[whichSet].caloriesOut, 2), 9)
+        Rob.rPad("Calories from grazing", 28, '.') +
+        Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.grazing, 2), 10) +
+        Rob.rPad(gainLossMessage, 27, '.') +
+        Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.parasitism, 2), 9)
       );
-    };
+  
+      console.log("\nCalories out:");
 
-    showStats('thisSecond');
-    showStats('thisLifetime');
+      console.log(
+        Rob.rPad("Sensor", 28, '.') +
+        Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.sensor, 2), 10)
+      );
   
-    console.log("\nCalories in:");
+      console.log(
+        Rob.rPad("Temp in range", 28, '.') +
+        Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.tempInRange, 2), 10) +
+        Rob.rPad(", out of range", 15, '.') +
+        Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.tempOutOfRange, 2), 9) +
+        Rob.rPad(", total", 15, '.') +
+        Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.totalTemp, 2), 9)
+      );
   
-    var gainLossMessage = whichSprite.archon.parasite ? ", gained from parasitism" : ", lost to parasites";
-    console.log(
-      Rob.rPad("Calories from grazing", 28, '.') +
-      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.grazing, 2), 10) +
-      Rob.rPad(gainLossMessage, 27, '.') +
-      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.parasitism, 2), 9)
-    );
+      console.log(
+        Rob.rPad("Friction", 28, '.') +
+        Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.friction, 2), 10) +
+        Rob.rPad(", inertia", 15, '.') +
+        Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.inertia, 2), 9) +
+        Rob.rPad(", total motion", 15, '.') +
+        Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.totalMotion, 2), 9)
+      );
+    } else {
+      console.log("\nGenome:");
   
-    console.log("\nCalories out:");
+      for(var i in Rob.globals.archonia.genomer.primordialGenome) {
+        if(i !== 'color') {
+          var value = whichSprite.archon[i];
 
-    console.log(
-      Rob.rPad("Sensor", 28, '.') +
-      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.sensor, 2), 10)
-    );
-  
-    console.log(
-      Rob.rPad("Temp in range", 28, '.') +
-      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.tempInRange, 2), 10) +
-      Rob.rPad(", out of range", 15, '.') +
-      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.tempOutOfRange, 2), 9) +
-      Rob.rPad(", total", 15, '.') +
-      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.totalTemp, 2), 9)
-    );
-  
-    console.log(
-      Rob.rPad("Friction", 28, '.') +
-      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.friction, 2), 10) +
-      Rob.rPad(", inertia", 15, '.') +
-      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.inertia, 2), 9) +
-      Rob.rPad(", total motion", 15, '.') +
-      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.totalMotion, 2), 9)
-    );
-
-    console.log("\nGenome:");
-  
-    for(var i in Rob.globals.archonia.genomer.primordialGenome) {
-      if(i !== 'color') {
-        var value = whichSprite.archon[i];
-
-        console.log(Rob.rPad(i, 28, '.'), Rob.lPad(Rob.numberFix(value, 2), 9));
+          console.log(Rob.rPad(i, 28, '.'), Rob.lPad(Rob.numberFix(value, 2), 9));
+        }
       }
     }
   },

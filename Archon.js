@@ -49,6 +49,7 @@ Rob.Archon = function(god, phaseron) {
   this.sprite = phaseron;
   this.button = phaseron.button;
   this.sensor = phaseron.sensor;  this.sensor.archon = this;
+  this.whichArchonReport = 0;
   this.god = god;
   
   var p = phaseron, b = p.button, s = p.sensor;

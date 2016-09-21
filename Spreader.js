@@ -123,6 +123,7 @@ Rob.Spreader.prototype.handleClick = function(pointer) {
 
   if(clickedOnASprite) {
     Rob.globals.archonia.archons.report.archonReport(whichSprite);
+    whichSprite.archon.whichArchonReport++;
   } else if(pointer.x < 50 && pointer.y > 550) {  // Left-corner click to dismiss the histogram
     Rob.pg.show(false);
   } else if(!Rob.pointInBounds(pointer)) {
