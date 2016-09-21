@@ -38,19 +38,27 @@ Rob.Lizer.prototype.absorbCalories = function(calories) {
 }
 
 Rob.Lizer.prototype.ffAction = function(preyHopefully) {
-  // We don't eat our children, although we will eat anyone else, siblings, grandchildren, etc.
-  // Note that calories gained or lost per bite are measured in seconds, so we divide
-  // by frames per second
-  if(!this.archon.isCloseRelative(preyHopefully.archon)) {
-    var myMass = this.getMass(), hisMass = preyHopefully.archon.lizer.getMass();
-    if(myMass > hisMass) {
-      // You don't get the full benefit of all your prey's lost calories
-      this.absorbCalories(Rob.globals.caloriesGainedPerParasiteBite);
-    } else if(hisMass > myMass){
-      this.absorbCalories(-Rob.globals.caloriesLostPerParasiteBite);
+  // Don't eat grandparents, parents, or siblings, neices, nephews, uncles, aunts.
+  // Cousins are fair game, and everyone else
+  if(Rob.globals.archonia.familyTree.getDegreeOfRelatedness(preyHopefully.archon.uniqueID, this.archon.uniqueID) >= 3) {
+    
+    if(this.archon.parasite) {              // I'm a parasite
+      
+      if(!preyHopefully.archon.parasite) {  // If he's not, I'll suck his blood
 
-      // If I'm losing calories, that means I'm being eaten. Tell the locator we're in trouble
-      this.archon.locator.sense('ff', preyHopefully);
+        // You don't get the full benefit of all your prey's lost calories
+        this.absorbCalories(Rob.globals.caloriesGainedPerParasiteBite);
+      }
+    } else {                                 // I'm not a parasite
+     
+      if(preyHopefully.archon.parasite) {    // If he is, he'll suck my blood
+
+        this.absorbCalories(-Rob.globals.caloriesLostPerParasiteBite);
+
+        // I'm being eaten. Tell the locator I'm in trouble
+        this.archon.locator.sense('ff', preyHopefully);
+        
+      }
     }
   }
 };

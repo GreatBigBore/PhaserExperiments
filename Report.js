@@ -13,6 +13,8 @@ Rob.Report = function(genePool) {
   this.genePool = genePool;
   this.accumulator = {};
   this.indexForHistogram = 0;
+  this.archonCount = 0;
+  this.parasiteCount = 0;
 };
 
 Rob.Report.prototype = {
@@ -55,11 +57,9 @@ Rob.Report.prototype = {
     var json = this.reportAsJson();
     var geneNames = Object.keys(json).sort();
     
-    geneNames.splice(geneNames.indexOf('population'), 1);
-    
-    this.indexForHistogram = (this.indexForHistogram + 1) % geneNames.length;
-    
     var values = json[geneNames[this.indexForHistogram]].all;
+
+    this.indexForHistogram = (this.indexForHistogram + 1) % geneNames.length;
     
     values.sort(function(a, b) { return a - b; });
 
@@ -96,10 +96,13 @@ Rob.Report.prototype = {
   getJson: function() {
     this.accumulator = {};
     this.archonCount = 0;
+    this.parasiteCount = 0;
 
     var i = null;
     
     this.genePool.forEachAlive(function(p) {
+      if(p.archon.parasite) { this.parasiteCount++; }
+      
       for(i in Rob.globals.archonia.genomer.primordialGenome) {
         if(i !== 'color') {
           var value = p.archon[i];
@@ -136,8 +139,6 @@ Rob.Report.prototype = {
       entry.nearMinimum = this.countValuesNear(i, 'minimum');
     }
     
-    this.accumulator.population = this.archonCount;
-    
     return this.accumulator;
   },
   
@@ -153,8 +154,10 @@ Rob.Report.prototype = {
     } else {
         var keys = Object.keys(j).sort();
   
-      console.log("\n\n\nReport for day " + dayNumber + " -- Population " + j.population + ", " +
+      console.log("\n\n\nReport for day " + dayNumber + " -- Population " + this.archonCount + ", " +
                   "Births: " + Rob.globals.dailyBirthCounter + ", Deaths: " + Rob.globals.dailyDeathCounter + "\n");
+                  
+      console.log("\n" + this.parasiteCount + " parasites\n");
                   
       console.log("\n");
       console.log(
@@ -176,15 +179,13 @@ Rob.Report.prototype = {
         if(propertyName === 'birthThresholdMultiplier') { propertyName = 'birthThresholdXer'; }
         if(propertyName === 'feedingAccelerationDamper') { propertyName = 'feedingAccDamper'; }
     
-        if(propertyName !== 'population') {
-          console.log(
-            rPad(propertyName, 20) +
-            rPad(lPad(entry.average.toFixed(4), 9), 0) + rPad(lPad(entry.nearAverage, 5), 0) +
-            rPad(lPad(entry.minimum.toFixed(4), 12), 0) + rPad(lPad(entry.nearMinimum, 6), 0) +
-            rPad(lPad(entry.median.toFixed (4), 12), 0) + rPad(lPad(entry.nearMedian,  6), 0) +
-            rPad(lPad(entry.maximum.toFixed(4), 12), 0) + rPad(lPad(entry.nearMaximum, 6), 0)
-          );
-        }
+        console.log(
+          rPad(propertyName, 20) +
+          rPad(lPad(entry.average.toFixed(4), 9), 0) + rPad(lPad(entry.nearAverage, 5), 0) +
+          rPad(lPad(entry.minimum.toFixed(4), 12), 0) + rPad(lPad(entry.nearMinimum, 6), 0) +
+          rPad(lPad(entry.median.toFixed (4), 12), 0) + rPad(lPad(entry.nearMedian,  6), 0) +
+          rPad(lPad(entry.maximum.toFixed(4), 12), 0) + rPad(lPad(entry.nearMaximum, 6), 0)
+        );
       }
     }
     

@@ -49,6 +49,8 @@ Rob.Spreader.prototype.create = function() {
   Rob.globals.archonia.mannaGarden = new Rob.MannaGarden(300, 3, this.db);
   
   Rob.globals.archonia.genomer = new Rob.Genomer();
+  
+  Rob.globals.archonia.familyTree = new Rob.FamilyTree();
 
   Rob.globals.archonia.archons = new Rob.Archons();
 

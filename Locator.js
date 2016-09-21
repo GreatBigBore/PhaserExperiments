@@ -46,6 +46,39 @@ Rob.Locator.prototype = {
     this.foodDistanceRange = new Rob.Range(1, 2);
   },
   
+  makeFlightPlan: function(predator, vectorToPredator) {
+    var a = null;
+    
+    if(Rob.fuzzyEqual(20, this.archon.position.x, predator.archon.position.x)) {
+      if(Rob.pointInXBounds(this.archon.position)) {
+        a = this.archon.position.x - predator.archon.position.x;
+        
+        if(a === 0) {
+          vectorToPredator.x += (Rob.integerInRange(0, 1) || -1) * 100;
+        } else {
+          vectorToPredator.x += Math.sign(a) * 100;
+        }
+      } else {
+        vectorToPredator.x -= Rob.pointXBoundsSign(this.archon.position) * 100;
+      }
+    }
+    
+    if(Rob.fuzzyEqual(20, this.archon.position.y, predator.archon.position.y)) {
+      if(Rob.pointInYBounds(this.archon.position)) {
+        a = this.archon.position.y - predator.archon.position.y;
+        
+        if(a === 0) {
+          vectorToPredator.y += (Rob.integerInRange(0, 1) || -1) * 100;
+        } else {
+          vectorToPredator.y += Math.sign(a) * 100;
+        }
+      } else {
+        vectorToPredator.y -= Rob.pointYBoundsSign(this.archon.position) * 100;
+      }
+    }
+    
+  },
+  
   reset: function() {
     for(var i in this.trackers) {
       var t = this.trackers[i];
@@ -68,45 +101,29 @@ Rob.Locator.prototype = {
     
     if(sense === 'ff') {
       // Close relatives don't eat each other
-      if(this.archon.isCloseRelative(sensee.archon)) {
-        addThisSensee = false;
-      } else {
-        // If I'm being pursued, the vector needs to point away
-        // from the pursuer. We'll let the genes decide how
-        // important flight is in relation to our own hunger
-        if(this.archon.lizer.getMass() < sensee.archon.lizer.getMass()) {
-          value *= this.archon.parasiteFlightFactor;
-          
-          if(Rob.fuzzyEqual(20, this.archon.position.x, sensee.archon.position.x)) {
-            if(Rob.pointInXBounds(this.archon.position)) {
-              a = this.archon.position.x - sensee.archon.position.x;
-              
-              if(a === 0) {
-                relativePosition.x += (Rob.integerInRange(0, 1) || -1) * 100;
-              } else {
-                relativePosition.x += Math.sign(a) * 100;
-              }
-            } else {
-              relativePosition.x -= Rob.pointXBoundsSign(this.archon.position) * 100;
-            }
+      // Don't eat grandparents, parents, or siblings, neices, nephews, uncles, aunts.
+      // Cousins are fair game, and everyone else
+      if(Rob.globals.archonia.familyTree.getDegreeOfRelatedness(sensee.archon.uniqueID, this.archon.uniqueID) >= 3) {
+
+        if(sensee.archon.parasite) {      // He's a parasite
+          if(!this.archon.parasite) {     // I'm not
+            value *= this.archon.parasiteFlightFactor;
+            this.makeFlightPlan(sensee, relativePosition);
+          } else {                        // I'm a parasite too; ignore him
+            addThisSensee = false;
           }
-          
-          if(Rob.fuzzyEqual(20, this.archon.position.y, sensee.archon.position.y)) {
-            if(Rob.pointInYBounds(this.archon.position)) {
-              a = this.archon.position.y - sensee.archon.position.y;
-              
-              if(a === 0) {
-                relativePosition.y += (Rob.integerInRange(0, 1) || -1) * 100;
-              } else {
-                relativePosition.y += Math.sign(a) * 100;
-              }
-            } else {
-              relativePosition.y -= Rob.pointYBoundsSign(this.archon.position) * 100;
-            }
+        } else {                          // He's not a parasite
+          if(this.archon.parasite) {      // I am
+            // He's not worth much to me if
+            // I'm surrounded by manna (which
+            // doesn't flee), but he is worth something
+            value *= this.archon.parasiteChaseFactor * Rob.globals.caloriesGainedPerParasiteBite;
+          } else {                        // I'm also not a parasite; ignore him
+            addThisSensee = false;
           }
-        } else {
-          value *= this.archon.parasiteChaseFactor;
         }
+      } else {
+        addThisSensee = false;            // Too closely related to eat each other
       }
     }
 

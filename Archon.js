@@ -45,6 +45,7 @@ var generateArchonoidPrototype = function() {
 };
 
 Rob.Archon = function(god, phaseron) {
+  this.firstLaunch = true;
   this.sprite = phaseron;
   this.button = phaseron.button;
   this.sensor = phaseron.sensor;  this.sensor.archon = this;
@@ -118,26 +119,16 @@ Rob.Archon.prototype.getVelocity = function() {
   return this.velocity;
 };
 
-Rob.Archon.prototype.isCloseRelative = function(rhsArchon) {
-  if(this.myParentArchon === undefined && rhsArchon.myParentArchon === undefined) {
-    // If they're both in the miracle generation, tell them not to eat each other
-    return true;
-  } else {
-    return (
-      // If they're not both miraculous, then an eating situation is
-      // possible. If either one is miraculous, either one can eat
-      // the other. If neither is miraculous, then it comes down to
-      // whether one is the parent of the other
-      this.myParentArchon === undefined ||
-      rhsArchon.myParentArchon === undefined ||
-      this.uniqueID === rhsArchon.myParentArchon.uniqueID ||
-      this.myParentArchon.uniqueID === rhsArchon.uniqueID
-    );
-  }
-};
-
 Rob.Archon.prototype.launch = function(myParentArchon) {
   Rob.globals.archonia.genomer.inherit(this, myParentArchon);
+  
+  if(this.firstLaunch) {
+    if(Rob.integerInRange(0, 100) < 25) {
+      this.parasite = true;
+    }
+  } else {
+    this.parasite = myParentArchon.parasite;
+  }
   
   this.myParentArchon = myParentArchon;
   this.frameCount = Rob.integerInRange(0, 60);
@@ -145,7 +136,7 @@ Rob.Archon.prototype.launch = function(myParentArchon) {
 
 	this.uniqueID = this.god.getUniqueID();
   if(this.uniqueID === 0) {
-    this.sprite.tint = 0x00FFFF;
+    this.sprite.tint = 0x00FFFF;  // For debugging, so I can see archon 0
   }
   
   this.sensor.scale.setTo(this.sensorScale, this.sensorScale);  
@@ -158,8 +149,10 @@ Rob.Archon.prototype.launch = function(myParentArchon) {
   
   if(myParentArchon === undefined) {
     this.position.set(Rob.integerInRange(20, game.width - 20), Rob.integerInRange(20, game.height - 20));
+    Rob.globals.archonia.familyTree.addMe(this.uniqueID, 'god');
   } else {
     this.position.set(myParentArchon.position);
+    Rob.globals.archonia.familyTree.addMe(this.uniqueID, myParentArchon.uniqueID);
   }
 
 	this.sprite.revive(); this.button.revive(); this.sensor.revive();
