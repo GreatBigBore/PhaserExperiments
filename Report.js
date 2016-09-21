@@ -19,6 +19,76 @@ Rob.Report = function(genePool) {
 
 Rob.Report.prototype = {
   
+  archonReport: function(whichSprite) {
+    var a = whichSprite.archon;
+
+    console.log(
+      "\n\nReport for archon " + a.uniqueID +
+      ": mass = " + a.lizer.getMass().toFixed(4) +
+      ", age " + Rob.numberFix(whichSprite.archon.frameCount / 60, 2) + " seconds" +
+      ", children " + a.howManyChildren
+    );
+  
+    console.log("\nMetabolism");
+  
+    var showStats = function(whichSet) {
+      console.log(
+        Rob.rPad(whichSet + ": calories in", 28, '.') +
+        Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats[whichSet].caloriesIn, 2), 10) +
+        Rob.rPad(', calories out', 27, '.') +
+        Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats[whichSet].caloriesOut, 2), 9)
+      );
+    };
+
+    showStats('thisSecond');
+    showStats('thisLifetime');
+  
+    console.log("\nCalories in:");
+  
+    var gainLossMessage = whichSprite.archon.parasite ? ", gained from parasitism" : ", lost to parasites";
+    console.log(
+      Rob.rPad("Calories from grazing", 28, '.') +
+      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.grazing, 2), 10) +
+      Rob.rPad(gainLossMessage, 27, '.') +
+      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.parasitism, 2), 9)
+    );
+  
+    console.log("\nCalories out:");
+
+    console.log(
+      Rob.rPad("Sensor", 28, '.') +
+      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.sensor, 2), 10)
+    );
+  
+    console.log(
+      Rob.rPad("Temp in range", 28, '.') +
+      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.tempInRange, 2), 10) +
+      Rob.rPad(", out of range", 15, '.') +
+      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.tempOutOfRange, 2), 9) +
+      Rob.rPad(", total", 15, '.') +
+      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.totalTemp, 2), 9)
+    );
+  
+    console.log(
+      Rob.rPad("Friction", 28, '.') +
+      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.friction, 2), 10) +
+      Rob.rPad(", inertia", 15, '.') +
+      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.inertia, 2), 9) +
+      Rob.rPad(", total motion", 15, '.') +
+      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.totalMotion, 2), 9)
+    );
+
+    console.log("\nGenome:");
+  
+    for(var i in Rob.globals.archonia.genomer.primordialGenome) {
+      if(i !== 'color') {
+        var value = whichSprite.archon[i];
+
+        console.log(Rob.rPad(i, 28, '.'), Rob.lPad(Rob.numberFix(value, 2), 9));
+      }
+    }
+  },
+
   countValuesNear: function(propertyName, whichField) {
     var count = 0;
     var valueToCheck = this.accumulator[propertyName][whichField];
@@ -163,15 +233,15 @@ Rob.Report.prototype = {
                   
       console.log("\n");
       console.log(
-        Rob.rPad(Rob.lPad("Gene", 9), 19) +
-        Rob.rPad(Rob.lPad("Avg", 7), 10) +
-        Rob.rPad(Rob.lPad("±10%", 6), 5) +
-        Rob.rPad(Rob.lPad("Min", 8), 10) +
-        Rob.rPad(Rob.lPad("±10%", 8), 5) +
-        Rob.rPad(Rob.lPad("Med", 8), 10) +
-        Rob.rPad(Rob.lPad("±10%", 8), 5) +
-        Rob.rPad(Rob.lPad("Max", 8), 10) +
-        Rob.rPad(Rob.lPad("±10%", 8), 5)
+        rPad(lPad("Gene", 9), 19) +
+        rPad(lPad("Avg", 7), 10) +
+        rPad(lPad("±10%", 6), 5) +
+        rPad(lPad("Min", 8), 10) +
+        rPad(lPad("±10%", 8), 5) +
+        rPad(lPad("Med", 8), 10) +
+        rPad(lPad("±10%", 8), 5) +
+        rPad(lPad("Max", 8), 10) +
+        rPad(lPad("±10%", 8), 5)
       );
   
       for(var k in keys) {
@@ -182,11 +252,11 @@ Rob.Report.prototype = {
         if(propertyName === 'feedingAccelerationDamper') { propertyName = 'feedingAccDamper'; }
     
         console.log(
-          Rob.rPad(propertyName, 20) +
-          Rob.rPad(Rob.lPad(entry.average.toFixed(4), 9), 0) + Rob.rPad(Rob.lPad(entry.nearAverage, 5), 0) +
-          Rob.rPad(Rob.lPad(entry.minimum.toFixed(4), 12), 0) + Rob.rPad(Rob.lPad(entry.nearMinimum, 6), 0) +
-          Rob.rPad(Rob.lPad(entry.median.toFixed (4), 12), 0) + Rob.rPad(Rob.lPad(entry.nearMedian,  6), 0) +
-          Rob.rPad(Rob.lPad(entry.maximum.toFixed(4), 12), 0) + Rob.rPad(Rob.lPad(entry.nearMaximum, 6), 0)
+          rPad(propertyName, 20) +
+          rPad(lPad(entry.average.toFixed(4), 9), 0) + rPad(lPad(entry.nearAverage, 5), 0) +
+          rPad(lPad(entry.minimum.toFixed(4), 12), 0) + rPad(lPad(entry.nearMinimum, 6), 0) +
+          rPad(lPad(entry.median.toFixed (4), 12), 0) + rPad(lPad(entry.nearMedian,  6), 0) +
+          rPad(lPad(entry.maximum.toFixed(4), 12), 0) + rPad(lPad(entry.nearMaximum, 6), 0)
         );
       }
     }
@@ -213,6 +283,26 @@ function getMedian(values) {
   }
   
   return median;
+}
+
+function lPad(value, length, character) {
+  if(character === undefined) { character = ' '; }
+  
+  for(var i = (value).toString().length; i < length; i++) {
+    value = character + value;
+  }
+  
+  return value;
+}
+
+function rPad(value, length, character) {
+  if(character === undefined) { character = ' '; }
+  
+  for(var i = value.length; i < length; i++) {
+    value += character;
+  }
+  
+  return value;
 }
 
 })(Rob);

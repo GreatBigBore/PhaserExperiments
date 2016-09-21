@@ -104,6 +104,7 @@ Rob.Archon.prototype.activatePhysicsBodies = function() {
 };
 
 Rob.Archon.prototype.breed = function() {
+  this.howManyChildren++;
   this.god.breed(this);
 };
 
@@ -132,6 +133,7 @@ Rob.Archon.prototype.launch = function(myParentArchon) {
   
   this.myParentArchon = myParentArchon;
   this.frameCount = Rob.integerInRange(0, 60);
+  this.howManyChildren = 0;
   this.flashDirection = -1;
 
 	this.uniqueID = this.god.getUniqueID();

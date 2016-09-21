@@ -122,7 +122,7 @@ Rob.Spreader.prototype.handleClick = function(pointer) {
   }, this);
 
   if(clickedOnASprite) {
-    this.report(whichSprite);
+    Rob.globals.archonia.archons.report.archonReport(whichSprite);
   } else if(pointer.x < 50 && pointer.y > 550) {  // Left-corner click to dismiss the histogram
     Rob.pg.show(false);
   } else if(!Rob.pointInBounds(pointer)) {
@@ -149,76 +149,6 @@ Rob.Spreader.prototype.render = function() {
   this.archons.render();
   this.mannaGarden.render();
 };
-
-Rob.Spreader.prototype.report = function(whichSprite) {
-  var a = whichSprite.archon;
-
-  console.log(
-    "\n\nReport for archon " + a.uniqueID +
-    ": mass = " + a.lizer.getMass().toFixed(4) +
-    ", age " + Rob.numberFix(whichSprite.archon.frameCount / 60, 2) + " seconds"
-  );
-  
-  console.log("\nMetabolism");
-  
-  var showStats = function(whichSet) {
-    console.log(
-      Rob.rPad(whichSet + ": calories in", 28, '.') +
-      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats[whichSet].caloriesIn, 2), 10) +
-      Rob.rPad(', calories out', 27, '.') +
-      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats[whichSet].caloriesOut, 2), 9)
-    );
-  };
-
-  showStats('thisSecond');
-  showStats('thisLifetime');
-  
-  console.log("\nCalories in:");
-  
-  var gainLossMessage = whichSprite.archon.parasite ? ", gained from parasitism" : ", lost to parasites";
-  console.log(
-    Rob.rPad("Calories from grazing", 28, '.') +
-    Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.grazing, 2), 10) +
-    Rob.rPad(gainLossMessage, 27, '.') +
-    Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.parasitism, 2), 9)
-  );
-  
-  console.log("\nCalories out:");
-
-  console.log(
-    Rob.rPad("Sensor", 28, '.') +
-    Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.sensor, 2), 10)
-  );
-  
-  console.log(
-    Rob.rPad("Temp in range", 28, '.') +
-    Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.tempInRange, 2), 10) +
-    Rob.rPad(", out of range", 15, '.') +
-    Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.tempOutOfRange, 2), 9) +
-    Rob.rPad(", total", 15, '.') +
-    Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.totalTemp, 2), 9)
-  );
-  
-  console.log(
-    Rob.rPad("Friction", 28, '.') +
-    Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.friction, 2), 10) +
-    Rob.rPad(", inertia", 15, '.') +
-    Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.inertia, 2), 9) +
-    Rob.rPad(", total motion", 15, '.') +
-    Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.totalMotion, 2), 9)
-  );
-
-  console.log("\nGenome:");
-  
-  for(var i in Rob.globals.archonia.genomer.primordialGenome) {
-    if(i !== 'color') {
-      var value = whichSprite.archon[i];
-
-      console.log(Rob.rPad(i, 28, '.'), Rob.lPad(Rob.numberFix(value, 2), 9));
-    }
-  }
-};
-
 
 Rob.Spreader.prototype.taste = function(sprite, tastyParticle) {
   sprite.archon.locator.taste(tastyParticle);
