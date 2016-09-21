@@ -124,12 +124,10 @@ Rob.Archon.prototype.getVelocity = function() {
 Rob.Archon.prototype.launch = function(myParentArchon) {
   Rob.globals.archonia.genomer.inherit(this, myParentArchon);
   
-  if(this.firstLaunch) {
-    if(Rob.integerInRange(0, 100) < 25) {
-      this.parasite = true;
-    }
+  if(myParentArchon === undefined) {
+    this.isParasite = Rob.integerInRange(0, 100) < 25;
   } else {
-    this.parasite = myParentArchon.parasite;
+    this.isParasite = myParentArchon.isParasite;
   }
   
   this.myParentArchon = myParentArchon;
@@ -157,6 +155,8 @@ Rob.Archon.prototype.launch = function(myParentArchon) {
     this.position.set(myParentArchon.position);
     Rob.globals.archonia.familyTree.addMe(this.uniqueID, myParentArchon.uniqueID);
   }
+
+  this.firstLaunch = false;
 
 	this.sprite.revive(); this.button.revive(); this.sensor.revive();
 };

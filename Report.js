@@ -51,7 +51,7 @@ Rob.Report.prototype = {
   
       console.log("\nCalories in:");
   
-      var gainLossMessage = whichSprite.archon.parasite ? ", gained from parasitism" : ", lost to parasites";
+      var gainLossMessage = whichSprite.archon.isParasite ? ", gained from parasitism" : ", lost to parasites";
       console.log(
         Rob.rPad("Calories from grazing", 28, '.') +
         Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.grazing, 2), 10) +
@@ -180,7 +180,7 @@ Rob.Report.prototype = {
     var i = null;
     
     this.genePool.forEachAlive(function(p) {
-      if(p.archon.parasite) { this.parasiteCount++; }
+      if(p.archon.isParasite) { this.parasiteCount++; }
       
       for(i in Rob.globals.archonia.genomer.primordialGenome) {
         if(i !== 'color') {

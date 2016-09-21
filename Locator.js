@@ -105,15 +105,15 @@ Rob.Locator.prototype = {
       // Cousins are fair game, and everyone else
       if(Rob.globals.archonia.familyTree.getDegreeOfRelatedness(sensee.archon.uniqueID, this.archon.uniqueID) >= 3) {
 
-        if(sensee.archon.parasite) {      // He's a parasite
-          if(!this.archon.parasite) {     // I'm not
+        if(sensee.archon.isParasite) {      // He's a parasite
+          if(!this.archon.isParasite) {     // I'm not
             value *= this.archon.parasiteFlightFactor;
             this.makeFlightPlan(sensee, relativePosition);
           } else {                        // I'm a parasite too; ignore him
             addThisSensee = false;
           }
         } else {                          // He's not a parasite
-          if(this.archon.parasite) {      // I am
+          if(this.archon.isParasite) {      // I am
             // He's not worth much to me if
             // I'm surrounded by manna (which
             // doesn't flee), but he is worth something

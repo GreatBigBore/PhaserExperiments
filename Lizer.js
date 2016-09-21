@@ -55,9 +55,9 @@ Rob.Lizer.prototype.ffAction = function(preyHopefully) {
   // Cousins are fair game, and everyone else
   if(Rob.globals.archonia.familyTree.getDegreeOfRelatedness(preyHopefully.archon.uniqueID, this.archon.uniqueID) >= 3) {
     
-    if(this.archon.parasite) {              // I'm a parasite
+    if(this.archon.isParasite) {              // I'm a parasite
       
-      if(!preyHopefully.archon.parasite) {  // If he's not, I'll suck his blood
+      if(!preyHopefully.archon.isParasite) {  // If he's not, I'll suck his blood
 
         // You don't get the full benefit of all your prey's lost calories
         this.absorbCalories(Rob.globals.caloriesGainedPerParasiteBite);
@@ -65,7 +65,7 @@ Rob.Lizer.prototype.ffAction = function(preyHopefully) {
       }
     } else {                                 // I'm not a parasite
      
-      if(preyHopefully.archon.parasite) {    // If he is, he'll suck my blood
+      if(preyHopefully.archon.isParasite) {    // If he is, he'll suck my blood
 
         this.absorbCalories(-Rob.globals.caloriesLostPerParasiteBite);
         this.stats.thisLifetime.parasitism += Rob.globals.caloriesLostPerParasiteBite;
