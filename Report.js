@@ -91,6 +91,8 @@ Rob.Report.prototype = {
     Rob.pg.tx[1].setText(values[0].toFixed(4));
     Rob.pg.tx[2].setText(values[values.length - 1].toFixed(4));
     Rob.pg.tx[3].setText(json[geneNames[this.indexForHistogram]].median.toFixed(4));
+
+    Rob.pg.show(true);
   },
 
   getJson: function() {
@@ -161,15 +163,15 @@ Rob.Report.prototype = {
                   
       console.log("\n");
       console.log(
-        rPad(lPad("Gene", 9), 19) +
-        rPad(lPad("Avg", 7), 10) +
-        rPad(lPad("±10%", 6), 5) +
-        rPad(lPad("Min", 8), 10) +
-        rPad(lPad("±10%", 8), 5) +
-        rPad(lPad("Med", 8), 10) +
-        rPad(lPad("±10%", 8), 5) +
-        rPad(lPad("Max", 8), 10) +
-        rPad(lPad("±10%", 8), 5)
+        Rob.rPad(Rob.lPad("Gene", 9), 19) +
+        Rob.rPad(Rob.lPad("Avg", 7), 10) +
+        Rob.rPad(Rob.lPad("±10%", 6), 5) +
+        Rob.rPad(Rob.lPad("Min", 8), 10) +
+        Rob.rPad(Rob.lPad("±10%", 8), 5) +
+        Rob.rPad(Rob.lPad("Med", 8), 10) +
+        Rob.rPad(Rob.lPad("±10%", 8), 5) +
+        Rob.rPad(Rob.lPad("Max", 8), 10) +
+        Rob.rPad(Rob.lPad("±10%", 8), 5)
       );
   
       for(var k in keys) {
@@ -180,11 +182,11 @@ Rob.Report.prototype = {
         if(propertyName === 'feedingAccelerationDamper') { propertyName = 'feedingAccDamper'; }
     
         console.log(
-          rPad(propertyName, 20) +
-          rPad(lPad(entry.average.toFixed(4), 9), 0) + rPad(lPad(entry.nearAverage, 5), 0) +
-          rPad(lPad(entry.minimum.toFixed(4), 12), 0) + rPad(lPad(entry.nearMinimum, 6), 0) +
-          rPad(lPad(entry.median.toFixed (4), 12), 0) + rPad(lPad(entry.nearMedian,  6), 0) +
-          rPad(lPad(entry.maximum.toFixed(4), 12), 0) + rPad(lPad(entry.nearMaximum, 6), 0)
+          Rob.rPad(propertyName, 20) +
+          Rob.rPad(Rob.lPad(entry.average.toFixed(4), 9), 0) + Rob.rPad(Rob.lPad(entry.nearAverage, 5), 0) +
+          Rob.rPad(Rob.lPad(entry.minimum.toFixed(4), 12), 0) + Rob.rPad(Rob.lPad(entry.nearMinimum, 6), 0) +
+          Rob.rPad(Rob.lPad(entry.median.toFixed (4), 12), 0) + Rob.rPad(Rob.lPad(entry.nearMedian,  6), 0) +
+          Rob.rPad(Rob.lPad(entry.maximum.toFixed(4), 12), 0) + Rob.rPad(Rob.lPad(entry.nearMaximum, 6), 0)
         );
       }
     }
@@ -193,22 +195,6 @@ Rob.Report.prototype = {
   }
 
 };
-
-function rPad(value, length) {
-  for(var i = value.length; i < length; i++) {
-    value += ' ';
-  }
-  
-  return value;
-}
-
-function lPad(value, length) {
-  for(var i = (value).toString().length; i < length; i++) {
-    value = ' ' + value;
-  }
-  
-  return value;
-}
 
 function getMedian(values) {
   values.sort(function(lhs, rhs) {

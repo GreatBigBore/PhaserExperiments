@@ -57,6 +57,14 @@ Rob.Bitmap.prototype.clear = function() {
   this.cx.clearRect(0, 0, game.width, game.height);
 };
 
+Rob.Bitmap.prototype.show = function(show) {
+  this.im.visible = show;
+  
+  if(this.tx !== undefined) {
+    for(var i = 0; i < this.tx.length; i++) { this.tx[i].visible = show; }
+  }
+};
+
 Rob.Bitmap.prototype.realityGoo = function() {
   var diameter = 100;
   var radius = diameter / 2;
@@ -113,7 +121,7 @@ Rob.Bitmap.prototype.reportBackground = function() {
   this.tx[3].width = game.width / 2; this.tx.height = game.height / 2;
   this.tx[3].anchor.setTo(0.5, 0.5);
 
-  game.add.image(0, 0, this.bm);
+  this.im = game.add.image(0, 0, this.bm);
   game.cache.addBitmapData('reportBackground', this.bm);
 };
 

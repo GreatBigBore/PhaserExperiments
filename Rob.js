@@ -66,6 +66,14 @@ Rob = {
     owner.alien.input.enableDrag();
   },
   
+  numberFix: function(value, decimals) {
+    // It is damned hard in js to determine whether you have a number!
+    if(typeof value === "number") { if(!isNaN(value)) { if(isFinite(value)) { value = parseFloat(value).toFixed(decimals);
+    } else { value = '<infinity>'; } } }
+    
+    return value;
+  },
+  
   pointInBounds: function(point) {
     var border = Rob.globals.worldBoundsBorder;
     return point.x > border && point.x < game.width - border && point.y > border && point.y < game.width - border;
@@ -138,8 +146,8 @@ Rob = {
     Rob.globals_.costPerExcessTemp = Rob.globals_.costPerTemp * 2;
     
     // Traveling at primordial max speed should cost about half the life of a calorie
-    Rob.globals_.costPerSpeed = Rob.globals_.typicalCalorieBurnRate / 2 / Rob.globals_.maxSpeed;
-    Rob.globals_.costPerAcceleration = Rob.globals_.costPerSpeed * 2;
+    Rob.globals_.costPerSpeed =  (2 / Rob.globals_.maxSpeed) / frameRate
+    Rob.globals_.costPerAcceleration = (2 / Rob.globals_.maxAcceleration) / frameRate;
     
     Rob.globals_.expectedNumberOfFeedingsToHaveABaby = 2;
     Rob.globals_.typicalMannaCountPerFeeding = 50;
@@ -157,8 +165,8 @@ Rob = {
       Rob.globals_.caloriesNeededForBabyFormation / Rob.globals_.typicalMannaCountPerFeeding
     );
     
-    // Ok, trial and error still; the manna is too nutritious
-    Rob.globals_.caloriesPerMannaMorsel /= 2;
+    // Ok, trial and error still
+    Rob.globals_.caloriesPerMannaMorsel;
     
     Rob.globals_.caloriesGainedPerParasiteBite = Rob.globals_.caloriesPerMannaMorsel * 2 / frameRate;
     Rob.globals_.caloriesLostPerParasiteBite = Rob.globals_.caloriesPerMannaMorsel * 5 / frameRate;
@@ -178,6 +186,32 @@ Rob = {
 
   realInRange: function(lo, hi) {
     return game.rnd.realInRange(lo, hi);
+  },
+
+  rPad: function(value, length, character) {
+    if(value.length + 1 < length) {
+      value += ' ';               // Always make first char a space
+    }
+
+    if(character === undefined) { character = ' '; }
+
+    if(value.length + 3 > length) { character = ' '; }  // If the input is too short, pad, but not with dots
+
+    for(var i = value.length; i < length; i++) {
+      value += character;
+    }
+  
+    return value;
+  },
+
+  lPad: function(value, length, character) {
+    if(character === undefined) { character = ' '; }
+
+    for(var i = (value).toString().length - 1; i < length; i++) {
+      value = character + value;
+    }
+  
+    return value;
   },
 
   setupBitmaps: function() {

@@ -105,53 +105,30 @@ Rob.Spreader.prototype.getTemperature = function(x, y) {
 };
 
 Rob.Spreader.prototype.handleClick = function(pointer) {
-  var changeState = false;
+  var clickedOnASprite = false;
+  var whichSprite = null;
+  this.archons.phaseronPool.forEachAlive(function(a) {
+    if(clickedOnASprite) { return; }
 
-  if(this.stopped) {
-    // We're completely stopped; if it was a click in the open,
-    // start everyone back up again. If it was a click on a
-    // sprite, just allow the sprite to be dragged around,
-    // don't start the world again
-    var clickedOnASprite = false;
-    var whichSprite = null;
-    this.archons.phaseronPool.forEachAlive(function(a) {
-      if(clickedOnASprite) { return; }
+    var radius = a.width / 2;
+    var rect = new Phaser.Rectangle(
+      a.x - radius, a.y - radius, a.width, a.height
+    );
 
-      var radius = a.width / 2;
-      var rect = new Phaser.Rectangle(
-        a.x - radius, a.y - radius, a.width, a.height
-      );
-
-      if(Phaser.Rectangle.containsPoint(rect, pointer)) {
-        clickedOnASprite = true;
-        whichSprite = a;
-      }
-    }, this);
-
-    if(clickedOnASprite) {
-      this.report(whichSprite);
-    } else {
-      // Clicked out in the open; start the world up again
-      this.stopped = false; changeState = true;
+    if(Phaser.Rectangle.containsPoint(rect, pointer)) {
+      clickedOnASprite = true;
+      whichSprite = a;
     }
+  }, this);
+
+  if(clickedOnASprite) {
+    this.report(whichSprite);
+  } else if(pointer.x < 50 && pointer.y > 550) {  // Left-corner click to dismiss the histogram
+    Rob.pg.show(false);
+  } else if(!Rob.pointInBounds(pointer)) {
+    Rob.globals.archonia.archons.geneReport();    // Any other click near the edges advances through the genes
   } else {
-    if(pointer.x < 50 && pointer.y > 550) { // left-corner click to dismiss the histogram
-      Rob.pg.clear();
-      for(var i = 0; i < 4; i++) { Rob.pg.tx[i].setText(""); }
-    } else if(pointer.x > 550 || pointer.y > 550) {
-      // Any other click near the edges advances through the genes
-      Rob.globals.archonia.archons.geneReport();
-    } else {
-      // We're running normally; a click anywhere stops everyone
-      this.stopped = true;
-      changeState = true;
-    }
-  }
-
-  if(changeState) {
-    this.archons.phaseronPool.forEachAlive(function(a) {
-      a.archon.stopped = this.stopped;
-    }, this);
+    game.paused = !game.paused;                   // Click out in the open pauses/resumes
   }
 };
 
@@ -176,18 +153,70 @@ Rob.Spreader.prototype.render = function() {
 Rob.Spreader.prototype.report = function(whichSprite) {
   var a = whichSprite.archon;
 
-  console.log("\n\n\nArchon " + a.uniqueID);
-  console.log("Mass = " + a.lizer.getMass().toFixed(4));
+  console.log(
+    "\n\nReport for archon " + a.uniqueID +
+    ": mass = " + a.lizer.getMass().toFixed(4) +
+    ", age " + Rob.numberFix(whichSprite.archon.frameCount / 60, 2) + " seconds"
+  );
+  
+  console.log("\nMetabolism");
+  
+  var showStats = function(whichSet) {
+    console.log(
+      Rob.rPad(whichSet + ": calories in", 28, '.') +
+      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats[whichSet].caloriesIn, 2), 10) +
+      Rob.rPad(', calories out', 27, '.') +
+      Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats[whichSet].caloriesOut, 2), 9)
+    );
+  };
 
-  console.log( "Energy budget: " + a.lizer.calorieBudget.toFixed());
+  showStats('thisSecond');
+  showStats('thisLifetime');
+  
+  console.log("\nCalories in:");
+  
+  var gainLossMessage = whichSprite.archon.parasite ? ", gained from parasitism" : ", lost to parasites";
+  console.log(
+    Rob.rPad("Calories from grazing", 28, '.') +
+    Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.grazing, 2), 10) +
+    Rob.rPad(gainLossMessage, 27, '.') +
+    Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.parasitism, 2), 9)
+  );
+  
+  console.log("\nCalories out:");
 
-  var t = a.lizer.expirationDate - a.frameCount;
-  console.log("Life remaining: " + (t / 60).toFixed() + "s (" + t + " ticks)");
+  console.log(
+    Rob.rPad("Sensor", 28, '.') +
+    Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.sensor, 2), 10)
+  );
+  
+  console.log(
+    Rob.rPad("Temp in range", 28, '.') +
+    Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.tempInRange, 2), 10) +
+    Rob.rPad(", out of range", 15, '.') +
+    Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.tempOutOfRange, 2), 9) +
+    Rob.rPad(", total", 15, '.') +
+    Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.totalTemp, 2), 9)
+  );
+  
+  console.log(
+    Rob.rPad("Friction", 28, '.') +
+    Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.friction, 2), 10) +
+    Rob.rPad(", inertia", 15, '.') +
+    Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.inertia, 2), 9) +
+    Rob.rPad(", total motion", 15, '.') +
+    Rob.lPad(Rob.numberFix(whichSprite.archon.lizer.stats.thisLifetime.costBreakdown.totalMotion, 2), 9)
+  );
 
-  console.log("\nDNA:");
-  console.log("Temps: " + a.optimalLoTemp.toFixed() +
-              " <= " + a.optimalTemp.toFixed() + " <= " +
-              a.optimalHiTemp.toFixed());
+  console.log("\nGenome:");
+  
+  for(var i in Rob.globals.archonia.genomer.primordialGenome) {
+    if(i !== 'color') {
+      var value = whichSprite.archon[i];
+
+      console.log(Rob.rPad(i, 28, '.'), Rob.lPad(Rob.numberFix(value, 2), 9));
+    }
+  }
 };
 
 
