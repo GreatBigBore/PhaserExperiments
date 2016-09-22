@@ -23,8 +23,9 @@ Rob.Report.prototype = {
     var a = whichSprite.archon;
     var whichReport = a.whichArchonReport % 2;
 
+    var parasiteIndicator = a.isParasite ? "p" : "np";
     console.log(
-      "\n\nReport for archon " + a.uniqueID +
+      "\n\nReport for archon " + a.uniqueID + "(" + parasiteIndicator + ")" +
       ": mass = " + a.lizer.getMass().toFixed(4) +
       ", age " + Rob.numberFix(whichSprite.archon.frameCount / 60, 2) + " seconds" +
       ", children " + a.howManyChildren
