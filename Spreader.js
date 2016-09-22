@@ -8,7 +8,6 @@
 Rob.Spreader = function() {
   this.yAxisRange = new Rob.Range(game.height, 0);
   this.darknessRange = Rob.globals.darknessRange;
-  this.stopped = false;
 
   // Phaser gives us mouseUp constantly. I want to ignore all
   // of these unless we've actually registered a mouseDown
