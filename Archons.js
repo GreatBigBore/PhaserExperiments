@@ -26,6 +26,20 @@ Rob.Archons = function() {
   Rob.globals.creation = false;
 };
 
+Rob.Archons.prototype.decreesYouAParasite = function() {
+  var parasiteCount = 0;
+  
+  this.phaseronPool.forEachAlive(function(p) {
+    if(p.archon.isParasite) {
+      parasiteCount++;
+    }
+  }, this);
+  
+  var probability = (parasiteCount / this.phaseronPool.countLiving() < 0.05) ? 50 : 10;
+
+  return Rob.integerInRange(0, 100) < probability;
+};
+
 Rob.Archons.prototype.getUniqueID = function() {
   return this.archonUniqueID++;
 };
@@ -146,17 +160,5 @@ Rob.Archons.prototype.tick = function() {
 	this.phaseronPool.forEachAlive(function(a) {
     a.archon.tick();
 	});
-};
-
-Rob.Archons.prototype.tooFewParasites = function() {
-  var parasiteCount = 0;
-  
-  this.phaseronPool.forEachAlive(function(p) {
-    if(p.archon.isParasite) {
-      parasiteCount++;
-    }
-  }, this);
-  
-  return parasiteCount / this.phaseronPool.countLiving() < 0.05;
 };
 
