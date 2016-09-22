@@ -19,7 +19,7 @@ Rob.Lizer = function(archon) {
         sensor: 0, tempInRange: 0, tempOutOfRange: 0, totalTemp: 0, friction: 0, inertia: 0, totalMotion: 0
       }
     }
-  }
+  };
 };
 
 Rob.Lizer.prototype.eat = function(foodParticle) {
@@ -48,41 +48,55 @@ Rob.Lizer.prototype.absorbCalories = function(calories) {
   }
   
 	this.archon.setSize(this.getMass());
-}
+};
 
-Rob.Lizer.prototype.ffAction = function(preyHopefully) {
-  // Don't eat grandparents, parents, or siblings, neices, nephews, uncles, aunts.
-  // Cousins are fair game, and everyone else
-  if(Rob.globals.archonia.familyTree.getDegreeOfRelatedness(preyHopefully.archon.uniqueID, this.archon.uniqueID) >= 3) {
+Rob.Lizer.prototype.ffAction = function(him) {
+  // Note that we do this in only one direction, wherƒe I am predatory;
+  // the case where he is predatory will be taken care of on his tick.
+
+  var massRatio = him.archon.lizer.getMass() / this.getMass();
+
+  var fp = this.archon.locator.getFlightPlan(massRatio, him);
+
+  if(fp.iWillBeParasitized) {
     
-    if(this.archon.isParasite) {              // I'm a parasite
-      
-      if(!preyHopefully.archon.isParasite) {  // If he's not, I'll suck his blood
+    this.absorbCalories(-Rob.globals.caloriesLostPerParasiteBite);
+    this.stats.thisLifetime.parasitism += Rob.globals.caloriesLostPerParasiteBite;
 
-        // You don't get the full benefit of all your prey's lost calories
-        this.absorbCalories(Rob.globals.caloriesGainedPerParasiteBite);
-        this.stats.thisLifetime.parasitism += Rob.globals.caloriesGainedPerParasiteBite;
-      }
-    } else {                                 // I'm not a parasite
-     
-      if(preyHopefully.archon.isParasite) {    // If he is, he'll suck my blood
+  } else if(fp.iWillParasitize) {
 
-        this.absorbCalories(-Rob.globals.caloriesLostPerParasiteBite);
-        this.stats.thisLifetime.parasitism += Rob.globals.caloriesLostPerParasiteBite;
+    var caloriesGained = him.archon.isDisabled ?
+      Rob.globals.caloriesGainedPerInjuredParasiteBite : Rob.globals.caloriesGainedPerParasiteBite;
+  
+    this.absorbCalories(caloriesGained);
 
-        // I'm being eaten. Tell the locator I'm in trouble
-        this.archon.locator.sense('ff', preyHopefully);
-        
-      }
-    }
+    // Entropy; no one gets the full benefit of all their prey's lost calories
+    this.stats.thisLifetime.parasitism += caloriesGained;
+    
+  }
+
+  if(fp.iWillBeInjured) {
+    
+    // It's possible to be injured even if I get to eat.
+    // Also, only parasites can be injured, and only non-disabled ones.
+    // Non-parasites and disabled parasites are parasitized
+    this.archon.injuryFactor += 0.005;
+    this.archon.maxMVelocity *= 1 - this.archon.injuryFactor;
+    
+  } else if(fp.iWillInjure) {
+
+    this.archon.isDefending = true;
+    
   }
 };
 
 Rob.Lizer.prototype.howPredatoryAmI = function(baseValue) {
-  this.howHungryAmI(baseValue) * Rob.globals.caloriesGainedPerParasiteBite / Rob.globals.caloriesPerMannaMorsel;
+  return this.howHungryAmI(baseValue) * Rob.globals.caloriesGainedPerParasiteBite / Rob.globals.caloriesPerMannaMorsel;
 };
 
 Rob.Lizer.prototype.howHungryAmI = function(baseValue) {
+  if(baseValue === undefined) { baseValue = 1; }
+  
   var hunger = (
     (this.birthThreshold - this.calorieBudget) * this.archon.hungerMultiplier
   );
@@ -97,15 +111,15 @@ Rob.Lizer.prototype.getMass = function() {
 Rob.Lizer.prototype.getMotionCost = function() {
   var c = 0, d = 0, e = 0, motion = this.archon.accel.getMotion();
   
-  d = motion.mVelocity * Rob.globals.costPerSpeed;
-  e = motion.mAcceleration * Rob.globals.costPerAcceleration;
+  d = motion.mVelocity * Rob.globals.nominalCostPerMagnitudeV;
+  e = motion.mAcceleration * Rob.globals.nominalCostPerMagnitudeA;
 
   c += d + e;
 
   this.stats.thisLifetime.costBreakdown.friction += d;
   this.stats.thisLifetime.costBreakdown.inertia += e;
   this.stats.thisLifetime.costBreakdown.totalMotion += c;
-
+  
   return c;
 };
 
@@ -118,7 +132,7 @@ Rob.Lizer.prototype.getTempCost = function(temp) {
   
 	// Costs for keeping the body warm, for moving, and
 	// for simply maintaining the body
-	c += Math.abs(temp - this.archon.optimalTemp) * Rob.globals.costPerTemp;
+	c += Math.abs(temp - this.archon.optimalTemp) * Rob.globals.nominalCostPerInRangeTemp;
   
   if(temp > this.archon.optimalHiTemp) {
     d = temp - this.archon.optimalHiTemp;
@@ -126,7 +140,7 @@ Rob.Lizer.prototype.getTempCost = function(temp) {
     d = this.archon.optimalLoTemp - temp;
   }
   
-  d *= Rob.globals.costPerExcessTemp;  // Temps outside your range cost more than normal
+  d *= Rob.globals.nominalCostPerExcessTemp;  // Temps outside your range cost more than normal
   
   // There's also a cost for having the ability to tolerate wide temperature ranges
   var geneticTempRange = this.archon.optimalHiTemp - this.archon.optimalLoTemp;
@@ -137,11 +151,11 @@ Rob.Lizer.prototype.getTempCost = function(temp) {
   }
 
   // This will make the costs grow with size, but logarithmically
-  var e = Math.floor(
+  e = Math.floor(
     Rob.globals.oneToTenRange.convertPoint(this.archon.getSize(), Rob.globals.archonSizeRange)
   );
   
-  var f = Math.pow(1.07, e);
+  f = Math.pow(1.07, e);
 
   var totalCost = (c + d) * f;
 
@@ -163,7 +177,7 @@ Rob.Lizer.prototype.launch = function(archon) {
   for(var i in this.stats.thisLifetime) {
     if(i === 'costBreakdown') {
       for(var j in this.stats.thisLifetime.costBreakdown) {
-        this.stats.thisLifetime.costBreakdown[i] = 0;
+        this.stats.thisLifetime.costBreakdown[j] = 0;
       }
     } else {
       this.stats.thisLifetime[i] = 0;
@@ -184,7 +198,7 @@ Rob.Lizer.prototype.launch = function(archon) {
   
   // This is how many calories we start life with
   this.calorieBudget = caloriesIHaveAtLaunch * Rob.globals.costFactorForBeingBorn;
-  this.masslessCaloriesForBaby = Rob.globals.masslessCaloriesAtBirth;
+  this.masslessCaloriesForBaby = Rob.globals.miracleCalories;
 
   // In addition to the calories I give to my offspring from the
   // embryo, I also expend a certain amount of energy by giving birth
@@ -248,15 +262,15 @@ Rob.Lizer.prototype.setButtonColor = function(temp) {
 };
 
 Rob.Lizer.prototype.tick = function(frameCount) {
-  for(var i in this.stats.thisLifetime) {
-    if(this.stats.thisSecond.hasOwnProperty(i)) {
-      if(this.frameCount % 60 === 0) {
+  if(this.frameCount % 60 === 0) {
+    for(var i in this.stats.thisLifetime) {
+      if(this.stats.thisSecond.hasOwnProperty(i)) {
         this.stats.thisLifetime[i] += this.stats.thisSecond[i];
         this.stats.thisSecond[i] = 0;
       }
     }
   }
-
+  
   this.frameCount = frameCount;
 	this.metabolize();
 };

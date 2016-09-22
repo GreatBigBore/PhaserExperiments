@@ -11,7 +11,8 @@ Rob.Sun = function() {
   this.sunChariotAlphaHi = 1.0;
   this.sunChariotAlphaLo = 0.0;
 
-  this.dayLength = 60 * 1000; // In milliseconds, not ticks
+  this.dayLength = Rob.globals.dayLength * 1000;  // day length is in seconds; tween is in milliseconds
+
   this.easingFunction = Phaser.Easing.Quartic.InOut;
 
   this.letThereBeDark();

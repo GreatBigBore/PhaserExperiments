@@ -34,38 +34,45 @@ Rob.Archons.prototype.makeArchonGetters = function() {
   for(var i in Rob.globals.archonia.genomer.primordialGenome) {
     switch(i) {
     case 'color':
-      Object.defineProperty(Rob.Archon.prototype, i, { get: function () {
-        return this.genome.color.getColorAsDecimal(); 
-      }});
+      Object.defineProperty(Rob.Archon.prototype, i,
+        { get: function () { return this.genome.color.getColorAsDecimal(); } }
+      );
       break;
       
     case 'optimalHiTemp':
-      Object.defineProperty(Rob.Archon.prototype, i, { get: function () {
-        return this.genome.color.getOptimalHiTemp(); 
-      }});
+      Object.defineProperty(Rob.Archon.prototype, i,
+        { get: function () { return this.genome.color.getOptimalHiTemp(); } }
+      );
       break;
       
     case 'optimalLoTemp':
-      Object.defineProperty(Rob.Archon.prototype, i, { get: function () {
-        return this.genome.color.getOptimalLoTemp(); 
-      }});
+      Object.defineProperty(Rob.Archon.prototype, i,
+        { get: function () { return this.genome.color.getOptimalLoTemp(); } }
+      );
       break;
       
     case 'optimalTemp':
-      Object.defineProperty(Rob.Archon.prototype, i, { get: function () {
-        var t = this.genome.color.getOptimalTemp();
-        return t;
-      }});
+      Object.defineProperty(Rob.Archon.prototype, i,
+        { get: function () { var t = this.genome.color.getOptimalTemp(); return t; } }
+      );
       break;
       
     default:
       Object.defineProperty(Rob.Archon.prototype, i, (
         function(propertyName) {
           return {
-            get: function() { return this.genome[propertyName].value; } 
+            get: function() { 
+              if(this.genome.hasOwnProperty(propertyName)) { 
+                return this.genome[propertyName].value; }
+              else { debugger; } // jshint ignore: line 
+            },
+            
+            set: function(value) {
+              if(this.genome.hasOwnProperty(propertyName)) { this.genome[propertyName].value = value; return true;}
+              else { debugger; } // jshint ignore: line
+            }
           };
-        }
-      )(i));
+        })(i));
       break;
     }
   }
@@ -75,7 +82,7 @@ Rob.Archons.prototype.dailyReport = function(dayNumber) {
   this.report.reportAsText(dayNumber);
 };
 
-Rob.Archons.prototype.geneReport = function(dayNumber) {
+Rob.Archons.prototype.geneReport = function() {
   this.report.geneReport();
 };
 
@@ -140,3 +147,16 @@ Rob.Archons.prototype.tick = function() {
     a.archon.tick();
 	});
 };
+
+Rob.Archons.prototype.tooFewParasites = function() {
+  var parasiteCount = 0;
+  
+  this.phaseronPool.forEachAlive(function(p) {
+    if(p.archon.isParasite) {
+      parasiteCount++;
+    }
+  }, this);
+  
+  return parasiteCount / this.phaseronPool.countLiving() < 0.05;
+};
+

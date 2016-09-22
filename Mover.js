@@ -1,8 +1,6 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
-/* global roblog */
-
 "use strict";
 
 var Rob = Rob || {};
@@ -60,7 +58,12 @@ Rob.Mover.prototype = {
   },
   
   tick: function(frameCount) {
-    if(!this.archon.stopped && frameCount > this.noNewTargetUntil) {
+    if(this.archon.isDisabled) {
+      this.archon.velocity.set(0);
+      return;
+    }
+    
+    if(frameCount > this.noNewTargetUntil) {
       var m = 0, mTemp = 0, mTaste = 0;
       
       var tempVector = this.getTempVector();
@@ -83,7 +86,7 @@ Rob.Mover.prototype = {
       vectorsToCompare.push({ name: 'processMannaVector', v: tasteVector, value: this.archon.lizer.howHungryAmI(mTaste) });
 
       var getWinner = function() {
-        var highestValue = null, vName = null, winner = null;
+        var highestValue = null, winner = null;
         for(var i = 0; i < vectorsToCompare.length; i++) {
           var v = vectorsToCompare[i];
           

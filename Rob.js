@@ -1,6 +1,8 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
+/* global Proxy */
+
 "use strict";
 
 var Rob = null;
@@ -25,7 +27,9 @@ Rob = {
     costFactorForBeingBorn: 1,
     darknessAlphaHi: 0.3,
     darknessAlphaLo: 0.0,
+    maxMagnitudeA: 15,
     maxAcceleration: 15,
+    maxMagnitudeV: 75,
     maxSpeed: 75,                   // pix/sec
     minimumAdultMass: 1,            // Below this, an adult will die
     temperatureLo: -1000,
@@ -44,7 +48,7 @@ Rob = {
     return Math.abs(rhs - lhs) < bounds;
   },
 
-  go: function(runWhichState) {
+  go: function() {
     Rob.preGameInit();
 
     game = new Phaser.Game(600, 600, Phaser.CANVAS);
@@ -130,48 +134,141 @@ Rob = {
     
     var frameRate = 60;
 
-    Rob.globals_.fatCalorieDensity = 100;             // 100 calories = 1 gram
-    Rob.globals_.massOfMiracleBabies = 1;             // In grams
-    Rob.globals_.approximateLifeOf100Calories = 45;   // In seconds
-    Rob.globals_.masslessCaloriesAtBirth = 100;       // To get the baby through the initial night/day spent away from the food
-    
-    // In ticks
-    Rob.globals_.approximateLifeOf1Calorie = (
-      Rob.globals_.approximateLifeOf100Calories / (Rob.globals_.massOfMiracleBabies * Rob.globals_.fatCalorieDensity) / frameRate
-    );
-    
-    Rob.globals_.typicalCalorieBurnRate = Rob.globals_.approximateLifeOf1Calorie / frameRate;
+    Rob.globals_.dayLength = 60;  // In seconds
 
-    // W/in 200˚ of optimal should cost about half the life of a calorie
-    Rob.globals_.costPerTemp = Rob.globals_.approximateLifeOf1Calorie / 200 / 2;
-    Rob.globals_.costPerExcessTemp = Rob.globals_.costPerTemp * 2;
+    Rob.globals_.massOfMiracleBabies = 1;             // In grams
+    Rob.globals_.fatCalorieDensity = 100;             // 100 calories = 1 gram
+    Rob.globals_.lifeOf100Calories = Rob.globals_.dayLength * 0.5;  // 100 calories should last you 1/2 day
+    Rob.globals_.miracleCalories = 100;               // 1g of real mass plus this extra massless embryonic nutrition
     
-    // Traveling at primordial max speed should cost about half the life of a calorie
-    Rob.globals_.costPerSpeed =  (2 / Rob.globals_.maxSpeed) / frameRate
-    Rob.globals_.costPerAcceleration = (2 / Rob.globals_.maxAcceleration) / frameRate;
-    
-    Rob.globals_.expectedNumberOfFeedingsToHaveABaby = 2;
-    Rob.globals_.typicalMannaCountPerFeeding = 50;
-    Rob.globals_.ticksBetweenFeedings = 30 * frameRate;  // 30-ish, that is
-    Rob.globals_.caloriesNeededPerFeeding = (
-      Rob.globals_.massOfMiracleBabies * Rob.globals_.fatCalorieDensity / Rob.globals_.expectedNumberOfFeedingsToHaveABaby
+    // This is in calories per second -- 3 1/3
+    Rob.globals_.nominalCalorieBurnRate = (
+      (Rob.globals_.massOfMiracleBabies * Rob.globals_.fatCalorieDensity) / Rob.globals_.lifeOf100Calories
     );
-    Rob.globals_.caloriesNeededBetweenFeedings = Rob.globals_.ticksBetweenFeedings * Rob.globals_.typicalCalorieBurnRate;
     
-    Rob.globals_.caloriesNeededForBabyFormation = (
-      (Rob.globals_.caloriesNeededPerFeeding * Rob.globals_.expectedNumberOfFeedingsToHaveABaby) + Rob.globals_.caloriesNeededBetweenFeedings
+    // 1 2/3 each
+    Rob.globals_.nominalTempCostPerSecond = Rob.globals_.nominalCalorieBurnRate / 2;
+    Rob.globals_.nominalMotionCostPerSecond = Rob.globals_.nominalCalorieBurnRate / 2;
+    
+    // 0.0028
+    Rob.globals_.nominalCostPerInRangeTemp = (
+      Rob.globals_.nominalTempCostPerSecond / 
+      (Rob.globals_.standardArchonTolerableTempRange.hi - Rob.globals_.standardArchonTolerableTempRange.lo) / 3
+    );
+    
+    // 0.0056
+    Rob.globals_.nominalCostPerExcessTemp = Rob.globals_.nominalCostPerInRangeTemp * 2;
+
+    // 0.0074, 0.0148
+    Rob.globals_.nominalCostPerMagnitudeV = Rob.globals_.nominalMotionCostPerSecond / Rob.globals_.maxMagnitudeV / 3;
+    Rob.globals_.nominalCostPerMagnitudeA = Rob.globals_.nominalCostPerMagnitudeV * 2;
+    
+    Rob.globals_.estimatedMannaEatenPerFeeding = 50;
+    Rob.globals_.estimatedFeedingDuration = Rob.globals_.dayLength / 4;
+    Rob.globals_.nominalTimeBetweenFeedings = Rob.globals_.dayLength / 4;
+    
+    // I decree that you should have to eat twice to build the reserves necessary for a baby
+    // This is in seconds
+    Rob.globals_.decreedNumberOfFeedingsForMakingABaby = 2;
+    
+    // 45!
+    Rob.globals_.nominalTimeForMakingABaby = (
+      (Rob.globals_.decreedNumberOfFeedingsForMakingABaby * Rob.globals_.estimatedFeedingDuration) +
+      Rob.globals_.nominalTimeBetweenFeedings
+    );
+    
+    Rob.globals_.nominalReservesBeforeEmbryoBuilding = 1.5; // Your own birth weight plus this as reserves
+    Rob.globals_.nominalBirthThresholdMultiplier = 1.1;     // Have some excess before you risk having a baby
+
+    // 275 -- This is nominally how many calories you should have on board in order to have a baby
+    // (In addition to your own nominal birth weight)
+    Rob.globals_.nominalBirthThreshold = (
+      (Rob.globals_.massOfMiracleBabies + Rob.globals_.nominalReservesBeforeEmbryoBuilding) *
+      Rob.globals_.fatCalorieDensity * Rob.globals_.nominalBirthThresholdMultiplier
+    );
+    
+    // This is just to keep my own body going through the feedings and the gaps between
+    // 150
+    Rob.globals_.caloriesToSurviveBabyTime = Rob.globals_.nominalCalorieBurnRate * Rob.globals_.nominalTimeForMakingABaby;
+
+    // 425
+    Rob.globals_.totalCaloriesNeededToSpreadGenes = (
+      Rob.globals_.nominalBirthThreshold + Rob.globals_.caloriesToSurviveBabyTime
+    );
+    
+    // Hopefully I've done the math right, and this will give us at least a rough
+    // idea of how many calories we need in each manna morsel
+    // 4.25
+    Rob.globals_.caloriesPerMannaMorsel = (
+      Rob.globals_.totalCaloriesNeededToSpreadGenes /
+      (Rob.globals_.estimatedMannaEatenPerFeeding * Rob.globals_.decreedNumberOfFeedingsForMakingABaby)
+    );
+    
+    // It seems like it should be worth at least three manna to be worth
+    // my while even to be a parasite
+    Rob.globals_.caloriesGainedPerParasiteBite = Rob.globals_.caloriesPerManna * 3;
+    
+    // Has to be greater than what the predator can gain
+    Rob.globals_.caloriesLostPerParasiteBite = Rob.globals_.caloriesGainedPerParasiteBite * 2;
+
+///////////////////////////////////////////
+
+
+
+    Rob.globals_.nominalCalorieBurnRate /= frameRate;
+
+    Rob.globals_.nominalTempCostPerTick = Rob.globals_.nominalTempCostPerSecond / frameRate;
+    Rob.globals_.nominalMotionCostPerTick = Rob.globals_.nominalMotionCostPerSecond / frameRate;
+    
+    Rob.globals_.nominalCostPerInRangeTemp = (
+      Rob.globals_.nominalTempCostPerTick /       // Converted from secs to ticks
+      (Rob.globals_.standardArchonTolerableTempRange.hi - Rob.globals_.standardArchonTolerableTempRange.lo) / 3
+    );
+    
+    Rob.globals_.nominalCostPerExcessTemp = Rob.globals_.nominalCostPerInRangeTemp * 2;
+
+    Rob.globals_.nominalCostPerMagnitudeV /= frameRate;
+    Rob.globals_.nominalCostPerMagnitudeA = Rob.globals_.nominalCostPerMagnitudeV * 2;
+    
+    Rob.globals_.estimatedMannaEatenPerFeeding = 50;
+    Rob.globals_.estimatedFeedingDuration = Rob.globals_.dayLength / 4 * frameRate;
+    Rob.globals_.nominalTimeBetweenFeedings = Rob.globals_.dayLength / 4 * frameRate;
+    
+    Rob.globals_.decreedNumberOfFeedingsForMakingABaby = 2;
+    
+    Rob.globals_.nominalTimeForMakingABaby = (
+      (Rob.globals_.decreedNumberOfFeedingsForMakingABaby * Rob.globals_.estimatedFeedingDuration) +
+      Rob.globals_.nominalTimeBetweenFeedings
+    );
+    
+    Rob.globals_.nominalReservesBeforeEmbryoBuilding = 1.5; // Your own birth weight plus this as reserves
+    Rob.globals_.nominalBirthThresholdMultiplier = 1.1;     // Have some excess before you risk having a baby
+
+    Rob.globals_.nominalBirthThreshold = (
+      (Rob.globals_.massOfMiracleBabies + Rob.globals_.nominalReservesBeforeEmbryoBuilding) *
+      Rob.globals_.fatCalorieDensity * Rob.globals_.nominalBirthThresholdMultiplier
+    );
+    
+    Rob.globals_.caloriesToSurviveBabyTime = Rob.globals_.nominalCalorieBurnRate * Rob.globals_.nominalTimeForMakingABaby;
+
+    Rob.globals_.totalCaloriesNeededToSpreadGenes = (
+      Rob.globals_.nominalBirthThreshold + Rob.globals_.caloriesToSurviveBabyTime
     );
     
     Rob.globals_.caloriesPerMannaMorsel = (
-      Rob.globals_.caloriesNeededForBabyFormation / Rob.globals_.typicalMannaCountPerFeeding
+      0.25 *      // Still trial and error; even after all these careful calculations, the manna is too nutritious
+      Rob.globals_.totalCaloriesNeededToSpreadGenes /
+      (Rob.globals_.estimatedMannaEatenPerFeeding * Rob.globals_.decreedNumberOfFeedingsForMakingABaby)
     );
     
-    // Ok, trial and error still
-    Rob.globals_.caloriesPerMannaMorsel;
+    Rob.globals_.caloriesGainedPerParasiteBite = Rob.globals_.caloriesPerMannaMorsel * 3 / 60;
     
-    Rob.globals_.caloriesGainedPerParasiteBite = Rob.globals_.caloriesPerMannaMorsel * 2 / frameRate;
-    Rob.globals_.caloriesLostPerParasiteBite = Rob.globals_.caloriesPerMannaMorsel * 5 / frameRate;
-    
+    Rob.globals_.caloriesLostPerParasiteBite = Rob.globals_.caloriesGainedPerParasiteBite * 2;
+
+    Rob.globals_.caloriesGainedPerInjuredParasiteBite = Rob.globals_.caloriesGainedPerParasiteBite * 10;
+
+///////////////////////////////////////////
+        
     var archonMassRangeLo = Rob.globals_.massOfMiracleBabies / 2;
     var archonMassRangeHi = 4;
     
@@ -181,7 +278,9 @@ Rob = {
     Rob.globals_.parasitismCost = 0.1 / frameRate;    // Being a parasite requires extra metabolic machinery
     
     Rob.globals = new Proxy(Rob.globals_, {
-      get: function(target, name) { if(name in target) { return target[name]; } else { debugger; } }
+      get: function(target, name) {
+        if(name in target) { return target[name]; }
+        else { debugger; } }  // jshint ignore: line
     });
   },
 
@@ -230,11 +329,4 @@ if(typeof window === "undefined") {
   module.exports = Rob;
 } else {
   window.onload = function() { Rob.go(runWhichState); };
-  window.onerror = function(message, source, lineno, colno, error) {
-    console.log(message);
-    console.log(source);
-    console.log('Line', lineno, 'Column', colno);
-    console.log(error);
-    debugger;
-  };
 }

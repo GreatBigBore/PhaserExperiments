@@ -169,29 +169,31 @@ Rob.Genomer.prototype = {
 
   makePrimordialGenome: function() {
     this.primordialGenome = {
+      avoidDangerousPreyFactor: new Rob.ScalarGene(10),
+      birthThresholdMultiplier: new Rob.ScalarGene(Rob.globals.nominalBirthThresholdMultiplier),
       color: new Rob.ColorGene(Rob.tinycolor('hsl(180, 100%, 50%)')),
-      birthThresholdMultiplier: new Rob.ScalarGene(1.1),
       feedingAccelerationDamper: new Rob.ScalarGene(1),
       feedingSpeedDamper: new Rob.ScalarGene(1),
       hungerMultiplier: new Rob.ScalarGene(0.0005),
+      injuryFactorThreshold: new Rob.ScalarGene(0.5),
       maxMAcceleration: new Rob.ScalarGene(15),
       maxMVelocity: new Rob.ScalarGene(75),
       optimalMass: new Rob.ScalarGene(5),
       offspringMass: new Rob.ScalarGene(Rob.globals.massOfMiracleBabies),
       parasiteChaseFactor: new Rob.ScalarGene(1),
-      parasiteFlightFactor: new Rob.ScalarGene(1),
+      parasiteFlightFactor: new Rob.ScalarGene(10),
       sensorScale: new Rob.ScalarGene(1),
       targetChangeDelay: new Rob.ScalarGene(5),
       tasteFactor: new Rob.ScalarGene(100),
       tempFactor: new Rob.ScalarGene(1),
-      tempRange: new Rob.ScalarGene(400),
+      tempRange: new Rob.ScalarGene(Rob.globals.standardArchonTolerableTempRange.hi - Rob.globals.standardArchonTolerableTempRange.lo),
       tempRangeDamping: new Rob.ScalarGene(0.5),
     
       // dummy entries so the getters will work
       optimalTemp: null,
       optimalHiTemp: null,
       optimalLoTemp: null
-    }
+    };
   }
 
 };

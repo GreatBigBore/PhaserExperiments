@@ -19,16 +19,28 @@ Rob.Report = function(genePool) {
 
 Rob.Report.prototype = {
   
+  abbreviatePropertyName: function(propertyName) {
+    if(propertyName === 'birthThresholdMultiplier') { propertyName = 'birthThresholdXer'; }
+    if(propertyName === 'feedingAccelerationDamper') { propertyName = 'feedingAccDamper'; }
+    if(propertyName === 'avoidDangerousPreyFactor') { propertyName = 'avoidDangerousPrey'; }
+    propertyName = propertyName.replace('Factor', 'F');
+    
+    return propertyName;
+  },
+  
   archonReport: function(whichSprite) {
     var a = whichSprite.archon;
     var whichReport = a.whichArchonReport % 2;
 
     var parasiteIndicator = a.isParasite ? "p" : "np";
+    var injuryIndicator = a.isDisabled ? ", d" : "";
+    
     console.log(
-      "\n\nReport for archon " + a.uniqueID + "(" + parasiteIndicator + ")" +
-      ": mass = " + a.lizer.getMass().toFixed(4) +
+      "\n\nReport for archon " + a.uniqueID + "(" + parasiteIndicator + injuryIndicator + ")" +
+      ": mass " + a.lizer.getMass().toFixed(4) +
       ", age " + Rob.numberFix(whichSprite.archon.frameCount / 60, 2) + " seconds" +
-      ", children " + a.howManyChildren
+      ", children " + a.howManyChildren +
+      ", color #" + lPad(a.color.toString(16).toUpperCase(), 6, '0')
     );
   
     if(whichReport === 0) {
@@ -90,6 +102,7 @@ Rob.Report.prototype = {
       for(var i in Rob.globals.archonia.genomer.primordialGenome) {
         if(i !== 'color') {
           var value = whichSprite.archon[i];
+          i = this.abbreviatePropertyName(i);
 
           console.log(Rob.rPad(i, 28, '.'), Rob.lPad(Rob.numberFix(value, 2), 9));
         }
@@ -258,8 +271,7 @@ Rob.Report.prototype = {
         var propertyName = keys[k];
         var entry = j[propertyName];
         
-        if(propertyName === 'birthThresholdMultiplier') { propertyName = 'birthThresholdXer'; }
-        if(propertyName === 'feedingAccelerationDamper') { propertyName = 'feedingAccDamper'; }
+        propertyName = this.abbreviatePropertyName(propertyName);
     
         console.log(
           rPad(propertyName, 20) +

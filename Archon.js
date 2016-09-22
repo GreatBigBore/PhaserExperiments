@@ -1,6 +1,8 @@
 /* jshint forin:false, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, loopfunc:true,
 	undef:true, unused:true, curly:true, browser:true, indent:false, maxerr:50, jquery:true, node:true */
 
+/* global Proxy */
+
 "use strict";
 
 var Rob = Rob || {};
@@ -78,8 +80,8 @@ Rob.Archon = function(god, phaseron) {
   };
   
   for(var organ in this.organs) {
-    this[organ] = new Proxy(this.organs[organ], {
-      get: function(target, name) { if(name in target) { return target[name]; } else { debugger; } }
+    this[organ] = new Proxy(this.organs[organ], { 
+      get: function(target, name) { if(name in target) { return target[name]; }  else { debugger; } } // jshint ignore: line
     });
   }
 };
@@ -105,8 +107,10 @@ Rob.Archon.prototype.activatePhysicsBodies = function() {
 };
 
 Rob.Archon.prototype.breed = function() {
-  this.howManyChildren++;
-  this.god.breed(this);
+  if(!this.isDisabled) {
+    this.howManyChildren++;
+    this.god.breed(this);
+  }
 };
 
 Rob.Archon.prototype.getPosition = function() {
@@ -124,16 +128,28 @@ Rob.Archon.prototype.getVelocity = function() {
 Rob.Archon.prototype.launch = function(myParentArchon) {
   Rob.globals.archonia.genomer.inherit(this, myParentArchon);
   
-  if(myParentArchon === undefined) {
-    this.isParasite = Rob.integerInRange(0, 100) < 25;
+  if(myParentArchon === undefined || this.god.tooFewParasites()) {
+    this.isParasite = Rob.integerInRange(0, 100) < 10;
   } else {
     this.isParasite = myParentArchon.isParasite;
   }
   
   this.myParentArchon = myParentArchon;
   this.frameCount = Rob.integerInRange(0, 60);
+  this.whichFlash = 'birth';
+  this.flashDuration = 0.5 * 60;
+  this.flashInterval = 5;
+  this.flashExpiration = this.frameCount + this.flashDuration; // Flash birth for five seconds
   this.howManyChildren = 0;
   this.flashDirection = -1;
+  this.isDisabled = false;
+  this.isDefending = false;
+  this.injuryFactor = 0;
+  
+  this.flashes = {
+    birth: { on: 0xFFFFFF, off: 0 },
+    defending: { on: 0xFF0000, off: 0x0000FF }
+  };
 
 	this.uniqueID = this.god.getUniqueID();
   if(this.uniqueID === 0) {
@@ -192,20 +208,36 @@ Rob.Archon.prototype.throttle = function(id, interval, callback, context) {
 Rob.Archon.prototype.tick = function() {
   this.frameCount++;
   
-  if(this.frameCount % 60 === 0) {
+  if(this.isDefending) {
+    this.flashExpiration = this.frameCount + this.flashDuration;
+    this.whichFlash = 'defending';
+    this.isDefending = false;
+    this.flashDirection = 1;
+  }
+  
+  if((this.flashExpiration - this.frameCount) % this.flashInterval === 0) {
     this.flashDirection *= -1;
   }
   
-  if(this.frameCount > 600) {
+  if(this.frameCount > this.flashExpiration) {
     this.flashDirection = 0;
   }
   
-  if(this.flashDirection === -1) {
-    this.sprite.tint = this.uniqueID === 0 ? 0x00FF00 : 0;
-  } else if(this.flashDirection === 1) {
-    this.sprite.tint = this.uniqueID === 0 ? 0x0000FF : 0xffffff;
+  if(this.flashDirection === 1) {
+    this.sprite.tint = this.flashes[this.whichFlash].on;
+  } else if(this.flashDirection === -1) {
+    this.sprite.tint = this.flashes[this.whichFlash].off;
   } else {
-    this.sprite.tint = this.uniqueID === 0 ? 0x00FFFF : this.color;
+    this.sprite.tint = this.color;
+  }
+  
+  // If I've been injured so badly (or was born with a serious defect),
+  // then everyone can see me as injured. This doesn't matter unless
+  // I'm a parasite. Normally, a parasite is immune to parasitism;
+  // other parasites will leave me alone. But when they see my
+  // injury they'll come after me
+  if(this.maxMVelocity < Rob.globals.maxMagnitudeV / 5) {
+    this.isDisabled = true;
   }
 
   this.sensor.x = this.sprite.x; // So the sensor will stay attached
