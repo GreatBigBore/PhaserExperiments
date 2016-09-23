@@ -26,7 +26,7 @@ Rob.Archons = function() {
   Rob.globals.creation = false;
 };
 
-Rob.Archons.prototype.decreesYouAParasite = function() {
+Rob.Archons.prototype.decreesYouAParasite = function(parentArchon) {
   var parasiteCount = 0;
   
   this.phaseronPool.forEachAlive(function(p) {
@@ -35,7 +35,11 @@ Rob.Archons.prototype.decreesYouAParasite = function() {
     }
   }, this);
   
-  var probability = (parasiteCount / this.phaseronPool.countLiving() < 0.05) ? 50 : 10;
+  var probability = null;
+  
+  if(parentArchon.isParasite) { probability = 90; }
+  else if(parasiteCount / this.phaseronPool.countLiving() < 0.05) { probability = 25; }
+  else { probability = 5; }
 
   return Rob.integerInRange(0, 100) < probability;
 };
