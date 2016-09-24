@@ -104,7 +104,6 @@ Rob = {
   preGameInit: function() {
     Rob.globals_.tideRange = new Rob.Range(1.5, 1);
     Rob.globals_.archonSizeRange = new Rob.Range(0.07, 0.125);
-    Rob.globals_.standardArchonTolerableTempRange = new Rob.Range(-200, 200);
     Rob.globals_.archonColorRange = new Rob.Range(1, 255);
     Rob.globals_.darknessRange = new Rob.Range(Rob.globals_.darknessAlphaHi, Rob.globals_.darknessAlphaLo);
     Rob.globals_.zeroToOneRange = new Rob.Range(0, 1);
@@ -114,6 +113,11 @@ Rob = {
     Rob.globals_.normalZeroCenterRange = new Rob.Range(-0.5, 0.5);
     Rob.globals_.testTemperatureRange = new Rob.Range(-500, 500);
     Rob.globals_.oneToTenRange = new Rob.Range(1, 10);
+
+    Rob.globals_.standardArchonTolerableTempDelta = 200;
+    Rob.globals_.standardArchonTolerableTempRange = new Rob.Range(
+      -Rob.globals_.standardArchonTolerableTempDelta, Rob.globals_.standardArchonTolerableTempDelta
+    );
 
     var fatDensity = 100;                  // Calories per gram
     var babyFatDensity = 1000;             // Calories per gram
@@ -126,7 +130,7 @@ Rob = {
 
     var frameRate = 60;                    // ticks per second
     var dayLength = 60;                    // in seconds
-    var lifeOf100Calories = 1;             // in days
+    var lifeOf100Calories = 0.5;             // in days
     var optimalAdultMass = 1.5;            // grams -- weigh this much before embryo building starts
     var costFactorForGivingBirth = 1.25;         // It takes an extra 25% of the offspring mass; this is lost to entropy
     var starvingAdultMass = adultFatAtBirth;      // Basically the minimum mass an adult can tolerate
@@ -144,11 +148,22 @@ Rob = {
     var caloriesRequiredForGivingBirth = nominalOffspringEnergy * costFactorForGivingBirth;  // entropy cost + nominal baby mass
     var adultFullPregnancyMass = (optimalAdultMass * fatDensity) + caloriesRequiredForGivingBirth; // (cal) when you're this big, your baby is born
     var diffBetweenFullPregnancyAndStarving = (adultFullPregnancyMass - starvingAdultMass) * birthThresholdMultiplier;
+    
+    var howLongToReachBearingMass = 0.5;    // In days
 
-    var nominalMannaIntakeRate = mannaPerFeeding * feedingsPerDay / dayLength; // manna/sec, averaged over the day
+    // manna/sec, averaged over the day
+    var nominalMannaIntakeRate = mannaPerFeeding * feedingsPerDay / (dayLength * howLongToReachBearingMass);
     var caloriesPerMannaForStagnation = nominalMannaIntakeRate / calorieBurnRate;
     var caloriesPerMannaForBreeding = diffBetweenFullPregnancyAndStarving / (nominalMannaIntakeRate / calorieBurnRate);
-      
+    var caloriesPerManna = caloriesPerMannaForStagnation + caloriesPerMannaForBreeding;
+
+    calorieBurnRate /= frameRate;
+    caloriesPerManna /= frameRate;
+    mAccelerationBurnRate /= frameRate;
+    mVelocityBurnRate /= frameRate;
+    excessTempBurnRate /= frameRate;
+    standardTempBurnRate /= frameRate;
+    
     Rob.globals_.dayLength = dayLength;
     Rob.globals_.fatDensity = fatDensity;
     Rob.globals_.babyFatDensity = babyFatDensity;
@@ -157,19 +172,20 @@ Rob = {
     Rob.globals_.excessTempBurnRate = excessTempBurnRate;
     Rob.globals_.mVelocityBurnRate = mVelocityBurnRate;
     Rob.globals_.mAccelerationBurnRate = mAccelerationBurnRate;
-    Rob.globals_.caloriesPerManna = caloriesPerMannaForStagnation + caloriesPerMannaForBreeding;
+    Rob.globals_.caloriesPerManna = caloriesPerManna;
     Rob.globals_.caloriesGainedPerParasiteBite = Rob.globals_.caloriesPerManna * 3;
     Rob.globals_.caloriesLostPerParasiteBite = Rob.globals_.caloriesGainedPerParasiteBite * 2;
     Rob.globals_.nominalBirthThresholdMultiplier = birthThresholdMultiplier;
     Rob.globals_.costFactorForGivingBirth = costFactorForGivingBirth;
     Rob.globals_.adultFullPregnancyMass = adultFullPregnancyMass;
+    Rob.globals_.optimalAdultMass = optimalAdultMass;
     
     Rob.globals_.nominalOffspringEnergy = nominalOffspringEnergy;
     Rob.globals_.babyFatAtBirth = babyFatAtBirth;             // 100g baby fat + 100g adult fat gives us 1.1g
     Rob.globals_.adultFatAtBirth = adultFatAtBirth;
         
     var archonMassRangeLo = 0.5;
-    var archonMassRangeHi = 4;
+    var archonMassRangeHi = 50;
     
     Rob.globals_.archonMassRange = new Rob.Range(archonMassRangeLo, archonMassRangeHi);
 

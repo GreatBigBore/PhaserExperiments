@@ -61,7 +61,7 @@ Rob.Lizer.prototype.absorbCalories = function(calories) {
     this.processCalorieLoss();
   }
   
-  if(this.archon.phaseron.alive) {
+  if(this.archon.sprite.alive) {
     this.setSize();
   }
 };
@@ -162,24 +162,35 @@ Rob.Lizer.prototype.getTemperature = function() {
 Rob.Lizer.prototype.getTempCost = function(temp) {
   var c = 0, d = 0, e = 0, f = 0;
   
-	// Costs for keeping the body warm, for moving, and
-	// for simply maintaining the body
-	c += Math.abs(temp - this.archon.optimalTemp) * Rob.globals.standardTempBurnRate;
+	// Costs for keeping the body warm
+
+  var geneticTempRange = this.archon.optimalHiTemp - this.archon.optimalLoTemp;
+  var worldTempRange = Rob.globals.temperatureHi - Rob.globals.temperatureLo;
   
-  if(temp > this.archon.optimalHiTemp) {
-    d = temp - this.archon.optimalHiTemp;
-  } else if(temp < this.archon.optimalLoTemp) {
-    d = this.archon.optimalLoTemp - temp;
+  if(temp < this.archon.optimalTemp) {
+    if(temp < this.archon.optimalLoTemp) {
+      c = -this.archon.optimalLoTemp;
+      d = this.archon.optimalLoTemp - temp;
+    } else {
+      c = this.archon.optimalTemp - temp;
+    }
+  } else if(temp > this.archon.optimalTemp) {
+    if(temp > this.archon.optimalHiTemp) {
+      c = this.archon.optimalHiTemp;
+      d = temp - this.archon.optimalHiTemp;
+    } else {
+      c = temp - this.archon.optimalTemp;
+    }
   }
-  
-  d *= Rob.globals.excessTempBurnRate;  // Temps outside your range cost more than normal
+
+  c *= Rob.globals.standardTempBurnRate * (1 + geneticTempRange / worldTempRange);
+  d *= Rob.globals.excessTempBurnRate * (1 + geneticTempRange / worldTempRange);
   
   // There's also a cost for having the ability to tolerate wide temperature ranges
-  var geneticTempRange = this.archon.optimalHiTemp - this.archon.optimalLoTemp;
   var standardTempRange = Rob.globals.standardArchonTolerableTempRange.hi - Rob.globals.standardArchonTolerableTempRange.lo;
 
   if(geneticTempRange > standardTempRange) {
-    d *= geneticTempRange / standardTempRange;
+    d *= 1 + (standardTempRange / geneticTempRange);
   }
 
   // This will make the costs grow with size, but logarithmically
@@ -260,7 +271,7 @@ Rob.Lizer.prototype.metabolize = function() {
   if(this.embryoCalorieBudget > 0) {
     this.embryoCalorieBudget -= cost;
 
-    if(this.this.embryoCalorieBudget < 0) {
+    if(this.embryoCalorieBudget < 0) {
       cost = -this.embryoCalorieBudget;
       this.embryoCalorieBudget = 0;
     }
