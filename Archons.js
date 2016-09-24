@@ -36,9 +36,9 @@ Rob.Archons.prototype.decreesYouAParasite = function(parentArchon) {
   }, this);
   
   var probability = null;
-  
-  if(parentArchon.isParasite) { probability = 90; }
-  else if(parasiteCount / this.phaseronPool.countLiving() < 0.05) { probability = 25; }
+ 
+  if(parentArchon === undefined || (parasiteCount / this.phaseronPool.countLiving() < 0.05)) { probability = 25; }
+  else if(parentArchon.isParasite) { probability = 90; }
   else { probability = 5; }
 
   return Rob.integerInRange(0, 100) < probability;
@@ -107,6 +107,9 @@ Rob.Archons.prototype.geneReport = function() {
 Rob.Archons.prototype.breed = function(parentArchon) {
 	var phaseron = this.phaseronPool.getFirstDead();
 	if(phaseron === null) { throw "No more phaserons in pool"; }
+  
+  phaseron.inputEnabled = true;
+  phaseron.input.enableDrag();
   
   if(phaseron.archon === undefined) {
     phaseron.archon = new Rob.Archon(this, phaseron);

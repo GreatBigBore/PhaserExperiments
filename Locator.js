@@ -20,8 +20,12 @@ Rob.Locator = function() {
   this.trackers = {
     taste: { vector: Rob.XY(), hitCount: 0 }
   };
+
+  this.frameCount = 0;
   
   this.wallAvoidance = Rob.XY();
+  this.jinkTime = 0;
+  this.lastPredatorDistance = Number.MAX_VALUE;
 };
 
 Rob.Locator.prototype = {
@@ -35,6 +39,16 @@ Rob.Locator.prototype = {
       ( this.archon.avoidDangerousPreyFactor * (1 + this.archon.injuryFactor * 100) )
     );
   },
+
+  computerizeAngle: function(robizedAngle) {
+    while(robizedAngle > 2 * Math.PI) {
+      robizedAngle -= 2 * Math.PI;
+    }
+  
+    var a = (robizedAngle > Math.PI) ? 2 * Math.PI - robizedAngle : -robizedAngle;
+  
+    return a;
+  },
   
   ffSense: function(rhs) {
     if(this.archon.uniqueID !== rhs.archon.uniqueID) {
@@ -42,106 +56,83 @@ Rob.Locator.prototype = {
     }
   },
   
-  getEmergencyFlightPlan: function(predator, vectorToPredator) {
-    var a = null;
-    var inDangerZone = false;
+  getAvoidanceFlightPlan: function(predator, vectorToPredator) {
+    var inDanger = false;
     
-    if(Rob.fuzzyEqual(20, this.archon.position.x, predator.archon.position.x)) {
-      inDangerZone = true;
-      
-      if(Rob.pointInXBounds(this.archon.position) && !this.wallAvoidance.x) {
-        a = this.archon.position.x - predator.archon.position.x;
-        
-        if(a === 0) {
-          vectorToPredator.x += (Rob.integerInRange(0, 1) || -1) * 100;
-        } else {
-          vectorToPredator.x += Math.sign(a) * 100;
-        }
-      } else {
-        this.wallAvoidance.x = Math.abs(this.archon.position.x - game.width / 2) > game.width / 4;
+    var rrc = 50;
+    if(this.archon.position.x < 25) { this.wallAvoidance.x = rrc; } else if(this.archon.position.x > game.width - 25) { this.wallAvoidance.x = rrc - game.width; }
+    if(this.archon.position.y < 25) { this.wallAvoidance.y = rrc; } else if(this.archon.position.y > game.height - 25) { this.wallAvoidance.y = rrc - game.height; }
+  
+    if(this.wallAvoidance.x && this.archon.position.x >= rrc && this.archon.position.x <= game.width - rrc) { this.wallAvoidance.x = false; }
+    if(this.wallAvoidance.y && this.archon.position.y >= rrc && this.archon.position.y <= game.height - rrc) { this.wallAvoidance.y = false; }
+  
+    if(this.wallAvoidance.x) { vectorToPredator.x = this.wallAvoidance.x; inDanger = true; }
+    if(this.wallAvoidance.y) { vectorToPredator.y = this.wallAvoidance.y; inDanger = true; }
+    
+    if(this.wallAvoidance.x || this.wallAvoidance.y) {
+      vectorToPredator.scalarMultiply(-100);
+    }
 
-        if(this.wallAvoidance.x) {
-          vectorToPredator.x -= (this.archon.position.x - game.width / 2) * 100;
-        }
+    var currentDistanceToPredator = this.archon.position.getDistanceTo(predator.archon.position);
+    if(!inDanger && (this.frameCount > this.jinkTime)) {
+      inDanger = true;
+    
+      this.jinkTime = this.frameCount + 30;
+      this.lastPredatorDistance = currentDistanceToPredator;
+
+      var theta = this.archon.position.getAngleTo(predator.archon.position);
+    
+      var adjust = null;
+      var direction = game.rnd.integerInRange(0, 1) || -1;
+    
+      if(direction > 0) {
+        adjust = game.rnd.realInRange(-Math.PI / 2, -Math.PI / 4);
+      } else {
+        adjust = game.rnd.realInRange(Math.PI / 4, Math.PI / 2);
       }
+    
+      var robizedAngle = this.robizeAngle(theta + adjust + Math.PI);
+    
+      var computerizedAngle = this.computerizeAngle(robizedAngle);
+
+      vectorToPredator.set(Rob.XY.fromPolar(this.archon.sensorWidth * 100, computerizedAngle));
     }
     
-    if(Rob.fuzzyEqual(20, this.archon.position.y, predator.archon.position.y)) {
-      inDangerZone = true;
-      if(Rob.pointInYBounds(this.archon.position) && !this.wallAvoidance.y) {
-        a = this.archon.position.y - predator.archon.position.y;
-        
-        if(a === 0) {
-          vectorToPredator.y += (Rob.integerInRange(0, 1) || -1) * 100;
-        } else {
-          vectorToPredator.y += Math.sign(a) * 100;
-        }
-      } else {
-        this.wallAvoidance.y = Math.abs(this.archon.position.y - game.height / 2) > game.height / 4;
+    if(!inDanger) { this.lastPredatorDistance = Number.MAX_VALUE; }
 
-        if(this.wallAvoidance.y) {
-          vectorToPredator.y -= (this.archon.position.y - game.height / 2) * 100;
-        }
-      }
-    }
-    
-    return inDangerZone;
-    
+    return true;
   },
   
-  getFlightPlan: function(massRatioHisToMine, him) {
-    var relatedness = Rob.globals.archonia.familyTree.getDegreeOfRelatedness(him.archon.uniqueID, this.archon.uniqueID);
+  getStandardFlightPlan: function(massRatioHisToMine, theOtherGuy) {
+    var him = theOtherGuy.archon, he = him;
+    var me = this.archon;
+    
+    var iShouldAvoid = false;
+    var iShouldIgnore = false;
+    var iShouldPursue = false;
+    var iWillBeInjured = false;
+    var iWillBeParasitized = false;
+    var iWillInjure = false;
+    var iWillParasitize = false;
+    var done = false;
+    
+    var closeRelatives = Rob.globals.archonia.familyTree.getDegreeOfRelatedness(him.uniqueID, me.uniqueID) <= 3;
+    var bothGrazers = !me.isParasite && !him.isParasite;
 
-    // If I'm a not-too-injured parasite, I am dangerous
-    var iAmDangerous = (
-      this.archon.isParasite && (this.archon.injuryFactor < him.archon.injuryFactorThreshold) && !this.archon.isDisabled
-    );
-    
-    // If he's a not-too-injured parasite, he is dangerous
-    var heIsDangerous = (
-      him.archon.isParasite && (him.archon.injuryFactor < this.archon.injuryFactorThreshold) && !him.archon.isDisabled
-    );
+    if(closeRelatives || bothGrazers) { iShouldIgnore = true; done = true; }
+    if(!done && he.isParasite && !me.isParasite) { iShouldAvoid = true; done = true; }
+    if(!done && me.isParasite && he.isDisabled) { iShouldPursue = true; done = true; }
+    if(!done && me.isParasite && he.isParasite) { iShouldIgnore = true; done = true; }
+    if(!done && me.isParasite && massRatioHisToMine >= 1) { iShouldAvoid = true; done = true; }
+    if(!done && me.isParasite && massRatioHisToMine <= 1) { iShouldPursue = true; done = true; }
 
-    // If I'm a non-parasite, I should avoid all parasites, their injuries notwithstanding
-    // If he's a too-big non-parasite, I should avoid him
-    // If I'm a too-injured parasite, I should avoid everyone
-    //    (non-parasites can still injure me, and other parasites will eat me)
-    var iShouldAvoid = (
-      (him.archon.isParasite && !this.archon.isParasite) ||
-      (!him.archon.isParasite && massRatioHisToMine > this.archon.avoidDangerousPreyFactor) ||
-      !iAmDangerous
-    );
-    
-    // If I'm not dangerous, and he's not dangerous, we can browse together in peace
-    // If he's dangerous, and I'm dangerous, we can prey together in peace
-    // If we're too closely related, we should ignore each other
-    // JS doesn't have an xor?!?!
-    var iShouldIgnore = (iAmDangerous && heIsDangerous) || (!iAmDangerous && !heIsDangerous) || relatedness <= 3;
+    if(he.isParasite && !he.isDisabled && (!me.isParasite || me.isDisabled)) { iWillBeParasitized = true; }
+    if(me.isParasite && !me.isDisabled && (!he.isParasite || he.isDisabled)) { iWillParasitize = true; }
 
-    // If avoidance and ignorance have both been ruled out, he's prey
-    var iShouldPursue = !iShouldAvoid && !iShouldIgnore;
-    
-    // If he's a parasite, he will get something from me if I'm not a parasite,
-    // even if I injure him in the encounter. If he's a parasite and I'm disabled,
-    // he will get something from me, again, even if I injure him
-    var iWillBeParasitized = (this.archon.isDisabled || !this.archon.isParasite) && him.archon.isParasite;
-    
-    // Whether I get an injury or not, if I'm not disabled, I get some calories
-    var iWillParasitize = this.archon.isParasite && !this.archon.isDisabled && (!him.archon.isParasite || him.archon.isDisabled);
-    
-    var iWillBeInjured = (
-      !iWillBeParasitized &&      // Being injured and being parasitized are mutually exclusive
-      this.archon.isParasite &&   // Only parasites can be injured; non-parasites are parasitized
-      !him.archon.isParasite &&   // Only non-parasites can injure; parasites parasitize
-      massRatioHisToMine > 1
-    );
-    
-    // Parasites don't injure each other. I will injure him if he's smaller than I
-    // am, even if he gets some calories from me
-    var iWillInjure = !this.archon.isParasite && him.archon.isParasite && massRatioHisToMine < 1;
+    if(!he.isParasite && me.isParasite && !me.isDisabled && massRatioHisToMine > 1) { iWillBeInjured = true; }
+    if(!me.isParasite && he.isParasite && !he.isDisabled && massRatioHisToMine < 1) { iWillInjure = true; }
     
     return {
-      iAmDangerous: iAmDangerous, heIsDangerous: heIsDangerous,
       iShouldPursue: iShouldPursue, iShouldIgnore: iShouldIgnore, iShouldAvoid: iShouldAvoid,
       iWillBeInjured: iWillBeInjured, iWillInjure: iWillInjure,
       iWillBeParasitized: iWillBeParasitized, iWillParasitize: iWillParasitize
@@ -177,6 +168,16 @@ Rob.Locator.prototype = {
     }
   },
 
+  robizeAngle: function(computerizedAngle) {
+    var a = (computerizedAngle < 0) ? -computerizedAngle : 2 * Math.PI - computerizedAngle;
+  
+    while(a < 2 * Math.PI) {
+      a += 2 * Math.PI;
+    }
+  
+    return a;
+  },
+  
   sense: function(sense, sensee) {
     var t = this.trackers.taste;
     var radius = this.archon.sensorRadius;
@@ -192,7 +193,7 @@ Rob.Locator.prototype = {
     if(sense === 'ff') {
       var massRatio = sensee.archon.lizer.getMass() / this.archon.lizer.getMass();
 
-      var fp = this.getFlightPlan(massRatio, sensee);
+      var fp = this.getStandardFlightPlan(massRatio, sensee);
       
       if(fp.iShouldIgnore) {
 
@@ -203,7 +204,7 @@ Rob.Locator.prototype = {
 
         value *= this.archon.parasiteFlightFactor;
         
-        if(!this.getEmergencyFlightPlan(sensee, relativePosition)) {
+        if(this.getAvoidanceFlightPlan(sensee, relativePosition)) {
           // If we're out of the predator's range, then it's not
           // quite as much of an emergency, so no flight plan will
           // be made. In that case, we just need to point our vector
@@ -243,6 +244,10 @@ Rob.Locator.prototype = {
   
   taste: function(food) {
     this.sense('taste', food);
+  },
+  
+  tick: function(frameCount) {
+    this.frameCount = frameCount;
   }
   
 };

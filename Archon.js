@@ -128,7 +128,7 @@ Rob.Archon.prototype.getVelocity = function() {
 Rob.Archon.prototype.launch = function(myParentArchon) {
   Rob.globals.archonia.genomer.inherit(this, myParentArchon);
   
-  this.isParasite = (myParentArchon !== undefined) && this.god.decreesYouAParasite(myParentArchon);
+  this.isParasite = this.god.decreesYouAParasite(myParentArchon);
   
   this.myParentArchon = myParentArchon;
   this.frameCount = Rob.integerInRange(0, 60);
@@ -241,6 +241,7 @@ Rob.Archon.prototype.tick = function() {
   
   this.accel.tick(this.frameCount);
   this.lizer.tick(this.frameCount);
+  this.locator.tick(this.frameCount);
   this.mover.tick(this.frameCount);
 };
 

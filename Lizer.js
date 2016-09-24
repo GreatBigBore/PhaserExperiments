@@ -56,7 +56,7 @@ Rob.Lizer.prototype.ffAction = function(him) {
 
   var massRatio = him.archon.lizer.getMass() / this.getMass();
 
-  var fp = this.archon.locator.getFlightPlan(massRatio, him);
+  var fp = this.archon.locator.getStandardFlightPlan(massRatio, him);
 
   if(fp.iWillBeParasitized) {
     
