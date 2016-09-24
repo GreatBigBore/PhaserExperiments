@@ -114,162 +114,61 @@ Rob = {
     Rob.globals_.normalZeroCenterRange = new Rob.Range(-0.5, 0.5);
     Rob.globals_.testTemperatureRange = new Rob.Range(-500, 500);
     Rob.globals_.oneToTenRange = new Rob.Range(1, 10);
-    
-    // Fat density is fixed by god
-    // Adult fat density = 1 gram / calorie
-    // Baby fat density = 0.1 gram / calorie
-    // What you're born with should last you 45 sec
-    // --> typical metabolism cost in calories ~ primordial baby calories / 45
-    // -->        meaning typical temp cost + typical motion cost
-    // --> # calories you need for having baby = gene-determined baby mass * baby fat calorie density
-    // Two feedings should allow you 30more seconds of life and to have one baby
-    // Estimate 50 morsels per feeding, so 100
-    // to have a baby, you need 100 cal * entropy cost
-    // If we make it such that you need two feedings to have a baby,
-    //    and about 30 sec between feedings, then you need 170+ cal.
-    //    If you can get 50 manna per feeding, that's 100 manna, so let's say 2cal / manna
-    
-    // typical temp cost ~ 1/2 typical metabolism cost for anything w/in 200˚ of optimal
-    // typical speed cost also
-    
-    var frameRate = 60;
 
-    Rob.globals_.dayLength = 60;  // In seconds
+    var fatDensity = 100;                  // Calories per gram
+    var babyFatDensity = 1000;             // Calories per gram
+    var embryoFatDensity = 1000;              // Calories per gram; should be same as baby fat density
 
-    Rob.globals_.massOfMiracleBabies = 1;             // In grams
-    Rob.globals_.fatCalorieDensity = 100;             // 100 calories = 1 gram
-    Rob.globals_.lifeOf100Calories = Rob.globals_.dayLength * 0.5;  // 100 calories should last you 1/2 day
-    Rob.globals_.miracleCalories = 100;               // 1g of real mass plus this extra massless embryonic nutrition
-    
-    // This is in calories per second -- 3 1/3
-    Rob.globals_.nominalCalorieBurnRate = (
-      (Rob.globals_.massOfMiracleBabies * Rob.globals_.fatCalorieDensity) / Rob.globals_.lifeOf100Calories
-    );
-    
-    // 1 2/3 each
-    Rob.globals_.nominalTempCostPerSecond = Rob.globals_.nominalCalorieBurnRate / 2;
-    Rob.globals_.nominalMotionCostPerSecond = Rob.globals_.nominalCalorieBurnRate / 2;
-    
-    // 0.0028
-    Rob.globals_.nominalCostPerInRangeTemp = (
-      Rob.globals_.nominalTempCostPerSecond / 
-      (Rob.globals_.standardArchonTolerableTempRange.hi - Rob.globals_.standardArchonTolerableTempRange.lo) / 3
-    );
-    
-    // 0.0056
-    Rob.globals_.nominalCostPerExcessTemp = Rob.globals_.nominalCostPerInRangeTemp * 2;
+    // Organize the newborn fat such that we'll be born with 200 calories, weighing just over a gram
+    var babyFatAtBirth = 100;             // 100g baby fat + 100g adult fat gives us 1.1g
+    var adultFatAtBirth = 100;
+    var nominalOffspringEnergy = 200;     // Actual number of calories in a newborn
 
-    // 0.0074, 0.0148
-    Rob.globals_.nominalCostPerMagnitudeV = Rob.globals_.nominalMotionCostPerSecond / Rob.globals_.maxMagnitudeV / 3;
-    Rob.globals_.nominalCostPerMagnitudeA = Rob.globals_.nominalCostPerMagnitudeV * 2;
-    
-    Rob.globals_.estimatedMannaEatenPerFeeding = 50;
-    Rob.globals_.estimatedFeedingDuration = Rob.globals_.dayLength / 4;
-    Rob.globals_.nominalTimeBetweenFeedings = Rob.globals_.dayLength / 4;
-    
-    // I decree that you should have to eat twice to build the reserves necessary for a baby
-    // This is in seconds
-    Rob.globals_.decreedNumberOfFeedingsForMakingABaby = 2;
-    
-    // 45!
-    Rob.globals_.nominalTimeForMakingABaby = (
-      (Rob.globals_.decreedNumberOfFeedingsForMakingABaby * Rob.globals_.estimatedFeedingDuration) +
-      Rob.globals_.nominalTimeBetweenFeedings
-    );
-    
-    Rob.globals_.nominalReservesBeforeEmbryoBuilding = 1.5; // Your own birth weight plus this as reserves
-    Rob.globals_.nominalBirthThresholdMultiplier = 1.1;     // Have some excess before you risk having a baby
+    var frameRate = 60;                    // ticks per second
+    var dayLength = 60;                    // in seconds
+    var lifeOf100Calories = 1;             // in days
+    var optimalAdultMass = 1.5;            // grams -- weigh this much before embryo building starts
+    var costFactorForGivingBirth = 1.25;         // It takes an extra 25% of the offspring mass; this is lost to entropy
+    var starvingAdultMass = adultFatAtBirth;      // Basically the minimum mass an adult can tolerate
+    var mannaPerFeeding = 50;              // Probably won't be this high
+    var feedingsPerDay = 2;                // Max -- they might miss one; tough
 
-    // 275 -- This is nominally how many calories you should have on board in order to have a baby
-    // (In addition to your own nominal birth weight)
-    Rob.globals_.nominalBirthThreshold = (
-      (Rob.globals_.massOfMiracleBabies + Rob.globals_.nominalReservesBeforeEmbryoBuilding) *
-      Rob.globals_.fatCalorieDensity * Rob.globals_.nominalBirthThresholdMultiplier
-    );
-    
-    // This is just to keep my own body going through the feedings and the gaps between
-    // 150
-    Rob.globals_.caloriesToSurviveBabyTime = Rob.globals_.nominalCalorieBurnRate * Rob.globals_.nominalTimeForMakingABaby;
+    var calorieBurnRate = lifeOf100Calories / dayLength;  // calories per second
 
-    // 425
-    Rob.globals_.totalCaloriesNeededToSpreadGenes = (
-      Rob.globals_.nominalBirthThreshold + Rob.globals_.caloriesToSurviveBabyTime
-    );
-    
-    // Hopefully I've done the math right, and this will give us at least a rough
-    // idea of how many calories we need in each manna morsel
-    // 4.25
-    Rob.globals_.caloriesPerMannaMorsel = (
-      Rob.globals_.totalCaloriesNeededToSpreadGenes /
-      (Rob.globals_.estimatedMannaEatenPerFeeding * Rob.globals_.decreedNumberOfFeedingsForMakingABaby)
-    );
-    
-    // It seems like it should be worth at least three manna to be worth
-    // my while even to be a parasite
+    var standardTempBurnRate = 0.5 * (1/3) * calorieBurnRate; // cal/sec; total temp is half total burn rate; standard rate is half excess rate
+    var excessTempBurnRate = 2 * standardTempBurnRate;        // cal/sec
+    var mVelocityBurnRate = standardTempBurnRate;             // cal/sec; total motion cost half total burn, same as temp
+    var mAccelerationBurnRate = 2 * mVelocityBurnRate;        // same as excess temp
+
+    var birthThresholdMultiplier = 1.1; // Safety cushion; grow a little bigger than nominal before giving birth
+    var caloriesRequiredForGivingBirth = nominalOffspringEnergy * costFactorForGivingBirth;  // entropy cost + nominal baby mass
+    var adultFullPregnancyMass = (optimalAdultMass * fatDensity) + caloriesRequiredForGivingBirth; // (cal) when you're this big, your baby is born
+    var diffBetweenFullPregnancyAndStarving = (adultFullPregnancyMass - starvingAdultMass) * birthThresholdMultiplier;
+
+    var nominalMannaIntakeRate = mannaPerFeeding * feedingsPerDay / dayLength; // manna/sec, averaged over the day
+    var caloriesPerMannaForStagnation = nominalMannaIntakeRate / calorieBurnRate;
+    var caloriesPerMannaForBreeding = diffBetweenFullPregnancyAndStarving / (nominalMannaIntakeRate / calorieBurnRate);
+      
+    Rob.globals_.dayLength = dayLength;
+    Rob.globals_.fatDensity = fatDensity;
+    Rob.globals_.babyFatDensity = babyFatDensity;
+    Rob.globals_.embryoFatDensity = embryoFatDensity;
+    Rob.globals_.standardTempBurnRate = standardTempBurnRate;
+    Rob.globals_.excessTempBurnRate = excessTempBurnRate;
+    Rob.globals_.mVelocityBurnRate = mVelocityBurnRate;
+    Rob.globals_.mAccelerationBurnRate = mAccelerationBurnRate;
+    Rob.globals_.caloriesPerManna = caloriesPerMannaForStagnation + caloriesPerMannaForBreeding;
     Rob.globals_.caloriesGainedPerParasiteBite = Rob.globals_.caloriesPerManna * 3;
-    
-    // Has to be greater than what the predator can gain
     Rob.globals_.caloriesLostPerParasiteBite = Rob.globals_.caloriesGainedPerParasiteBite * 2;
-
-///////////////////////////////////////////
-
-
-
-    Rob.globals_.nominalCalorieBurnRate /= frameRate;
-
-    Rob.globals_.nominalTempCostPerTick = Rob.globals_.nominalTempCostPerSecond / frameRate;
-    Rob.globals_.nominalMotionCostPerTick = Rob.globals_.nominalMotionCostPerSecond / frameRate;
+    Rob.globals_.nominalBirthThresholdMultiplier = birthThresholdMultiplier;
+    Rob.globals_.costFactorForGivingBirth = costFactorForGivingBirth;
+    Rob.globals_.adultFullPregnancyMass = adultFullPregnancyMass;
     
-    Rob.globals_.nominalCostPerInRangeTemp = (
-      Rob.globals_.nominalTempCostPerTick /       // Converted from secs to ticks
-      (Rob.globals_.standardArchonTolerableTempRange.hi - Rob.globals_.standardArchonTolerableTempRange.lo) / 3
-    );
-    
-    Rob.globals_.nominalCostPerExcessTemp = Rob.globals_.nominalCostPerInRangeTemp * 2;
-
-    Rob.globals_.nominalCostPerMagnitudeV /= frameRate;
-    Rob.globals_.nominalCostPerMagnitudeA = Rob.globals_.nominalCostPerMagnitudeV * 2;
-    
-    Rob.globals_.estimatedMannaEatenPerFeeding = 50;
-    Rob.globals_.estimatedFeedingDuration = Rob.globals_.dayLength / 4 * frameRate;
-    Rob.globals_.nominalTimeBetweenFeedings = Rob.globals_.dayLength / 4 * frameRate;
-    
-    Rob.globals_.decreedNumberOfFeedingsForMakingABaby = 2;
-    
-    Rob.globals_.nominalTimeForMakingABaby = (
-      (Rob.globals_.decreedNumberOfFeedingsForMakingABaby * Rob.globals_.estimatedFeedingDuration) +
-      Rob.globals_.nominalTimeBetweenFeedings
-    );
-    
-    Rob.globals_.nominalReservesBeforeEmbryoBuilding = 1.5; // Your own birth weight plus this as reserves
-    Rob.globals_.nominalBirthThresholdMultiplier = 1.1;     // Have some excess before you risk having a baby
-
-    Rob.globals_.nominalBirthThreshold = (
-      (Rob.globals_.massOfMiracleBabies + Rob.globals_.nominalReservesBeforeEmbryoBuilding) *
-      Rob.globals_.fatCalorieDensity * Rob.globals_.nominalBirthThresholdMultiplier
-    );
-    
-    Rob.globals_.caloriesToSurviveBabyTime = Rob.globals_.nominalCalorieBurnRate * Rob.globals_.nominalTimeForMakingABaby;
-
-    Rob.globals_.totalCaloriesNeededToSpreadGenes = (
-      Rob.globals_.nominalBirthThreshold + Rob.globals_.caloriesToSurviveBabyTime
-    );
-    
-    Rob.globals_.caloriesPerMannaMorsel = (
-      0.25 *      // Still trial and error; even after all these careful calculations, the manna is too nutritious
-      Rob.globals_.totalCaloriesNeededToSpreadGenes /
-      (Rob.globals_.estimatedMannaEatenPerFeeding * Rob.globals_.decreedNumberOfFeedingsForMakingABaby)
-    );
-    
-    Rob.globals_.caloriesGainedPerParasiteBite = Rob.globals_.caloriesPerMannaMorsel * 3 / 60;
-    
-    Rob.globals_.caloriesLostPerParasiteBite = Rob.globals_.caloriesGainedPerParasiteBite * 2;
-
-    Rob.globals_.caloriesGainedPerInjuredParasiteBite = Rob.globals_.caloriesGainedPerParasiteBite * 10;
-
-///////////////////////////////////////////
+    Rob.globals_.nominalOffspringEnergy = nominalOffspringEnergy;
+    Rob.globals_.babyFatAtBirth = babyFatAtBirth;             // 100g baby fat + 100g adult fat gives us 1.1g
+    Rob.globals_.adultFatAtBirth = adultFatAtBirth;
         
-    var archonMassRangeLo = Rob.globals_.massOfMiracleBabies / 2;
+    var archonMassRangeLo = 0.5;
     var archonMassRangeHi = 4;
     
     Rob.globals_.archonMassRange = new Rob.Range(archonMassRangeLo, archonMassRangeHi);

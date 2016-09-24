@@ -95,7 +95,7 @@ Rob.Archon.prototype.activatePhysicsBodies = function() {
 	};
 
 	enable(this.sprite);
-	this.setSize(Rob.globals.massOfMiracleBabies);
+	this.setSize(false);
 
 	enable(this.sensor);
   
@@ -189,11 +189,23 @@ Rob.Archon.prototype.setVelocity = function(a1, a2) {
   this.velocity.set(a1, a2);
 };
 
-Rob.Archon.prototype.getSize = function() {
-  return this.sprite.width / Rob.rg.bm.width;
-};
-
-Rob.Archon.prototype.setSize = function(mass) {
+Rob.Archon.prototype.setSize = function(lizerIsLaunched) {
+  var mass = null, babyFat = 0, adultFat = 0, embryoFat = 0;
+  
+  if(lizerIsLaunched) {
+    babyFat = this.lizer.babyCalorieBudget;
+    adultFat = this.lizer.calorieBudget;
+    embryoFat = this.lizer.embryoCalorieBudget;
+  } else {
+    babyFat = Rob.globals.babyFatAtBirth;
+    adultFat = Rob.globals.adultFatAtBirth;
+    embryoFat = 0;
+  }
+  
+  mass = (
+    (babyFat / Rob.globals.babyFatDensity) + (adultFat / Rob.globals.fatDensity) + (embryoFat / Rob.globals.embryoFatDensity)
+  );
+  
 	var p = Rob.globals.archonSizeRange.convertPoint(mass, Rob.globals.archonMassRange);
 
 	this.sprite.scale.setTo(p, p);
@@ -201,6 +213,10 @@ Rob.Archon.prototype.setSize = function(mass) {
 	var w = this.sprite.width;	// Have to tell the body to keep up with the sprite
 	this.sprite.body.setSize(w, w);
 	this.sprite.body.setCircle(w / 2);
+};
+
+Rob.Archon.prototype.getSize = function() {
+  return this.sprite.width / Rob.rg.bm.width;
 };
 
 Rob.Archon.prototype.throttle = function(id, interval, callback, context) {

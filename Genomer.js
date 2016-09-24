@@ -179,7 +179,7 @@ Rob.Genomer.prototype = {
       maxMAcceleration: new Rob.ScalarGene(15),
       maxMVelocity: new Rob.ScalarGene(75),
       optimalMass: new Rob.ScalarGene(5),
-      offspringMass: new Rob.ScalarGene(Rob.globals.massOfMiracleBabies),
+      offspringEnergy: new Rob.ScalarGene(Rob.globals.nominalOffspringEnergy),
       parasiteChaseFactor: new Rob.ScalarGene(1),
       parasiteFlightFactor: new Rob.ScalarGene(10),
       sensorScale: new Rob.ScalarGene(1),

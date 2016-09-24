@@ -10,7 +10,7 @@ Rob.Lizer = function(archon) {
   this.frameCount = 0;
   
   this.mannaNutritionRange =
-  	new Rob.Range(Rob.globals.caloriesPerMannaMorsel, 4 * Rob.globals.caloriesPerMannaMorsel);
+  	new Rob.Range(Rob.globals.caloriesPerManna, 4 * Rob.globals.caloriesPerManna);
     
   this.stats = {
     thisSecond: { caloriesIn: 0, caloriesOut: 0 },
@@ -42,12 +42,28 @@ Rob.Lizer.prototype.absorbCalories = function(calories) {
   this.calorieBudget += calories;
   this.stats.thisSecond.caloriesIn += calories;
   
-  if(this.calorieBudget > this.birthThreshold) {
-    this.archon.breed();
-    this.calorieBudget -= this.costForHavingBabies;
+  if(this.babyCalorieBudget > 0) {
+    this.calorieBudget += calories;
+  } else if(this.calorieBudget >= (Rob.globals.optimalAdultMass * Rob.globals.fatDensity)) {
+    this.embryoCalorieBudget += calories;
+  } else {
+    this.calorieBudget += calories;
   }
   
-	this.archon.setSize(this.getMass());
+  if(this.embryoCalorieBudget > this.birthThreshold) {
+    this.archon.breed();
+    this.embryoCalorieBudget -= this.whatILoseWhenIReproduce;
+    
+    if(this.embryoCalorieBudget < 0) {
+      this.calorieBudget -= this.whatILoseWhenIReproduce;
+    }
+    
+    this.processCalorieLoss();
+  }
+  
+  if(this.archon.phaseron.alive) {
+    this.setSize();
+  }
 };
 
 Rob.Lizer.prototype.ffAction = function(him) {
@@ -104,15 +120,31 @@ Rob.Lizer.prototype.howHungryAmI = function(baseValue) {
   return Math.abs(baseValue * this.archon.tasteFactor * hunger);
 };
 
-Rob.Lizer.prototype.getMass = function() {
-  return this.calorieBudget / Rob.globals.fatCalorieDensity;
+Rob.Lizer.prototype.getMass = function(useDefaults) {
+  var babyCalories = null, adultCalories = null, embryoCalories = null;
+  
+  if(useDefaults === undefined) {
+    babyCalories = this.babyCalorieBudget;
+    adultCalories = this.calorieBudget;
+    embryoCalories = this.embryoCalorieBudget;
+  } else {
+    babyCalories = Rob.globals.babyFatAtBirth;
+    adultCalories = Rob.globals.adultFatAtbirth;
+    embryoCalories = 0;
+  }
+
+  return  (
+    (adultCalories / Rob.globals.fatDensity) +
+    (babyCalories / Rob.globals.babyFatDensity) +
+    (embryoCalories / Rob.globals.embryoFatDensity)
+  );
 };
 
 Rob.Lizer.prototype.getMotionCost = function() {
   var c = 0, d = 0, e = 0, motion = this.archon.accel.getMotion();
   
-  d = motion.mVelocity * Rob.globals.nominalCostPerMagnitudeV;
-  e = motion.mAcceleration * Rob.globals.nominalCostPerMagnitudeA;
+  d = motion.mVelocity * Rob.globals.mVelocityBurnRate;
+  e = motion.mAcceleration * Rob.globals.mAccelerationBurnRate;
 
   c += d + e;
 
@@ -132,7 +164,7 @@ Rob.Lizer.prototype.getTempCost = function(temp) {
   
 	// Costs for keeping the body warm, for moving, and
 	// for simply maintaining the body
-	c += Math.abs(temp - this.archon.optimalTemp) * Rob.globals.nominalCostPerInRangeTemp;
+	c += Math.abs(temp - this.archon.optimalTemp) * Rob.globals.standardTempBurnRate;
   
   if(temp > this.archon.optimalHiTemp) {
     d = temp - this.archon.optimalHiTemp;
@@ -140,7 +172,7 @@ Rob.Lizer.prototype.getTempCost = function(temp) {
     d = this.archon.optimalLoTemp - temp;
   }
   
-  d *= Rob.globals.nominalCostPerExcessTemp;  // Temps outside your range cost more than normal
+  d *= Rob.globals.excessTempBurnRate;  // Temps outside your range cost more than normal
   
   // There's also a cost for having the ability to tolerate wide temperature ranges
   var geneticTempRange = this.archon.optimalHiTemp - this.archon.optimalLoTemp;
@@ -168,7 +200,6 @@ Rob.Lizer.prototype.getTempCost = function(temp) {
 
 Rob.Lizer.prototype.launch = function(archon) {
   this.archon = archon;
-	this.calorieBudget = 0;
 	this.accumulatedMetabolismCost = 0;
   this.parasitismBenefit = 0;
 		
@@ -190,27 +221,17 @@ Rob.Lizer.prototype.launch = function(archon) {
   this.lifetime = 0;
 	this.expirationDate = this.lifetime + this.archon.frameCount;
 
-  var caloriesIHaveAtLaunch = (
-    this.archon.myParentArchon === undefined ?
-    Rob.globals.massOfMiracleBabies :
-    this.archon.myParentArchon.offspringMass
-  ) * Rob.globals.fatCalorieDensity;
+  this.calorieBudget = Rob.globals.adultFatAtBirth;
+  this.babyCalorieBudget = Rob.globals.babyFatAtBirth;
+  this.embryoCalorieBudget = 0;
   
-  // This is how many calories we start life with
-  this.calorieBudget = caloriesIHaveAtLaunch * Rob.globals.costFactorForBeingBorn;
-  this.masslessCaloriesForBaby = Rob.globals.miracleCalories;
-
   // In addition to the calories I give to my offspring from the
   // embryo, I also expend a certain amount of energy by giving birth
-	this.costForHavingBabies = this.archon.offspringMass * Rob.globals.fatCalorieDensity * Rob.globals.costFactorForGivingBirth;
-  
-  // This is how many calories my embryo must contain before it can produce an offspring
-  this.birthThreshold = (
-    (this.costForHavingBabies + (Rob.globals.archonMassRange.lo * Rob.globals.fatCalorieDensity)) *
-    this.archon.birthThresholdMultiplier
-  );
+  this.whatILoseWhenIReproduce = this.archon.offspringEnergy * Rob.globals.costFactorForGivingBirth;
 
-	this.archon.setSize(this.getMass());
+  this.birthThreshold = Rob.globals.adultFullPregnancyMass * this.archon.birthThresholdMultiplier;
+
+	this.setSize();
 };
 
 Rob.Lizer.prototype.metabolize = function() {
@@ -225,19 +246,36 @@ Rob.Lizer.prototype.metabolize = function() {
   cost += this.getTempCost(temp);
   cost += this.getMotionCost();
   
-  if(this.masslessCaloriesForBaby > 0) {
-    this.masslessCaloriesForBaby -= cost;
-    
-    if(this.masslessCaloriesForBaby < 0) {
-      cost -= this.masslessCaloriesForBaby;
-    } else {
-      cost = 0;
+  var accounting = cost;
+  
+  if(this.babyCalorieBudget > 0) {
+    this.babyCalorieBudget -= cost;
+
+    if(this.babyCalorieBudget < 0) {
+      cost = -this.babyCalorieBudget;
+      this.babyCalorieBudget = 0;
+    }
+  }
+
+  if(this.embryoCalorieBudget > 0) {
+    this.embryoCalorieBudget -= cost;
+
+    if(this.this.embryoCalorieBudget < 0) {
+      cost = -this.embryoCalorieBudget;
+      this.embryoCalorieBudget = 0;
     }
   }
   
-	this.calorieBudget -= cost;
-  this.stats.thisSecond.caloriesOut += cost;
+  if(cost > 0) {
+    this.calorieBudget -= cost;
+  }
+  
+  this.stats.thisSecond.caloriesOut += accounting;
 
+  this.processCalorieLoss();
+};
+
+Rob.Lizer.prototype.processCalorieLoss = function() {
   if(this.calorieBudget < Rob.globals.archonMassRange.lo) {
 
     this.archon.sprite.kill(); this.archon.button.kill(); this.archon.sensor.kill();
@@ -245,7 +283,7 @@ Rob.Lizer.prototype.metabolize = function() {
 
   } else {
 
-		this.archon.setSize(this.getMass());
+		this.setSize();
 
 	}
 };
@@ -259,6 +297,10 @@ Rob.Lizer.prototype.setButtonColor = function(temp) {
 	var tint = parseInt(rgb, 16);
 
 	this.archon.button.tint = tint;
+};
+
+Rob.Lizer.prototype.setSize = function() {
+  this.archon.setSize(true);
 };
 
 Rob.Lizer.prototype.tick = function(frameCount) {
