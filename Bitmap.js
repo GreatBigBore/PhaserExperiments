@@ -11,7 +11,7 @@ Rob.Bitmap = function(whichBitmap) {
     case 'debugBackground':
     case 'rectGradient':
     case 'realityGoo':
-    case 'wallsGoo':
+    case 'parasiteGoo':
     case 'reportBackground':
     this[whichBitmap]();
     break;
@@ -187,14 +187,22 @@ Rob.Bitmap.prototype.tick = function() {
 };
   
 
-Rob.Bitmap.prototype.wallsGoo = function() {
-  this.bm = game.add.bitmapData(1, 1);
+Rob.Bitmap.prototype.parasiteGoo = function() {
+  var diameter = 100;
+  var radius = diameter / 2;
+
+  this.bm = game.add.bitmapData(diameter, diameter);
   this.cx = this.bm.context;
 
-  this.cx.fillStyle = 'rgba(255, 255, 255, 1)';
-  this.cx.strokeStyle = 'rgba(255, 255, 255, 1)';
+  this.cx.beginPath();
+  this.bm.circle(radius, radius, radius, 'rgba(255, 255, 255, 1)');
+  this.cx.fill();
+  
+  this.cx.strokeStyle = 'red';
+  this.cx.lineWidth = 25;
+  
+  //this.cx.beginPath(); this.cx.moveTo(radius, 0); this.cx.lineTo(radius, diameter); this.cx.stroke();
+  this.cx.beginPath(); this.cx.moveTo(0, radius); this.cx.lineTo(diameter, radius); this.cx.stroke();
 
-  this.cx.fillRect(0, 0, game.width, game.height);
-
-  game.cache.addBitmapData('wallsGoo', this.bm);
+  game.cache.addBitmapData('parasiteGoo', this.bm);
 };

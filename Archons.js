@@ -154,7 +154,7 @@ Rob.Archons.prototype.setupSpritePools = function() {
 	var setupPool = function(t, whichPool) {
 		t[whichPool] = game.add.group();
 	  t[whichPool].enableBody = true;
-	  t[whichPool].createMultiple(1000, game.cache.getBitmapData('realityGoo'), 0, false);
+	  t[whichPool].createMultiple(500, game.cache.getBitmapData('realityGoo'), 0, false);
 	  game.physics.enable(t[whichPool], Phaser.Physics.ARCADE);
 	};
 

@@ -318,7 +318,7 @@ Rob = {
     Rob.bg = new Rob.Bitmap('rectGradient');
     Rob.db = new Rob.Bitmap('debugBackground');
     Rob.rg = new Rob.Bitmap('realityGoo');
-    Rob.wg = new Rob.Bitmap('wallsGoo');
+    Rob.wg = new Rob.Bitmap('parasiteGoo');
     Rob.pg = new Rob.Bitmap('reportBackground');
   }
 };
