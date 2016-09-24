@@ -25,7 +25,6 @@ Rob.Locator = function() {
   
   this.wallAvoidance = Rob.XY();
   this.jinkTime = 0;
-  this.lastPredatorDistance = Number.MAX_VALUE;
 };
 
 Rob.Locator.prototype = {
@@ -57,7 +56,7 @@ Rob.Locator.prototype = {
   },
   
   getAvoidanceFlightPlan: function(predator, vectorToPredator) {
-    var inDanger = false;
+    var inWallAvoidance = false;
     
     var rrc = 50;
     if(this.archon.position.x < 25) { this.wallAvoidance.x = rrc; } else if(this.archon.position.x > game.width - 25) { this.wallAvoidance.x = rrc - game.width; }
@@ -66,41 +65,14 @@ Rob.Locator.prototype = {
     if(this.wallAvoidance.x && this.archon.position.x >= rrc && this.archon.position.x <= game.width - rrc) { this.wallAvoidance.x = false; }
     if(this.wallAvoidance.y && this.archon.position.y >= rrc && this.archon.position.y <= game.height - rrc) { this.wallAvoidance.y = false; }
   
-    if(this.wallAvoidance.x) { vectorToPredator.x = this.wallAvoidance.x; inDanger = true; }
-    if(this.wallAvoidance.y) { vectorToPredator.y = this.wallAvoidance.y; inDanger = true; }
+    if(this.wallAvoidance.x) { vectorToPredator.x = this.wallAvoidance.x; inWallAvoidance = true; }
+    if(this.wallAvoidance.y) { vectorToPredator.y = this.wallAvoidance.y; inWallAvoidance = true; }
     
     if(this.wallAvoidance.x || this.wallAvoidance.y) {
-      vectorToPredator.scalarMultiply(-100);
-    }
-
-    var currentDistanceToPredator = this.archon.position.getDistanceTo(predator.archon.position);
-    if(!inDanger && (this.frameCount > this.jinkTime)) {
-      inDanger = true;
-    
-      this.jinkTime = this.frameCount + 30;
-      this.lastPredatorDistance = currentDistanceToPredator;
-
-      var theta = this.archon.position.getAngleTo(predator.archon.position);
-    
-      var adjust = null;
-      var direction = game.rnd.integerInRange(0, 1) || -1;
-    
-      if(direction > 0) {
-        adjust = game.rnd.realInRange(-Math.PI / 2, -Math.PI / 4);
-      } else {
-        adjust = game.rnd.realInRange(Math.PI / 4, Math.PI / 2);
-      }
-    
-      var robizedAngle = this.robizeAngle(theta + adjust + Math.PI);
-    
-      var computerizedAngle = this.computerizeAngle(robizedAngle);
-
-      vectorToPredator.set(Rob.XY.fromPolar(this.archon.sensorWidth * 100, computerizedAngle));
+      return;
     }
     
-    if(!inDanger) { this.lastPredatorDistance = Number.MAX_VALUE; }
-
-    return false;
+    vectorToPredator.scalarMultiply(-1);
   },
   
   getStandardFlightPlan: function(massRatioHisToMine, theOtherGuy) {
@@ -170,7 +142,7 @@ Rob.Locator.prototype = {
     }
   },
 
-  robizeAngle: function(computerizedAngle) {
+  robalizeAngle: function(computerizedAngle) {
     var a = (computerizedAngle < 0) ? -computerizedAngle : 2 * Math.PI - computerizedAngle;
   
     while(a < 2 * Math.PI) {
@@ -206,13 +178,7 @@ Rob.Locator.prototype = {
 
         value *= this.archon.parasiteFlightFactor;
         
-        if(!this.getAvoidanceFlightPlan(sensee, relativePosition)) {
-          // If we're out of the predator's range, then it's not
-          // quite as much of an emergency, so no flight plan will
-          // be made. In that case, we just need to point our vector
-          // safely away from the predator
-          value *= -1;
-        }
+        this.getAvoidanceFlightPlan(sensee, relativePosition);
 
       } else if(fp.iShouldPursue) {
 
