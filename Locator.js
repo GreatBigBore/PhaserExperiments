@@ -100,7 +100,7 @@ Rob.Locator.prototype = {
     
     if(!inDanger) { this.lastPredatorDistance = Number.MAX_VALUE; }
 
-    return true;
+    return false;
   },
   
   getStandardFlightPlan: function(massRatioHisToMine, theOtherGuy) {
@@ -126,11 +126,13 @@ Rob.Locator.prototype = {
     if(!done && me.isParasite && massRatioHisToMine >= 1) { iShouldAvoid = true; done = true; }
     if(!done && me.isParasite && massRatioHisToMine <= 1) { iShouldPursue = true; done = true; }
 
-    if(he.isParasite && !he.isDisabled && (!me.isParasite || me.isDisabled)) { iWillBeParasitized = true; }
-    if(me.isParasite && !me.isDisabled && (!he.isParasite || he.isDisabled)) { iWillParasitize = true; }
+    if(!closeRelatives) {
+      if(he.isParasite && !he.isDisabled && (!me.isParasite || me.isDisabled)) { iWillBeParasitized = true; }
+      if(me.isParasite && !me.isDisabled && (!he.isParasite || he.isDisabled)) { iWillParasitize = true; }
 
-    if(!he.isParasite && me.isParasite && !me.isDisabled && massRatioHisToMine > 1) { iWillBeInjured = true; }
-    if(!me.isParasite && he.isParasite && !he.isDisabled && massRatioHisToMine < 1) { iWillInjure = true; }
+      if(!he.isParasite && me.isParasite && !me.isDisabled && massRatioHisToMine > 1) { iWillBeInjured = true; }
+      if(!me.isParasite && he.isParasite && !he.isDisabled && massRatioHisToMine < 1) { iWillInjure = true; }
+    }
     
     return {
       iShouldPursue: iShouldPursue, iShouldIgnore: iShouldIgnore, iShouldAvoid: iShouldAvoid,
@@ -204,7 +206,7 @@ Rob.Locator.prototype = {
 
         value *= this.archon.parasiteFlightFactor;
         
-        if(this.getAvoidanceFlightPlan(sensee, relativePosition)) {
+        if(!this.getAvoidanceFlightPlan(sensee, relativePosition)) {
           // If we're out of the predator's range, then it's not
           // quite as much of an emergency, so no flight plan will
           // be made. In that case, we just need to point our vector

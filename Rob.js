@@ -21,7 +21,7 @@ Rob = {
   debugText: "",
 
   globals_: {
-    archonCount: 15,
+    archonCount: 25,
     archonia: {},
     costFactorForGivingBirth: 2,
     costFactorForBeingBorn: 1,
