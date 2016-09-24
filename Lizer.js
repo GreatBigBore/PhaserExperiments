@@ -80,7 +80,7 @@ Rob.Lizer.prototype.ffAction = function(him) {
     // It's possible to be injured even if I get to eat.
     // Also, only parasites can be injured, and only non-disabled ones.
     // Non-parasites and disabled parasites are parasitized
-    this.archon.injuryFactor = 0.005;
+    this.archon.injuryFactor += 0.001 / 60;
     this.archon.maxMVelocity *= 1 - this.archon.injuryFactor;
     
   } else if(fp.iWillInjure) {
