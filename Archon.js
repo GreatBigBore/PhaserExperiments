@@ -130,8 +130,13 @@ Rob.Archon.prototype.launch = function(myParentArchon) {
   
   this.isParasite = this.god.decreesYouAParasite(myParentArchon);
   
-  var texture = this.isParasite ? 'parasiteGoo' : 'realityGoo';
-  this.sprite.loadTexture(game.cache.getBitmapData(texture));
+  //var texture = this.isParasite ? 'parasiteGoo' : 'realityGoo';
+  //this.sprite.loadTexture(game.cache.getBitmapData(texture));
+  
+  var xScale = this.isParasite ? 1.25 : 0.25;
+  var yScale = this.isParasite ? 0.25 : 0.25;
+  
+  this.button.scale.setTo(xScale, yScale);
   
   this.myParentArchon = myParentArchon;
   this.frameCount = Rob.integerInRange(0, 60);
