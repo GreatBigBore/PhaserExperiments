@@ -70,19 +70,27 @@ Rob.Archon = function(god, phaseron) {
   this.velocity = new Rob.Archonoid(p.body.velocity);
   
   Rob.globals.archonia.genomer.genomifyMe(this); // No inheritance here; just getting a skeleton genome
+
+  if(1) {
+    this.accel = new Rob.Accel();
+    this.lizer = new Rob.Lizer();
+    this.locator = new Rob.Locator();
+    this.mover = new Rob.Mover();
+    this.temper = new Rob.Temper(game.width / 2);
+  } else { 
+    this.organs = {
+      accel: new Rob.Accel(),
+      lizer: new Rob.Lizer(),
+      locator: new Rob.Locator(),
+      mover: new Rob.Mover(),
+      temper: new Rob.Temper(game.width / 2)
+    };
   
-  this.organs = {
-    accel: new Rob.Accel(),
-    lizer: new Rob.Lizer(),
-    locator: new Rob.Locator(),
-    mover: new Rob.Mover(),
-    temper: new Rob.Temper(game.width / 2)
-  };
-  
-  for(var organ in this.organs) {
-    this[organ] = new Proxy(this.organs[organ], { 
-      get: function(target, name) { if(name in target) { return target[name]; }  else { debugger; } } // jshint ignore: line
-    });
+    for(var organ in this.organs) {
+      this[organ] = new Proxy(this.organs[organ], { 
+        get: function(target, name) { if(name in target) { return target[name]; }  else { debugger; } } // jshint ignore: line
+      });
+    }
   }
 };
 

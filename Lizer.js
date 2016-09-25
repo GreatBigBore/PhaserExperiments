@@ -10,7 +10,7 @@ Rob.Lizer = function(archon) {
   this.frameCount = 0;
   
   this.mannaNutritionRange =
-  	new Rob.Range(Rob.globals.caloriesPerManna, 4 * Rob.globals.caloriesPerManna);
+  	new Rob.Range(Rob.globals.caloriesPerManna, 2 * Rob.globals.caloriesPerManna);
     
   this.stats = {
     thisSecond: { caloriesIn: 0, caloriesOut: 0 },
@@ -32,6 +32,11 @@ Rob.Lizer.prototype.eat = function(foodParticle) {
   
 	var sunStrength = Rob.globals.archonia.sun.getStrength();
 	var calories = this.mannaNutritionRange.convertPoint(sunStrength, Rob.globals.oneToZeroRange);
+  
+  // Parasites have to supplement their diet with blood
+  if(this.archon.isParasite) {
+    calories *= 0.75;
+  }
 
   this.absorbCalories(calories);
   
