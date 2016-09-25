@@ -127,38 +127,52 @@ Rob = {
     var babyFatAtBirth = 100;             // 100g baby fat + 100g adult fat gives us 1.1g
     var adultFatAtBirth = 100;
     var nominalOffspringEnergy = 200;     // Actual number of calories in a newborn
+    var howLongNewbornCanLiveWithoutFood = 1; // In days
 
     var frameRate = 60;                    // ticks per second
     var dayLength = 60;                    // in seconds
-    var lifeOf100Calories = 0.5;             // in days
-    var optimalAdultMass = 1.5;            // grams -- weigh this much before embryo building starts
-    var costFactorForGivingBirth = 1.25;         // It takes an extra 25% of the offspring mass; this is lost to entropy
-    var starvingAdultMass = adultFatAtBirth;      // Basically the minimum mass an adult can tolerate
+    
+    var cBurnRate = (howLongNewbornCanLiveWithoutFood / dayLength);
+
     var mannaPerFeeding = 50;              // Probably won't be this high
     var feedingsPerDay = 2;                // Max -- they might miss one; tough
+    
+    var gOptimalAdultMass = 2;                   // Arbitrary -- could be less or more
 
-    var calorieBurnRate = lifeOf100Calories / dayLength;  // calories per second
+    var costFactorForGivingBirth = 1.25;          // It takes an extra 25% of the offspring mass; this is lost to entropy
 
-    var standardTempBurnRate = 0.5 * (1/3) * calorieBurnRate; // cal/sec; total temp is half total burn rate; standard rate is half excess rate
-    var excessTempBurnRate = 2 * standardTempBurnRate;        // cal/sec
-    var mVelocityBurnRate = standardTempBurnRate;             // cal/sec; total motion cost half total burn, same as temp
-    var mAccelerationBurnRate = 2 * mVelocityBurnRate;        // same as excess temp
+    var totalTempBurnRate = 0.1 * cBurnRate;     // Temp gets less weight than motion
+    var totalMotionBurnRate = cBurnRate - totalTempBurnRate;
+    
+    var standardTempBurnRate = totalTempBurnRate / 3;
+    var excessTempBurnRate = 2 * standardTempBurnRate;
+    
+    var mVelocityBurnRate = totalMotionBurnRate / 3;
+    var mAccelerationBurnRate = 2 * mVelocityBurnRate;
 
     var birthThresholdMultiplier = 1.1; // Safety cushion; grow a little bigger than nominal before giving birth
-    var caloriesRequiredForGivingBirth = nominalOffspringEnergy * costFactorForGivingBirth;  // entropy cost + nominal baby mass
-    var adultFullPregnancyMass = (optimalAdultMass * fatDensity) + caloriesRequiredForGivingBirth; // (cal) when you're this big, your baby is born
-    var diffBetweenFullPregnancyAndStarving = (adultFullPregnancyMass - starvingAdultMass) * birthThresholdMultiplier;
     
-    var howLongToReachBearingMass = 0.5;    // In days
+    // entropy cost + nominal baby mass
+    var cWhatILoseWhenIReproduce = nominalOffspringEnergy * costFactorForGivingBirth;
+    
+    // You must already be at your optimal mass, with this much extra, to reproduce
+    var cBirthPackageMass = cWhatILoseWhenIReproduce * birthThresholdMultiplier;
 
-    // manna/sec, averaged over the day
-    var nominalMannaIntakeRate = mannaPerFeeding * feedingsPerDay / (dayLength * howLongToReachBearingMass);
-    var caloriesPerMannaForStagnation = nominalMannaIntakeRate / calorieBurnRate;
-    var caloriesPerMannaForBreeding = diffBetweenFullPregnancyAndStarving / (nominalMannaIntakeRate / calorieBurnRate);
-    var caloriesPerManna = caloriesPerMannaForStagnation + caloriesPerMannaForBreeding;
+    // When you're this big, you get a baby, whether you want one or not
+    var cAdultFullPregnancyMass = (gOptimalAdultMass * fatDensity) + cBirthPackageMass;
+    
+    var howLongToBuildBirthPackage = 2; // Days
+    
+    // Calories per second needed to get to full pregnancy mass, not counting the background burn rate
+    var cRequiredGainRate = cAdultFullPregnancyMass / (howLongToBuildBirthPackage * dayLength);
+    var cRequiredIntakeRate = cRequiredGainRate + cBurnRate;
 
-    calorieBurnRate /= frameRate;
-    caloriesPerManna /= frameRate;
+    var nominalMannaPerSecond = mannaPerFeeding * feedingsPerDay / dayLength;
+
+    var caloriesPerManna = cRequiredIntakeRate / nominalMannaPerSecond;
+
+    //caloriesPerManna *= frameRate;
+    cBurnRate /= frameRate;
     mAccelerationBurnRate /= frameRate;
     mVelocityBurnRate /= frameRate;
     excessTempBurnRate /= frameRate;
@@ -173,12 +187,12 @@ Rob = {
     Rob.globals_.mVelocityBurnRate = mVelocityBurnRate;
     Rob.globals_.mAccelerationBurnRate = mAccelerationBurnRate;
     Rob.globals_.caloriesPerManna = caloriesPerManna;
-    Rob.globals_.caloriesGainedPerParasiteBite = Rob.globals_.caloriesPerManna * 3;
+    Rob.globals_.caloriesGainedPerParasiteBite = Rob.globals_.caloriesPerManna * 1;
     Rob.globals_.caloriesLostPerParasiteBite = Rob.globals_.caloriesGainedPerParasiteBite * 2;
     Rob.globals_.nominalBirthThresholdMultiplier = birthThresholdMultiplier;
     Rob.globals_.costFactorForGivingBirth = costFactorForGivingBirth;
-    Rob.globals_.adultFullPregnancyMass = adultFullPregnancyMass;
-    Rob.globals_.optimalAdultMass = optimalAdultMass;
+    Rob.globals_.adultFullPregnancyMass = cAdultFullPregnancyMass;
+    Rob.globals_.optimalAdultMass = gOptimalAdultMass;
     
     Rob.globals_.nominalOffspringEnergy = nominalOffspringEnergy;
     Rob.globals_.babyFatAtBirth = babyFatAtBirth;             // 100g baby fat + 100g adult fat gives us 1.1g
