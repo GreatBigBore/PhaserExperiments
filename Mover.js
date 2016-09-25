@@ -167,7 +167,7 @@ Rob.Mover.prototype = {
         }
       }
 
-      var drawDebugLines = true;
+      var drawDebugLines = false;
       if(drawDebugLines) {
         this.debugLineVector.set(finalVector);
         this.debugLineVector.subtract(this.archon.position);

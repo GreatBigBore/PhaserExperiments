@@ -77,7 +77,7 @@ Rob.Temper.prototype.getTempVector = function() {
   this.tempVector.set(0, 1);
   this.tempVector.scalarMultiply(e.signedDelta);
   
-  var drawDebugLines = true;
+  var drawDebugLines = false;
   if(drawDebugLines) {
     this.debugLineVector = Rob.XY(this.tempVector);
     this.debugLineVector.normalize();

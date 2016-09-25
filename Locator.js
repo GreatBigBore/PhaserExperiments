@@ -197,7 +197,7 @@ Rob.Locator.prototype = {
       t.vector.add(relativePosition);
       t.hitCount++;
   
-      var drawDebugLines = true;
+      var drawDebugLines = false;
       if(drawDebugLines) {
         var color = null;
         switch(sense) {
