@@ -25,6 +25,9 @@ Rob.Locator = function() {
   
   this.wallAvoidance = Rob.XY();
   this.jinkTime = 0;
+  
+  this.debugFFVector = Rob.XY();
+  this.debugTasteVector = Rob.XY();
 };
 
 Rob.Locator.prototype = {
@@ -194,7 +197,7 @@ Rob.Locator.prototype = {
       t.vector.add(relativePosition);
       t.hitCount++;
   
-      var drawDebugLines = false;
+      var drawDebugLines = true;
       if(drawDebugLines) {
         var color = null;
         switch(sense) {
@@ -202,10 +205,16 @@ Rob.Locator.prototype = {
           case 'ff': color = 'blue'; break;
           default: throw "Bad sense '" + sense + "'";
         }
-      
-        if(color === 'blue') {
-          Rob.db.draw(this.archon.position, relativePosition.plus(this.archon.position), color, 1);
-        }
+        
+        this.debugFFVector.set(relativePosition);
+        this.debugFFVector.normalize();
+        this.debugFFVector.scalarMultiply(this.archon.sensorRadius);
+        this.debugFFVector.add(this.archon.position);
+        
+        this.debugTasteVector.set(relativePosition);
+        this.debugTasteVector.normalize();
+        this.debugTasteVector.scalarMultiply(this.archon.sensorRadius);
+        this.debugTasteVector.add(this.archon.position);
       }
     }
   },

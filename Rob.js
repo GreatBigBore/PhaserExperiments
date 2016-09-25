@@ -89,7 +89,7 @@ Rob = {
   },
   
   pointXBoundsSign: function(point) {
-    return point.x - (game.width - Rob.globals.worldBoundsBorder);
+    return Math.sign(point.x - (game.width - Rob.globals.worldBoundsBorder));
   },
   
   pointInYBounds: function(point) {
@@ -98,7 +98,7 @@ Rob = {
   },
   
   pointYBoundsSign: function(point) {
-    return point.y - (game.height - Rob.globals.worldBoundsBorder);
+    return Math.sign(point.y - (game.height - Rob.globals.worldBoundsBorder));
   },
 
   preGameInit: function() {

@@ -15,6 +15,7 @@ if(typeof window === "undefined") {
 (function(Rob) {
 
 Rob.Mover = function() {
+  this.debugLineVector = Rob.XY();
 };
 
 Rob.Mover.prototype = {
@@ -57,7 +58,57 @@ Rob.Mover.prototype = {
     finalVector.set(tempVector);
   },
   
+  fuckWithOutOfBounds: function(vector) {
+    if(!Rob.pointInXBounds(vector)) {
+      var newXSign = Rob.pointXBoundsSign(vector);
+
+      vector.subtract(this.archon.position);
+      vector.normalize();
+      vector.y = this.archon.sensorRadius * -newXSign;
+      vector.x = -0.25 * this.archon.sensorRadius * newXSign;
+      vector.add(this.archon.position);
+    }
+
+    if(!Rob.pointInYBounds(vector)) {
+      var newYSign = Rob.pointYBoundsSign(vector);
+
+      vector.subtract(this.archon.position);
+      vector.normalize();
+      vector.x = this.archon.sensorRadius * -newYSign;
+      vector.y = -0.25 * this.archon.sensorRadius * newYSign;
+      vector.add(this.archon.position);
+    }
+  },
+  
   tick: function(frameCount) {
+    if(!this.archon.temper.debugLineVector.equals(0)) {
+      this.fuckWithOutOfBounds(this.archon.temper.debugLineVector);
+      Rob.db.draw(this.archon.position, this.archon.temper.debugLineVector, 'red', 2);
+    }
+
+    if(!this.archon.locator.debugFFVector.equals(0)) {
+      this.archon.locator.debugFFVector.subtract(this.archon.position);
+      this.archon.locator.debugFFVector.normalize();
+      this.archon.locator.debugFFVector.add(this.archon.position);
+
+      this.fuckWithOutOfBounds(this.archon.locator.debugFFVector);
+      Rob.db.draw(this.archon.position, this.archon.locator.debugFFVector, 'blue', 2);
+    }
+
+    if(!this.archon.locator.debugTasteVector.equals(0)) {
+      this.archon.locator.debugTasteVector.subtract(this.archon.position);
+      this.archon.locator.debugTasteVector.normalize();
+      this.archon.locator.debugTasteVector.add(this.archon.position);
+
+      this.fuckWithOutOfBounds(this.archon.locator.debugTasteVector);
+      Rob.db.draw(this.archon.position, this.archon.locator.debugTasteVector, 'green', 2);
+    }
+    
+    if(!this.debugLineVector.equals(0)) {
+      this.fuckWithOutOfBounds(this.debugLineVector);
+      Rob.db.draw(this.archon.position, this.debugLineVector, 'white', 1);
+    }
+
     if(this.archon.isDisabled) {
       this.archon.velocity.set(0);
       return;
@@ -114,6 +165,15 @@ Rob.Mover.prototype = {
           this.noNewTargetUntil += this.archon.targetChangeDelay / 2;
           this.jitterReductionActive = true;
         }
+      }
+
+      var drawDebugLines = true;
+      if(drawDebugLines) {
+        this.debugLineVector.set(finalVector);
+        this.debugLineVector.subtract(this.archon.position);
+        this.debugLineVector.normalize();
+        this.debugLineVector.scalarMultiply(this.archon.sensorRadius);
+        this.debugLineVector.add(this.archon.position);
       }
 
       this.archon.accel.setTarget(finalVector);

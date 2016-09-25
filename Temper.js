@@ -13,6 +13,7 @@ if(typeof window === "undefined") {
 
 Rob.Temper = function(gameCenter) {
   this.tempVector = Rob.XY();
+  this.debugLineVector = Rob.XY();
   
   // This is so we can function properly in both
   // the live and test harness environments. If
@@ -30,13 +31,7 @@ Rob.Temper = function(gameCenter) {
 
 Rob.Temper.prototype.getTempVector = function() {
   var e = null;
-  
-  var goddamnedWalls = Rob.XY(this.archon.position);
-  goddamnedWalls.y = game.height / 2;
-  if(Rob.pointInBounds(goddamnedWalls)) {
-    this.tempVector.reset();
-  }
-  
+    
   for(var i = 0, j = -this.senseLimit; i < this.testPoints.length; i++, j += this.senseLimit) {
     e = this.testPoints[i];
     
@@ -82,17 +77,12 @@ Rob.Temper.prototype.getTempVector = function() {
   this.tempVector.set(0, 1);
   this.tempVector.scalarMultiply(e.signedDelta);
   
-  // A mistake that led to a hacky sort of fix for the walls problem.
-  // Don't reset the temp vector every time we come in here; it will
-  // retain the x-value we assigned it when we found that the archon
-  // was against the wall. Keep that x direction unti we're well
-  // away from the wall, but slow down a bit each tick, so we don't
-  // just go back and forth from wall to wall when there's no food
-  // around
-  goddamnedWalls = Rob.XY(this.archon.position);
-  goddamnedWalls.y = game.height / 2;
-  if(!Rob.pointInBounds(goddamnedWalls)) {
-    this.tempVector.x = game.width / 2 - goddamnedWalls.x
+  var drawDebugLines = true;
+  if(drawDebugLines) {
+    this.debugLineVector = Rob.XY(this.tempVector);
+    this.debugLineVector.normalize();
+    this.debugLineVector.scalarMultiply(this.archon.sensorRadius);
+    this.debugLineVector.add(this.archon.position);
   }
   
   return this.tempVector;
