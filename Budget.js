@@ -11,24 +11,25 @@ Rob.Range = require('./Range.js');
 (function(Rob) {
 
 Archonia = (function() {
-  var worldTempRange = new Rob.Range(-1000, 1000);
-  var archonDefaultTempRange = new Rob.Range(-200, 200);
+  var worldTemps = new Rob.Range(-1000, 1000);
 
-  var archonDefaultTempRangeLo = new Rob.Range(worldTempRange.lo, archonDefaultTempRange.lo);
-  var archonDefaultTempRangeHi = new Rob.Range(archonDefaultTempRange.hi, worldTempRange.hi);
+  var archonDefaultSoftTemps = new Rob.Range(-500, 500);
+  var archonDefaultHardTempsLo = new Rob.Range(worldTemps.lo, archonDefaultSoftTemps.lo);
+  var archonDefaultHardTempsHi = new Rob.Range(archonDefaultSoftTemps.hi, worldTemps.hi);
 
-  // Cost in calories/sec when you're at the limit of the default body temp range
-  var costPerTempRadius = 1;
-  var baseCostPerSoftDegree = costPerTempRadius / archonDefaultTempRange.getRadius();
-  var baseCostPerHardDegree = baseCostPerSoftDegree * 0.5;
+  // Cost in spud/sec when you're at the limit of the default body temp range
+  var spudPerSoftTemp = 1 / archonDefaultSoftTemps.getRadius();
+  var chugPerHardTempHi = 1 / archonDefaultHardTempsHi.getRadius();
+  var slugPerHardTempLo = 1 / archonDefaultHardTempsLo.getRadius();
 
   return {
-    worldTempRange: worldTempRange,
-    archonDefaultTempRange: archonDefaultTempRange,
-    baseCostPerSoftDegree: baseCostPerSoftDegree,
-    baseCostPerHardDegree: baseCostPerHardDegree,
-    archonDefaultTempRangeLo: archonDefaultTempRangeLo,
-    archonDefaultTempRangeHi: archonDefaultTempRangeHi
+    worldTemps: worldTemps,
+    archonDefaultSoftTemps: archonDefaultSoftTemps,
+    archonDefaultHardTempsLo: archonDefaultHardTempsLo,
+    archonDefaultHardTempsHi: archonDefaultHardTempsHi,
+    spudPerSoftTemp: spudPerSoftTemp,
+    chugPerHardTempHi: chugPerHardTempHi,
+    slugPerHardTempLo: slugPerHardTempLo
   };
 })();
   
@@ -38,50 +39,67 @@ Rob.Budget = function() {
 Rob.Budget.prototype = {
 
   getCost: function(currentTemp) {
-    var softTemp = 0;
-    var hardTemp = 0;
-    var toHardRange = null;
-    var fromHardRange = null;
+    var a = 0, b = 0;
+    var spudCost = 0, chugCost = 0, slugCost = 0;
     
     if(currentTemp > this.optimalTemp) {
       
       if(currentTemp > this.optimalTempHi) {
-        fromHardRange = Archonia.archonDefaultTempRangeHi;
-        toHardRange = this.hardRangeHi;
-        hardTemp = currentTemp - this.optimalTempHi;
-        softTemp = this.optimalTempHi - this.optimalTemp;
+        
+        a = this.hardTempsHi.getSize();
+        b = Archonia.archonDefaultHardTempsHi.getSize();
+        
+        chugCost = (currentTemp - this.optimalTempHi) * (a / b) * Archonia.chugPerHardTempHi;
+        
+        a = this.softTemps.getSize();
+        b = Archonia.archonDefaultSoftTemps.getSize();
+        
+        spudCost = (this.optimalTempHi - this.optimalTemp) * (a / b) * Archonia.spudPerSoftTemp;
+        
       } else {
-        softTemp = this.optimalTempHi - currentTemp;
+        
+        a = this.softTemps.getSize();
+        b = Archonia.archonDefaultSoftTemps.getSize();
+        
+        spudCost = (currentTemp - this.optimalTemp) * (a / b) * Archonia.spudPerSoftTemp;
+        
       }
-      
     } else if(currentTemp < this.optimalTemp) {
       
       if(currentTemp < this.optimalTempLo) {
-        fromHardRange = Archonia.archonDefaultTempRangeLo;
-        toHardRange = this.hardRangeLo;
-        hardTemp = currentTemp - this.optimalTempLo;
-        softTemp = this.optimalTempLo - this.optimalTemp;
+        
+        a = this.hardTempsLo.getSize();
+        b = Archonia.archonDefaultHardTempsLo.getSize();
+        
+        slugCost = (this.optimalTempLo - currentTemp) * (a / b) * Archonia.slugPerHardTempLo;
+        
+        a = this.softTemps.getSize();
+        b = Archonia.archonDefaultSoftTemps.getSize();
+        
+        spudCost = (this.optimalTemp - this.optimalTempLo) * (a / b) * Archonia.spudPerSoftTemp;
+        
       } else {
-        softTemp = currentTemp - this.optimalTempLo;
+        
+        a = this.softTemps.getSize();
+        b = Archonia.archonDefaultSoftTemps.getSize();
+        
+        spudCost = (this.optimalTemp - currentTemp) * (a / b) * Archonia.spudPerSoftTemp;
+        
       }
       
     }
     
-    var scaledSoft = Math.abs(this.softTempRange.convertPoint(currentTemp, Archonia.archonDefaultTempRange));
-
-    var scaledHard = 0;
-    if(hardTemp !== 0) {
-      scaledHard = Math.abs(toHardRange.convertPoint(currentTemp, fromHardRange));
-    }
+    console.log(
+      currentTemp, slugCost.toFixed(4), spudCost.toFixed(4), chugCost.toFixed(4), (slugCost + spudCost + chugCost).toFixed(4)
+    );
     
-    console.log(currentTemp, this.optimalTempLo, this.optimalTemp, this.optimalTempHi, scaledSoft.toFixed(4), scaledHard.toFixed(4));
-    return scaledSoft * Archonia.baseCostPerSoftDegree + scaledHard * Archonia.baseCostPerHardDegree;
+    return slugCost + spudCost + chugCost;
   },
   
   launch: function(archon) {
-    this.hardRangeHi = new Rob.Range(archon.optimalHiTemp, Archonia.worldTempRange.hi);
-    this.hardRangeLo = new Rob.Range(Archonia.worldTempRange.lo, archon.optimalLoTemp);
-    this.softTempRange = new Rob.Range(archon.optimalLoTemp, archon.optimalHiTemp);
+    this.hardTempsHi = new Rob.Range(archon.optimalHiTemp, Archonia.worldTemps.hi);
+    this.hardTempsLo = new Rob.Range(Archonia.worldTemps.lo, archon.optimalLoTemp);
+    this.softTemps = new Rob.Range(archon.optimalLoTemp, archon.optimalHiTemp);
     
     this.optimalTempLo = archon.optimalLoTemp;
     this.optimalTempHi = archon.optimalHiTemp;
@@ -101,14 +119,10 @@ if(typeof window === "undefined") {
     { optimalHiTemp: 1000, optimalLoTemp: -1000, optimalTemp: 0 },
     { optimalHiTemp: 500, optimalLoTemp: -500, optimalTemp: 0 },
     { optimalHiTemp: 900, optimalLoTemp: 700, optimalTemp: 800 },
-    { optimalHiTemp: 950, optimalLoTemp: 900, optimalTemp: 925 }
+    { optimalHiTemp: -300, optimalLoTemp: -800, optimalTemp: -675 }
   ];
   
   for(var j = 0; j < archons.length; j++) {
-    //archon.optimalTemp = (Math.random() * 2000) - 1000;
-    //archon.optimalLoTemp = Math.random() * (Math.abs(archon.optimalTemp - 1000)) - 1000;
-    //archon.optimalHiTemp = 1000 - Math.random() * (Math.abs(archon.optimalTemp - 1000));
-    
     var archon = archons[j];
     
     console.log();
@@ -116,19 +130,10 @@ if(typeof window === "undefined") {
 
     var b = new Rob.Budget();
     b.launch(archon);
-
-    var out = "";
-    var sep = "";
+    
     for(var i = -10; i <= 10; i++) {
       var t = (i * 100);
-      var c = b.getCost(t).toFixed(2);
-      
-      if(i % 5 === 0) { out += "\n"; }
-      
-      out += sep + "(" + t + ": " + c + ")";
-      sep = ", ";
+      b.getCost(t);
     }
-
-    console.log(out);
   }
 }

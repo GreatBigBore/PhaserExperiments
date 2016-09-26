@@ -13,6 +13,8 @@ if(typeof window === "undefined") {
 
 Rob.Range = function(lo, hi) {
   this.lo = lo; this.hi = hi;
+  
+  this.radialRange = null;
 };
 
 Rob.Range.prototype = {
@@ -40,6 +42,10 @@ Rob.Range.prototype = {
     var base = (this.lo < this.hi) ? this.lo : this.hi;
     return base + this.getSize() / 2;
   },
+  
+  getRadius: function() {
+    return this.radial().getSize();
+  },
 
   getSign: function() {
     return Math.sign(this.hi - this.lo) || 1;
@@ -47,6 +53,14 @@ Rob.Range.prototype = {
 
   getSize: function() {
     return Math.abs(this.hi - this.lo);
+  },
+  
+  radial: function() {
+    if(this.radialRange === null) {
+      this.radialRange = new Rob.Range(0, Math.abs(this.hi - this.lo) / 2);
+    }
+    
+    return this.radialRange;
   },
 
   set: function(lo, hi) {
