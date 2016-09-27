@@ -114,35 +114,47 @@ Rob.Budget.prototype = {
 
 if(typeof window === "undefined") {
   
-  var getUglyCurve = function(temp, a, b, c2, c1, optimal) {
-    var t = null;
-    
-    if(optimal <= 0) {
-      if(temp > optimal) {
-        t = getCurve(temp, a, b, c1);
-      } else {
-        t = getCurve(temp, a, b, c2);
-      }
-    } else {
-      if(temp < optimal) {
-        t = getCurve(temp, a, b, c2);
-      } else {
-        t = getCurve(temp, a, b, c1);
-      }
-    }
-    
-    return t;
+  var TCArchon = function(optimalTempLo, optimalTemp, optimalTempHi) {
+    this.optimalTempLo = optimalTempLo;
+    this.optimalTemp = optimalTemp;
+    this.optimalTempHi = optimalTempHi;
   };
   
-  var getCurve = function(temp, a, b, c) {
-    temp /= 1000; a /= 1000;  b /= 1000; c /= 1000;
+  TCArchon.prototype = {
+    getAsymmetricCurve: function(temp, a, b, c2, c1, optimal) {
+      var c = temp > optimal ? c1 : c2;
+  
+      return this.getCurve(temp, a, b, c);
+    },
+      
+    getCurve: function(temp, a, b, c) {
+      temp /= 1000; a /= 1000;  b /= 1000; c /= 1000;
+
+      var f = -Math.pow(temp - b, 2);
+      var g = 2 * Math.pow(c, 2);
+
+      return a * Math.pow(Math.E, f / g);
+    },
     
-    var f = -Math.pow(temp - b, 2);
-    var g = 2 * Math.pow(c, 2);
-    
-    //console.log(temp, a.toFixed(4), b.toFixed(4), c.toFixed(4), f.toFixed(4), g.toFixed(4));
-    
-    return a * Math.pow(Math.E, f / g);
+    getTempCost: function(temp) {
+      var max = Math.max(Math.abs(this.optimalTempHi), Math.abs(this.optimalTempLo));
+
+      var center = this.optimalTemp;
+
+      var width2 = Math.abs(this.optimalTempHi - this.optimalTemp);
+      var width1 = Math.abs(this.optimalTemp - this.optimalTempLo);
+
+      var t = this.optimalTemp;
+      var c = this.getAsymmetricCurve(temp, max, center, width1, width2, t);
+
+      if(this.optimalTempLo > 0) {
+        c = Math.abs(this.optimalTempHi / 1000) - c;
+      } else {
+        c = Math.abs(this.optimalTempLo / 1000) - c;
+      }
+      
+      return c;
+    }
   };
 
   var archons = [
@@ -158,28 +170,11 @@ if(typeof window === "undefined") {
     { optimalHiTemp: 1100, optimalLoTemp: 800, optimalTemp: 1000 }
   ];
   
-  for(var j = 0; j < archons.length; j++) {
-    var archon = archons[j];
+  for(var i = 0; i < archons.length; i++) {
+    var archon = new TCArchon(archons[i].optimalLoTemp, archons[i].optimalTemp, archons[i].optimalHiTemp);
     
-    var max = Math.max(Math.abs(archon.optimalHiTemp), Math.abs(archon.optimalLoTemp));
-
-    var center = archon.optimalTemp;
-
-    var width2 = Math.abs(archon.optimalHiTemp - archon.optimalTemp);
-    var width1 = Math.abs(archon.optimalTemp - archon.optimalLoTemp);
-    
-    var b = new Rob.Budget();
-    b.launch(archon);
-
-    var t = archon.optimalTemp;
-    var c = getUglyCurve(t, max, center, width1, width2, t);
-
-    if(archon.optimalLoTemp > 0) {
-      c = Math.abs(archon.optimalHiTemp / 1000) - c;
-    } else {
-      c = Math.abs(archon.optimalLoTemp / 1000) - c;
+    for(var j = -1000; j <= 1000; j += 100) {
+      console.log(j, archon.getTempCost(j).toFixed(4));
     }
-    
-    console.log(t, c.toFixed(4));
   }
 }
