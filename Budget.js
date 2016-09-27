@@ -113,9 +113,20 @@ Rob.Budget.prototype = {
 })(Rob);
 
 if(typeof window === "undefined") {
+  
+  var getCurve = function(temp, a, b, c) {
+    temp /= 1000; a /= 1000;  b /= 1000; c /= 1000;
+    
+    var f = -Math.pow(temp - b, 2);
+    var g = 2 * Math.pow(c, 2);
+    
+    //console.log(temp, a.toFixed(4), b.toFixed(4), c.toFixed(4), f.toFixed(4), g.toFixed(4));
+    
+    return a * Math.pow(Math.E, f / g);
+  };
 
   var archons = [
-    { optimalHiTemp: 200, optimalLoTemp: -200, optimalTemp: 0 },
+    { optimalHiTemp: 600, optimalLoTemp: 400, optimalTemp: 500 },
     { optimalHiTemp: 1000, optimalLoTemp: -1000, optimalTemp: 0 },
     { optimalHiTemp: 500, optimalLoTemp: -500, optimalTemp: 0 },
     { optimalHiTemp: 900, optimalLoTemp: 700, optimalTemp: 800 },
@@ -127,13 +138,30 @@ if(typeof window === "undefined") {
     
     console.log();
     console.log(archon);
-
+    
+    var max = Math.max(Math.abs(archon.optimalHiTemp), Math.abs(archon.optimalLoTemp));
+    
+    var center = (archon.optimalHiTemp - archon.optimalLoTemp) / 2 + archon.optimalLoTemp;
+    var width = Math.abs(archon.optimalHiTemp - archon.optimalLoTemp);
+    
     var b = new Rob.Budget();
     b.launch(archon);
-    
-    for(var i = -10; i <= 10; i++) {
-      var t = (i * 100);
-      b.getCost(t);
+
+    var sep = "";
+    var out = "";
+    for(var i = -1000; i <= 1000; i+= 25) {
+      out += sep;
+
+      if(i % 500 === 0) {
+        out += "\n";
+      } 
+
+      out += i.toString() + ": ";
+      
+      out += (getCurve(i, max, center, width)).toFixed(4);
+      sep = ", ";
     }
+    
+    console.log(out);
   }
 }
