@@ -114,6 +114,26 @@ Rob.Budget.prototype = {
 
 if(typeof window === "undefined") {
   
+  var getUglyCurve = function(temp, a, b, c2, c1, optimal) {
+    var t = null;
+    
+    if(optimal <= 0) {
+      if(temp > optimal) {
+        t = getCurve(temp, a, b, c1);
+      } else {
+        t = getCurve(temp, a, b, c2);
+      }
+    } else {
+      if(temp < optimal) {
+        t = getCurve(temp, a, b, c2);
+      } else {
+        t = getCurve(temp, a, b, c1);
+      }
+    }
+    
+    return t;
+  };
+  
   var getCurve = function(temp, a, b, c) {
     temp /= 1000; a /= 1000;  b /= 1000; c /= 1000;
     
@@ -130,38 +150,36 @@ if(typeof window === "undefined") {
     { optimalHiTemp: 1000, optimalLoTemp: -1000, optimalTemp: 0 },
     { optimalHiTemp: 500, optimalLoTemp: -500, optimalTemp: 0 },
     { optimalHiTemp: 900, optimalLoTemp: 700, optimalTemp: 800 },
-    { optimalHiTemp: -300, optimalLoTemp: -800, optimalTemp: -675 }
+    
+    
+    { optimalHiTemp: 400, optimalLoTemp: -700, optimalTemp: 300 },
+    { optimalHiTemp: 400, optimalLoTemp: -700, optimalTemp: -300 },
+    { optimalHiTemp: -300, optimalLoTemp: -800, optimalTemp: -675 },
+    { optimalHiTemp: 1100, optimalLoTemp: 800, optimalTemp: 1000 }
   ];
   
   for(var j = 0; j < archons.length; j++) {
     var archon = archons[j];
     
-    console.log();
-    console.log(archon);
-    
     var max = Math.max(Math.abs(archon.optimalHiTemp), Math.abs(archon.optimalLoTemp));
-    
-    var center = (archon.optimalHiTemp - archon.optimalLoTemp) / 2 + archon.optimalLoTemp;
-    var width = Math.abs(archon.optimalHiTemp - archon.optimalLoTemp);
+
+    var center = archon.optimalTemp;
+
+    var width2 = Math.abs(archon.optimalHiTemp - archon.optimalTemp);
+    var width1 = Math.abs(archon.optimalTemp - archon.optimalLoTemp);
     
     var b = new Rob.Budget();
     b.launch(archon);
 
-    var sep = "";
-    var out = "";
-    for(var i = -1000; i <= 1000; i+= 25) {
-      out += sep;
+    var t = archon.optimalTemp;
+    var c = getUglyCurve(t, max, center, width1, width2, t);
 
-      if(i % 500 === 0) {
-        out += "\n";
-      } 
-
-      out += i.toString() + ": ";
-      
-      out += (getCurve(i, max, center, width)).toFixed(4);
-      sep = ", ";
+    if(archon.optimalLoTemp > 0) {
+      c = Math.abs(archon.optimalHiTemp / 1000) - c;
+    } else {
+      c = Math.abs(archon.optimalLoTemp / 1000) - c;
     }
     
-    console.log(out);
+    console.log(t, c.toFixed(4));
   }
 }
